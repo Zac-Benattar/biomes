@@ -30,5 +30,7 @@ export function createTileGeometry() {
     geometry.instanceCount = grass_blades_count;
     geometry.setAttribute('vertIndex', new THREE.Uint8BufferAttribute(vertID, 1));
     geometry.setAttribute('position', new InstancedBufferAttribute(new Float32Array(offsetsData), 3)); 
+    geometry.setIndex(new THREE.BufferAttribute(new Uint16Array([0, 1, 2, 0, 2, 3]), 1));
+    console.log(geometry);
     return geometry;
 }
