@@ -1,11 +1,19 @@
 import * as THREE from "three";
 import * as BufferGeometryUtils from "three/examples/jsm/utils/BufferGeometryUtils.js";
+import Item from "./items";
+
+export enum TileFeature {
+  Rock,
+  Tree,
+}
 
 export default class Tile {
   height: number;
   position: THREE.Vector3;
+  feature: TileFeature;
+  item: Item;
 
-  constructor(height, position) {
+  constructor(height, position, feature, item) {
     this.height = height;
     this.position = position;
   }
@@ -29,38 +37,40 @@ export default class Tile {
     return geo;
   }
 
-  public getHex(height, position) {
-    let geo = this.hexGeometry(height, position);
+  public getHexTileGeometry() {
+    let geo = this.hexGeometry(this.height, this.position);
+    let stoneGeo: THREE.BufferGeometry = new THREE.BoxGeometry(0, 0, 0);
+    let dirtGeo: THREE.BufferGeometry = new THREE.BoxGeometry(0, 0, 0);
+    let dirt2Geo: THREE.BufferGeometry = new THREE.BoxGeometry(0, 0, 0);
+    let sandGeo: THREE.BufferGeometry = new THREE.BoxGeometry(0, 0, 0);
+    let grassGeo: THREE.BufferGeometry = new THREE.BoxGeometry(0, 0, 0);
 
-    if (height > 8) {
+    if (this.height > 8) {
       stoneGeo = BufferGeometryUtils.mergeGeometries([stoneGeo, geo]);
 
       if (Math.random() > 0.8) {
-        stoneGeo = BufferGeometryUtils.mergeGeometries([
-          stoneGeo,
-          this.rock(height, position),
-        ]);
+        this.rock(this.height, this.position);
       }
-    } else if (height > 7) {
+    } else if (this.height > 7) {
       dirtGeo = BufferGeometryUtils.mergeGeometries([dirtGeo, geo]);
-    } else if (height > 5) {
+    } else if (this.height > 5) {
       dirt2Geo = BufferGeometryUtils.mergeGeometries([dirt2Geo, geo]);
-    } else if (height > 3) {
+    } else if (this.height > 3) {
       grassGeo = BufferGeometryUtils.mergeGeometries([grassGeo, geo]);
 
       if (Math.random() > 0.8) {
-        this.alpineTree(height, position);
+        this.alpineTree(this.height, this.position);
       }
-    } else if (height > 0) {
+    } else if (this.height > 0) {
       sandGeo = BufferGeometryUtils.mergeGeometries([sandGeo, geo]);
 
       if (Math.random() > 0.8) {
-        sandGeo = BufferGeometryUtils.mergeGeometries([
-          sandGeo,
-          this.rock(height, position),
-        ]);
+        this.rock(this.height, this.position);
       }
     }
+
+    // return a list of geometries
+    return [stoneGeo, dirtGeo, dirt2Geo, sandGeo, grassGeo];
   }
 
   private rock(height, position) {
@@ -70,7 +80,14 @@ export default class Tile {
     const geo = new THREE.SphereGeometry(Math.random() * 0.3 + 0.1, 7, 7);
     geo.translate(position.x + px, height, position.y + py);
 
-    return geo;
+    let rockMaterial = new THREE.MeshStandardMaterial({
+      color: 0x888888,
+      flatShading: true,
+    });
+
+    let rockMesh = new THREE.Mesh(geo, rockMaterial);
+
+    return rockMesh;
   }
 
   private alpineTree(height, position) {

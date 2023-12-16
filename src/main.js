@@ -1,6 +1,7 @@
 import * as THREE from "three";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 import * as BufferGeometryUtils from "three/addons/utils/BufferGeometryUtils.js";
+import Island from "./island";
 import { Biome } from "./island";
 
 const scene = new THREE.Scene();
@@ -34,8 +35,8 @@ const MAX_HEIGHT = 10;
 
 (async function () {
 
-
   let island = new Island(Biome.Alpine, 0, 0, 0, 0, MAX_HEIGHT, 0);
+  island.addToScene(scene);
 
   renderer.setAnimationLoop(() => {
     controls.update();
