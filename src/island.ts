@@ -223,12 +223,11 @@ export default class Island {
       new THREE.CylinderGeometry(17.1, 17.1, this.max_height * 0.1, 50),
       new THREE.MeshBasicMaterial({
         color: 0x888888,
-        // flatShading: true,
         side: THREE.DoubleSide,
       })
     );
     islandFloorMesh.receiveShadow = true;
-    islandFloorMesh.position.set(0, this.max_height * 0.05, 0);
+    islandFloorMesh.position.set(0, this.max_height * 0.02, 0);
 
     let clouds = this.getClouds();
 
