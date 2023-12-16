@@ -42,9 +42,17 @@ export default class Island {
         if (position.length() > 16) continue;
 
         let noise = (noise2D(x * 0.1, y * 0.1) + 1) / 2; // Normalize noise to 0-1
-        noise = Math.pow(noise, 1.5); // Smooths out the noise
+        noise = Math.pow(noise, 1.5); // Smooth out the noise
         let height = noise * max_height;
-        this.tiles.push(new Tile(height, position, null, null));
+        let feature: TileFeature = TileFeature.None;
+        let item: Item = null;
+
+        if (biome == Biome.Alpine) {
+          if (Math.random() > 0.7) {
+            feature = TileFeature.Tree;
+          }
+        }
+        this.tiles.push(new Tile(height, position, biome, feature, item));
       }
     }
   }
@@ -104,9 +112,10 @@ export default class Island {
     let dirt2Geo: THREE.BufferGeometry = new THREE.BoxGeometry(0, 0, 0);
     let sandGeo: THREE.BufferGeometry = new THREE.BoxGeometry(0, 0, 0);
     let grassGeo: THREE.BufferGeometry = new THREE.BoxGeometry(0, 0, 0);
+    let features: THREE.Group = new THREE.Group();
+    let items: THREE.Group = new THREE.Group();
 
     for (let i = 0; i < this.tiles.length; i++) {
-      // add the list of geometries for the tile to the list of geometries for the island
       let tileGeometries = this.tiles[i].getHexTileGeometry();
       stoneGeo = BufferGeometryUtils.mergeGeometries([
         stoneGeo,
@@ -128,45 +137,50 @@ export default class Island {
         grassGeo,
         tileGeometries[4],
       ]);
+
+      features.add(tileGeometries[5]);
+      items.add(tileGeometries[6]);
     }
+
+    console.log(features);
 
     let stoneMesh = new THREE.Mesh(
       stoneGeo,
-      new THREE.MeshBasicMaterial({
+      new THREE.MeshStandardMaterial({
         color: 0x888888,
-        // flatShading: true,
+        flatShading: true,
       })
     );
 
     let dirtMesh = new THREE.Mesh(
       dirtGeo,
-      new THREE.MeshBasicMaterial({
+      new THREE.MeshStandardMaterial({
         color: 0x8b4513,
-        // flatShading: true,
+        flatShading: true,
       })
     );
 
     let dirt2Mesh = new THREE.Mesh(
       dirt2Geo,
-      new THREE.MeshBasicMaterial({
+      new THREE.MeshStandardMaterial({
         color: 0x8b4543,
-        // flatShading: true,
+        flatShading: true,
       })
     );
 
     let sandMesh = new THREE.Mesh(
       sandGeo,
-      new THREE.MeshBasicMaterial({
+      new THREE.MeshStandardMaterial({
         color: 0xf4a460,
-        // flatShading: true,
+        flatShading: true,
       })
     );
 
     let grassMesh = new THREE.Mesh(
       grassGeo,
-      new THREE.MeshBasicMaterial({
+      new THREE.MeshStandardMaterial({
         color: 0x85bb65,
-        // flatShading: true,
+        flatShading: true,
       })
     );
 
@@ -228,7 +242,9 @@ export default class Island {
       waterMesh,
       islandContainerMesh,
       islandFloorMesh,
-      clouds
+      clouds,
+      features,
+      items
     );
 
     scene.add(island);

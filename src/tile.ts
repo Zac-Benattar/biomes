@@ -1,21 +1,27 @@
 import * as THREE from "three";
 import * as BufferGeometryUtils from "three/examples/jsm/utils/BufferGeometryUtils.js";
 import Item from "./items";
+import { Biome } from "./island";
 
 export enum TileFeature {
   Rock,
   Tree,
+  None,
 }
 
 export default class Tile {
   height: number;
   position: THREE.Vector3;
+  biome: Biome;
   feature: TileFeature;
   item: Item;
 
-  constructor(height, position, feature, item) {
+  constructor(height, position, biome, feature, item) {
     this.height = height;
     this.position = position;
+    this.biome = biome;
+    this.feature = feature;
+    this.item = item;
   }
 
   private getMesh() {
@@ -44,12 +50,14 @@ export default class Tile {
     let dirt2Geo: THREE.BufferGeometry = new THREE.BoxGeometry(0, 0, 0);
     let sandGeo: THREE.BufferGeometry = new THREE.BoxGeometry(0, 0, 0);
     let grassGeo: THREE.BufferGeometry = new THREE.BoxGeometry(0, 0, 0);
+    let featureMesh: THREE.Group = new THREE.Group();
+    let itemMesh: THREE.Group = new THREE.Group();
 
     if (this.height > 8) {
       stoneGeo = BufferGeometryUtils.mergeGeometries([stoneGeo, geo]);
 
-      if (Math.random() > 0.8) {
-        this.rock(this.height, this.position);
+      if (this.feature === TileFeature.Tree) {
+        featureMesh = this.alpineTree(this.height, this.position);
       }
     } else if (this.height > 7) {
       dirtGeo = BufferGeometryUtils.mergeGeometries([dirtGeo, geo]);
@@ -58,19 +66,19 @@ export default class Tile {
     } else if (this.height > 3) {
       grassGeo = BufferGeometryUtils.mergeGeometries([grassGeo, geo]);
 
-      if (Math.random() > 0.8) {
+      if (this.feature === TileFeature.Tree) {
         this.alpineTree(this.height, this.position);
       }
     } else if (this.height > 0) {
       sandGeo = BufferGeometryUtils.mergeGeometries([sandGeo, geo]);
 
-      if (Math.random() > 0.8) {
-        this.rock(this.height, this.position);
+      if (this.feature === TileFeature.Tree) {
+        this.alpineTree(this.height, this.position);
       }
     }
 
     // return a list of geometries
-    return [stoneGeo, dirtGeo, dirt2Geo, sandGeo, grassGeo];
+    return [stoneGeo, dirtGeo, dirt2Geo, sandGeo, grassGeo, featureMesh, itemMesh];
   }
 
   private rock(height, position) {
