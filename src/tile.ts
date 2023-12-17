@@ -11,6 +11,7 @@ export enum TileType {
   Grass,
   Water,
   MartianSand,
+  Snow,
 }
 
 export enum TileFeature {
@@ -34,24 +35,39 @@ export enum TileFeature {
   None,
 }
 
+export enum TileTop {
+  None,
+  Snow,
+  Grass,
+}
+
 export default class Tile {
   height: number;
   position: THREE.Vector3;
   tileType: TileType;
   feature: TileFeature;
   item: Item;
+  top: TileTop;
 
-  constructor(height, position, tile_type, feature, item) {
+  constructor(height, position, tile_type, feature, item, top) {
     this.height = height;
     this.position = position;
     this.tileType = tile_type;
     this.feature = feature;
     this.item = item;
+    this.top = top;
   }
 
   private hexGeometry(height, position) {
     let geo = new THREE.CylinderGeometry(1, 1, height, 6, 1, false);
     geo.translate(position.x, height / 2, position.y);
+
+    return geo;
+  }
+
+  private snowGeometry(position) {
+    let geo = new THREE.CylinderGeometry(1, 1, 0.1, 6, 1, false);
+    geo.translate(position.x, position.z, position.y);
 
     return geo;
   }
@@ -64,6 +80,7 @@ export default class Tile {
     let sandGeo: THREE.BufferGeometry = new THREE.BoxGeometry(0, 0, 0);
     let grassGeo: THREE.BufferGeometry = new THREE.BoxGeometry(0, 0, 0);
     let martianSandGeo: THREE.BufferGeometry = new THREE.BoxGeometry(0, 0, 0);
+    let snowGeo: THREE.BufferGeometry = new THREE.BoxGeometry(0, 0, 0);
     let featureMesh: THREE.Group = new THREE.Group();
     let itemMesh: THREE.Group = new THREE.Group();
 
@@ -81,6 +98,13 @@ export default class Tile {
       sandGeo = BufferGeometryUtils.mergeGeometries([sandGeo, geo]);
     }
 
+    if (this.top === TileTop.Snow) {
+      let snowTopGeo = this.snowGeometry(
+        new THREE.Vector3(this.position.x, this.position.y, this.height + 0.05)
+      );
+      snowGeo = BufferGeometryUtils.mergeGeometries([snowGeo, snowTopGeo]);
+    }
+
     if (this.feature === TileFeature.Rock) {
       featureMesh.add(this.rock(this.height, this.position));
     } else if (this.feature === TileFeature.AlpineTree) {
@@ -95,6 +119,7 @@ export default class Tile {
       sandGeo,
       grassGeo,
       martianSandGeo,
+      snowGeo,
       featureMesh,
       itemMesh,
     ];

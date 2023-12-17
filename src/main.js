@@ -19,8 +19,8 @@ controls.dampingFactor = 0.05;
 controls.target.set(0, 0, 0);
 document.body.appendChild(renderer.domElement);
 
-camera.position.y = 20;
-camera.position.z = 20;
+camera.position.y = 30;
+camera.position.z = 30;
 
 const light = new THREE.PointLight(0xffcb8e, 400, 200);
 light.position.set(10, 20, 10);
