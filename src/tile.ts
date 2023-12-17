@@ -3,9 +3,18 @@ import * as BufferGeometryUtils from "three/examples/jsm/utils/BufferGeometryUti
 import Item from "./items";
 import { Biome } from "./island";
 
+export enum TileType {
+  Stone,
+  Dirt,
+  Dirt2,
+  Sand,
+  Grass,
+  Water,
+}
+
 export enum TileFeature {
   Rock,
-  Tree,
+  AlpineTree,
   Grass,
   Snw,
   Cactus,
@@ -27,14 +36,14 @@ export enum TileFeature {
 export default class Tile {
   height: number;
   position: THREE.Vector3;
-  biome: Biome;
+  tileType: TileType;
   feature: TileFeature;
   item: Item;
 
-  constructor(height, position, biome, feature, item) {
+  constructor(height, position, tile_type, feature, item) {
     this.height = height;
     this.position = position;
-    this.biome = biome;
+    this.tileType = tile_type;
     this.feature = feature;
     this.item = item;
   }
@@ -56,21 +65,21 @@ export default class Tile {
     let featureMesh: THREE.Group = new THREE.Group();
     let itemMesh: THREE.Group = new THREE.Group();
 
-    if (this.height > 8) {
+    if (this.tileType === TileType.Stone) {
       stoneGeo = BufferGeometryUtils.mergeGeometries([stoneGeo, geo]);
-    } else if (this.height > 7) {
+    } else if (this.tileType === TileType.Dirt) {
       dirtGeo = BufferGeometryUtils.mergeGeometries([dirtGeo, geo]);
-    } else if (this.height > 5) {
+    } else if (this.tileType === TileType.Dirt2) {
       dirt2Geo = BufferGeometryUtils.mergeGeometries([dirt2Geo, geo]);
-    } else if (this.height > 3) {
+    } else if (this.tileType === TileType.Grass) {
       grassGeo = BufferGeometryUtils.mergeGeometries([grassGeo, geo]);
-    } else if (this.height > 0) {
+    } else if (this.tileType === TileType.Sand) {
       sandGeo = BufferGeometryUtils.mergeGeometries([sandGeo, geo]);
     }
 
     if (this.feature === TileFeature.Rock) {
       featureMesh.add(this.rock(this.height, this.position));
-    } else if (this.feature === TileFeature.Tree) {
+    } else if (this.feature === TileFeature.AlpineTree) {
       featureMesh.add(this.alpineTree(this.height, this.position));
     }
 

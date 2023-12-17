@@ -2,7 +2,7 @@ import * as THREE from "three";
 import * as BufferGeometryUtils from "three/examples/jsm/utils/BufferGeometryUtils.js";
 import { createNoise2D } from "simplex-noise";
 import Item from "./items";
-import Tile, { TileFeature } from "./tile";
+import Tile, { TileFeature, TileType } from "./tile";
 
 export enum Biome {
   Jungle,
@@ -28,14 +28,30 @@ export enum Weather {
   Stormy,
 }
 
+class Layer {
+  min_height: number;
+  tileTypes: TileType[];
+  features: TileFeature[];
+
+  constructor(
+    min_height: number,
+    tileTypes: TileType[],
+    features: TileFeature[]
+  ) {
+    this.min_height = min_height;
+    this.tileTypes = tileTypes;
+    this.features = features;
+  }
+}
+
 class Parameters {
   max_height: number;
-  min_height: number;
   height_variance: number;
   weather: Weather;
   clouds: boolean;
   clouds_min_height: number;
   water: boolean;
+  layers: Layer[];
 }
 
 export default class Island {
@@ -61,12 +77,22 @@ export default class Island {
       case Biome.Alpine:
         this.Parameters = {
           max_height: 14,
-          min_height: 1,
           height_variance: 1.5,
           weather: Weather.Snowy,
           clouds: true,
           clouds_min_height: 11,
           water: false,
+          layers: [
+            new Layer(8, [TileType.Stone], [TileFeature.None]),
+            new Layer(
+              7,
+              [TileType.Dirt],
+              [TileFeature.AlpineTree, TileFeature.Rock]
+            ),
+            new Layer(6, [TileType.Dirt], [TileFeature.None]),
+            new Layer(4, [TileType.Grass], [TileFeature.None]),
+            new Layer(1, [TileType.Grass], [TileFeature.None]),
+          ],
         };
         break;
       default:
@@ -84,21 +110,45 @@ export default class Island {
         let noise = (noise2D(x * 0.1, y * 0.1) + 1) / 2; // Normalize noise to 0-1
         noise = Math.pow(noise, this.Parameters.height_variance); // Smooth out the noise
         let height = Math.min(
-          noise * (this.Parameters.max_height - this.Parameters.min_height) +
-            this.Parameters.min_height,
+          noise * (this.Parameters.max_height - this.getMinHeight()) +
+            this.getMinHeight(),
           this.Parameters.max_height
         );
         let feature: TileFeature = TileFeature.None;
         let item: Item = null;
 
-        if (biome == Biome.Alpine) {
-          if (height > 2 && Math.random() > 0.7) {
-            feature = TileFeature.Tree;
+        let tileLayer: Layer | undefined = this.Parameters.layers.find(
+          (layer) => {
+            return height >= layer.min_height;
           }
+        );
+
+        if (tileLayer === undefined) {
+          console.log("No layer found for height " + height);
+          continue;
         }
-        this.tiles.push(new Tile(height, position, biome, feature, item));
+
+        if (Math.random() > 0.7) {
+          feature =
+            tileLayer.features[
+              Math.floor(Math.random() * tileLayer.features.length)
+            ];
+        }
+
+        let tileType: TileType =
+          tileLayer.tileTypes[
+            Math.floor(Math.random() * tileLayer.tileTypes.length)
+          ];
+
+        this.tiles.push(new Tile(height, position, tileType, feature, item));
       }
     }
+  }
+
+  private getMinHeight(): number {
+    return this.Parameters.layers.reduce((min, layer) => {
+      return Math.min(min, layer.min_height);
+    }, this.Parameters.max_height);
   }
 
   private tileToPosition(tileX, tileY): THREE.Vector2 {
