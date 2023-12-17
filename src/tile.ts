@@ -10,13 +10,14 @@ export enum TileType {
   Sand,
   Grass,
   Water,
+  MartianSand,
 }
 
 export enum TileFeature {
   Rock,
   AlpineTree,
   Grass,
-  Snw,
+  Snow,
   Cactus,
   Tumbleweed,
   AnimalSkull,
@@ -62,6 +63,7 @@ export default class Tile {
     let dirt2Geo: THREE.BufferGeometry = new THREE.BoxGeometry(0, 0, 0);
     let sandGeo: THREE.BufferGeometry = new THREE.BoxGeometry(0, 0, 0);
     let grassGeo: THREE.BufferGeometry = new THREE.BoxGeometry(0, 0, 0);
+    let martianSandGeo: THREE.BufferGeometry = new THREE.BoxGeometry(0, 0, 0);
     let featureMesh: THREE.Group = new THREE.Group();
     let itemMesh: THREE.Group = new THREE.Group();
 
@@ -74,6 +76,8 @@ export default class Tile {
     } else if (this.tileType === TileType.Grass) {
       grassGeo = BufferGeometryUtils.mergeGeometries([grassGeo, geo]);
     } else if (this.tileType === TileType.Sand) {
+      sandGeo = BufferGeometryUtils.mergeGeometries([sandGeo, geo]);
+    } else if (this.tileType === TileType.MartianSand) {
       sandGeo = BufferGeometryUtils.mergeGeometries([sandGeo, geo]);
     }
 
@@ -90,6 +94,7 @@ export default class Tile {
       dirt2Geo,
       sandGeo,
       grassGeo,
+      martianSandGeo,
       featureMesh,
       itemMesh,
     ];

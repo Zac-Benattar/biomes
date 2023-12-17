@@ -19,6 +19,7 @@ export enum Biome {
   Taiga, // Less snowy than Alpine
   Beach,
   Meadow,
+  MartianDesert,
 }
 
 export enum Weather {
@@ -28,15 +29,25 @@ export enum Weather {
   Stormy,
 }
 
+class TileFeatureProbability {
+  feature: TileFeature;
+  probability: number;
+
+  constructor(feature: TileFeature, probability: number) {
+    this.feature = feature;
+    this.probability = probability;
+  }
+}
+
 class Layer {
   min_height: number;
   tileTypes: TileType[];
-  features: TileFeature[];
+  features: TileFeatureProbability[];
 
   constructor(
     min_height: number,
     tileTypes: TileType[],
-    features: TileFeature[]
+    features: TileFeatureProbability[]
   ) {
     this.min_height = min_height;
     this.tileTypes = tileTypes;
@@ -61,12 +72,22 @@ export default class Island {
   x: number;
   y: number;
   z: number;
+  radius: number;
   tiles: Array<Tile>;
   items: Array<Item>;
+  particles: THREE.Points<THREE.BufferGeometry> | null;
 
-  constructor(biome: Biome, seed: number, x: number, y: number, z: number) {
+  constructor(
+    biome: Biome,
+    seed: number,
+    radius: number,
+    x: number,
+    y: number,
+    z: number
+  ) {
     this.Biome = biome;
     this.seed = seed;
+    this.radius = radius;
     this.x = x;
     this.y = y;
     this.z = z;
@@ -83,15 +104,67 @@ export default class Island {
           clouds_min_height: 11,
           water: false,
           layers: [
-            new Layer(8, [TileType.Stone], [TileFeature.None]),
+            new Layer(
+              8,
+              [TileType.Stone],
+              [
+                new TileFeatureProbability(TileFeature.Rock, 0.1),
+                new TileFeatureProbability(TileFeature.AlpineTree, 0.3),
+              ]
+            ),
             new Layer(
               7,
               [TileType.Dirt],
-              [TileFeature.AlpineTree, TileFeature.Rock]
+              [
+                new TileFeatureProbability(TileFeature.AlpineTree, 0.2),
+                new TileFeatureProbability(TileFeature.Snow, 0.8),
+              ]
             ),
-            new Layer(6, [TileType.Dirt], [TileFeature.None]),
-            new Layer(4, [TileType.Grass], [TileFeature.None]),
-            new Layer(1, [TileType.Grass], [TileFeature.None]),
+            new Layer(6, [TileType.Dirt], []),
+            new Layer(4, [TileType.Grass], []),
+            new Layer(1, [TileType.Grass], []),
+          ],
+        };
+        break;
+      case Biome.Desert:
+        this.Parameters = {
+          max_height: 3,
+          height_variance: 0.5,
+          weather: Weather.Sunny,
+          clouds: false,
+          clouds_min_height: 11,
+          water: false,
+          layers: [
+            new Layer(
+              1,
+              [TileType.Sand],
+              [
+                new TileFeatureProbability(TileFeature.Rock, 0.2),
+                new TileFeatureProbability(TileFeature.Tumbleweed, 0.2),
+                new TileFeatureProbability(TileFeature.Cactus, 0.2),
+              ]
+            ),
+          ],
+        };
+        break;
+      case Biome.MartianDesert:
+        this.Parameters = {
+          max_height: 3,
+          height_variance: 0.5,
+          weather: Weather.Sunny,
+          clouds: false,
+          clouds_min_height: 11,
+          water: false,
+          layers: [
+            new Layer(
+              1,
+              [TileType.MartianSand],
+              [
+                new TileFeatureProbability(TileFeature.Rock, 0.2),
+                new TileFeatureProbability(TileFeature.Tumbleweed, 0.2),
+                new TileFeatureProbability(TileFeature.Cactus, 0.2),
+              ]
+            ),
           ],
         };
         break;
@@ -102,10 +175,10 @@ export default class Island {
 
     const noise2D = createNoise2D(this.randomFunction); // Create a seeded 2D noise function - gives values between -1 and 1
 
-    for (let y = -15; y < 15; y++) {
-      for (let x = -15; x < 15; x++) {
+    for (let y = -radius; y < radius; y++) {
+      for (let x = -radius; x < radius; x++) {
         let position = this.tileToPosition(x, y);
-        if (position.length() > 16) continue;
+        if (position.length() > radius + 1) continue;
 
         let noise = (noise2D(x * 0.1, y * 0.1) + 1) / 2; // Normalize noise to 0-1
         noise = Math.pow(noise, this.Parameters.height_variance); // Smooth out the noise
@@ -128,11 +201,17 @@ export default class Island {
           continue;
         }
 
-        if (Math.random() > 0.7) {
-          feature =
-            tileLayer.features[
-              Math.floor(Math.random() * tileLayer.features.length)
-            ];
+        // Pick a feature based on probability
+        if (tileLayer.features.length > 0) {
+          let featureProbability = Math.random();
+          let cumulativeProbability = 0;
+          for (let i = 0; i < tileLayer.features.length; i++) {
+            cumulativeProbability += tileLayer.features[i].probability;
+            if (featureProbability <= cumulativeProbability) {
+              feature = tileLayer.features[i].feature;
+              break;
+            }
+          }
         }
 
         let tileType: TileType =
@@ -143,6 +222,10 @@ export default class Island {
         this.tiles.push(new Tile(height, position, tileType, feature, item));
       }
     }
+  }
+
+  public update(): void {
+    this.updateParticles();
   }
 
   private getMinHeight(): number {
@@ -159,7 +242,7 @@ export default class Island {
     return Math.random();
   }
 
-  private getClouds(): THREE.Mesh<
+  public getClouds(): THREE.Mesh<
     THREE.BufferGeometry<THREE.NormalBufferAttributes>,
     THREE.MeshStandardMaterial,
     THREE.Object3DEventMap
@@ -182,9 +265,9 @@ export default class Island {
         puff3,
       ]);
       cloudGeo.translate(
-        Math.random() * 20 - 10,
+        Math.random() * this.radius - 5,
         Math.random() * 5 + this.Parameters.clouds_min_height,
-        Math.random() * 20 - 10
+        Math.random() * this.radius - 5
       );
       cloudGeo.rotateY(Math.random() * Math.PI * 2);
 
@@ -204,12 +287,103 @@ export default class Island {
     return mesh;
   }
 
+  public getSnow() {
+    let particles;
+    let positions: number[] = [];
+    let velocities: number[] = [];
+    const particleCount = 200;
+    const geo = new THREE.BufferGeometry();
+    const textureLoader = new THREE.TextureLoader();
+
+    for (let i = 0; i < particleCount; i++) {
+      positions.push(
+        Math.floor((Math.random() - 0.5) * (this.radius * 2)),
+        Math.floor(Math.random() * 10 + this.Parameters.clouds_min_height),
+        Math.floor((Math.random() - 0.5) * (this.radius * 2))
+      );
+      velocities.push(
+        (Math.random() - 0.5) * 0.05,
+        (Math.random() - 0.05) * -0.05 - 0.01,
+        (Math.random() - 0.5) * 0.05
+      );
+    }
+
+    geo.setAttribute(
+      "position",
+      new THREE.Float32BufferAttribute(positions, 3)
+    );
+    geo.setAttribute(
+      "velocity",
+      new THREE.Float32BufferAttribute(velocities, 3)
+    );
+
+    // Create a basic white square particle
+    const material = new THREE.PointsMaterial({
+      size: 0.5,
+      map: textureLoader.load("assets/snowflake.png"),
+      blending: THREE.AdditiveBlending,
+      depthTest: false,
+      transparent: true,
+      opacity: 0.8,
+    });
+
+    particles = new THREE.Points(geo, material);
+    return particles;
+  }
+
+  private updateParticles() {
+    const min_height = this.getMinHeight();
+    if (this.particles) {
+      for (
+        let i = 0;
+        i < this.particles.geometry.attributes.position.count;
+        i++
+      ) {
+        let x = this.particles.geometry.attributes.position.array[i * 3];
+        let y = this.particles.geometry.attributes.position.array[i * 3 + 1];
+        let z = this.particles.geometry.attributes.position.array[i * 3 + 2];
+
+        if (
+          y < min_height ||
+          Math.abs(x) > this.radius + 1 ||
+          Math.abs(z) > this.radius + 1
+        ) {
+          this.particles.geometry.attributes.position.array[i * 3] = Math.floor(
+            (Math.random() - 0.5) * (this.radius * 2)
+          );
+          this.particles.geometry.attributes.position.array[i * 3 + 1] =
+            Math.floor(Math.random() * 10 + this.Parameters.clouds_min_height);
+          this.particles.geometry.attributes.position.array[i * 3 + 2] =
+            Math.floor((Math.random() - 0.5) * (this.radius * 2));
+          this.particles.geometry.attributes.velocity.array[i * 3] =
+            (Math.random() - 0.5) * 0.05;
+          this.particles.geometry.attributes.velocity.array[i * 3 + 1] =
+            (Math.random() - 0.05) * -0.05 - 0.01;
+          this.particles.geometry.attributes.velocity.array[i * 3 + 2] =
+            (Math.random() - 0.5) * 0.05;
+          this.particles.geometry.attributes.position.needsUpdate = true;
+          continue;
+        }
+
+        this.particles.geometry.attributes.position.array[i * 3] =
+          x + this.particles.geometry.attributes.velocity.array[i * 3];
+        this.particles.geometry.attributes.position.array[i * 3 + 1] =
+          y + this.particles.geometry.attributes.velocity.array[i * 3 + 1];
+        this.particles.geometry.attributes.position.array[i * 3 + 2] =
+          z + this.particles.geometry.attributes.velocity.array[i * 3 + 2];
+
+        this.particles.geometry.attributes.position.needsUpdate = true;
+      }
+    }
+  }
+
   public addToScene(scene): void {
     let stoneGeo: THREE.BufferGeometry = new THREE.BoxGeometry(0, 0, 0);
     let dirtGeo: THREE.BufferGeometry = new THREE.BoxGeometry(0, 0, 0);
     let dirt2Geo: THREE.BufferGeometry = new THREE.BoxGeometry(0, 0, 0);
     let sandGeo: THREE.BufferGeometry = new THREE.BoxGeometry(0, 0, 0);
     let grassGeo: THREE.BufferGeometry = new THREE.BoxGeometry(0, 0, 0);
+    let martianSandGeo: THREE.BufferGeometry = new THREE.BoxGeometry(0, 0, 0);
     let features: THREE.Group = new THREE.Group();
     let items: THREE.Group = new THREE.Group();
 
@@ -235,9 +409,13 @@ export default class Island {
         grassGeo,
         tileGeometries[4],
       ]);
+      martianSandGeo = BufferGeometryUtils.mergeGeometries([
+        martianSandGeo,
+        tileGeometries[5],
+      ]);
 
-      features.add(tileGeometries[5]);
-      items.add(tileGeometries[6]);
+      features.add(tileGeometries[6]);
+      items.add(tileGeometries[7]);
     }
 
     let stoneMesh = new THREE.Mesh(
@@ -267,7 +445,7 @@ export default class Island {
     let sandMesh = new THREE.Mesh(
       sandGeo,
       new THREE.MeshStandardMaterial({
-        color: 0xf4a460,
+        color: 0xfada5e,
         flatShading: true,
       })
     );
@@ -276,6 +454,14 @@ export default class Island {
       grassGeo,
       new THREE.MeshStandardMaterial({
         color: 0x85bb65,
+        flatShading: true,
+      })
+    );
+
+    let martianSandMesh = new THREE.Mesh(
+      martianSandGeo,
+      new THREE.MeshStandardMaterial({
+        color: 0xf4a460,
         flatShading: true,
       })
     );
@@ -337,18 +523,24 @@ export default class Island {
       dirt2Mesh,
       sandMesh,
       grassMesh,
+      martianSandMesh,
       islandContainerMesh,
       islandFloorMesh,
       features,
       items
     );
 
+    if (this.Parameters.water) {
+      island.add(waterMesh);
+    }
+
     if (this.Parameters.clouds) {
       island.add(this.getClouds());
     }
 
-    if (this.Parameters.water) {
-      island.add(waterMesh);
+    if (this.Parameters.weather === Weather.Snowy) {
+      this.particles = this.getSnow();
+      island.add(this.particles);
     }
 
     scene.add(island);
