@@ -308,15 +308,15 @@ export default class Island {
     let particles;
     let positions: number[] = [];
     let velocities: number[] = [];
-    const particleCount = 200;
+    const particleCount = 250;
     const geo = new THREE.BufferGeometry();
     const textureLoader = new THREE.TextureLoader();
 
     for (let i = 0; i < particleCount; i++) {
       positions.push(
-        Math.floor((Math.random() - 0.5) * (this.radius * 2)),
+        Math.floor((Math.random() - 0.5) * (this.radius * 1.7)),
         Math.floor(Math.random() * 5 + this.Parameters.clouds_min_height),
-        Math.floor((Math.random() - 0.5) * (this.radius * 2))
+        Math.floor((Math.random() - 0.5) * (this.radius * 1.7))
       );
       velocities.push(
         (Math.random() - 0.5) * 0.05,
@@ -362,16 +362,16 @@ export default class Island {
 
         if (
           y < min_height ||
-          Math.abs(x) > this.radius + 1 ||
-          Math.abs(z) > this.radius + 1
+          Math.abs(x) > this.radius - 1 ||
+          Math.abs(z) > this.radius - 1
         ) {
           this.particles.geometry.attributes.position.array[i * 3] = Math.floor(
-            (Math.random() - 0.5) * (this.radius * 2)
+            (Math.random() - 0.5) * (this.radius * 1.7)
           );
           this.particles.geometry.attributes.position.array[i * 3 + 1] =
             Math.floor(Math.random() * 5 + this.Parameters.clouds_min_height);
           this.particles.geometry.attributes.position.array[i * 3 + 2] =
-            Math.floor((Math.random() - 0.5) * (this.radius * 2));
+            Math.floor((Math.random() - 0.5) * (this.radius * 1.7));
           this.particles.geometry.attributes.velocity.array[i * 3] =
             (Math.random() - 0.5) * 0.05;
           this.particles.geometry.attributes.velocity.array[i * 3 + 1] =
