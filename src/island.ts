@@ -179,9 +179,7 @@ export default class Island {
     for (let y = -radius; y < radius; y++) {
       for (let x = -radius; x < radius; x++) {
         let position = this.tileToPosition(x, y);
-        if (position.length() > radius + 1) continue;
-
-        if (position.length() + 1 > radius) continue;
+        if (position.length() > radius - 1) continue; // Skip tiles outside of the island radius
 
         let noise = (noise2D(x * 0.1, y * 0.1) + 1) / 2; // Normalize noise to 0-1
         noise = Math.pow(noise, this.Parameters.height_variance); // Smooth out the noise
