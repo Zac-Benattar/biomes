@@ -5,34 +5,74 @@ import Item from "./items";
 import Tile, { TileFeature } from "./tile";
 
 export enum Biome {
+  Jungle,
   Forest,
   Desert,
   Alpine,
-  Plains,
+  Savana,
   Ocean,
+  Mesa,
+  Volcano,
+  Tundra,
+  Swamp,
+  Plains,
+  Taiga, // Less snowy than Alpine
+  Beach,
+  Meadow,
+}
+
+export enum Weather {
+  Sunny,
+  Rainy,
+  Snowy,
+  Stormy,
+}
+
+class Parameters {
+  max_height: number;
+  min_height: number;
+  height_variance: number;
+  weather: Weather;
+  clouds: boolean;
+  clouds_min_height: number;
+  water: boolean;
 }
 
 export default class Island {
   Biome: Biome;
+  Parameters: Parameters;
   seed: number;
   x: number;
   y: number;
   z: number;
-  max_height: number;
-  min_height: number;
   tiles: Array<Tile>;
   items: Array<Item>;
 
-  constructor(biome, seed, x, y, z, max_height, min_height) {
+  constructor(biome: Biome, seed: number, x: number, y: number, z: number) {
     this.Biome = biome;
     this.seed = seed;
     this.x = x;
     this.y = y;
     this.z = z;
-    this.max_height = max_height;
-    this.min_height = min_height;
     this.tiles = [];
     this.items = [];
+
+    switch (biome) {
+      case Biome.Alpine:
+        this.Parameters = {
+          max_height: 14,
+          min_height: 1,
+          height_variance: 1.5,
+          weather: Weather.Snowy,
+          clouds: true,
+          clouds_min_height: 11,
+          water: false,
+        };
+        break;
+      default:
+        this.Parameters = new Parameters();
+        break;
+    }
 
     const noise2D = createNoise2D(this.randomFunction); // Create a seeded 2D noise function - gives values between -1 and 1
 
@@ -42,13 +82,17 @@ export default class Island {
         if (position.length() > 16) continue;
 
         let noise = (noise2D(x * 0.1, y * 0.1) + 1) / 2; // Normalize noise to 0-1
-        noise = Math.pow(noise, 1.5); // Smooth out the noise
-        let height = noise * max_height;
+        noise = Math.pow(noise, this.Parameters.height_variance); // Smooth out the noise
+        let height = Math.min(
+          noise * (this.Parameters.max_height - this.Parameters.min_height) +
+            this.Parameters.min_height,
+          this.Parameters.max_height
+        );
         let feature: TileFeature = TileFeature.None;
         let item: Item = null;
 
         if (biome == Biome.Alpine) {
-          if (Math.random() > 0.7) {
+          if (height > 2 && Math.random() > 0.7) {
             feature = TileFeature.Tree;
           }
         }
@@ -57,17 +101,21 @@ export default class Island {
     }
   }
 
-  private tileToPosition(tileX, tileY) {
+  private tileToPosition(tileX, tileY): THREE.Vector2 {
     return new THREE.Vector2((tileX + (tileY % 2) * 0.5) * 1.77, tileY * 1.535);
   }
 
-  private randomFunction() {
+  private randomFunction(): number {
     return Math.random();
   }
 
-  private getClouds() {
+  private getClouds(): THREE.Mesh<
+    THREE.BufferGeometry<THREE.NormalBufferAttributes>,
+    THREE.MeshStandardMaterial,
+    THREE.Object3DEventMap
+  > {
     let geo: THREE.BufferGeometry = new THREE.SphereGeometry(0, 0, 0);
-    let count = Math.floor(Math.pow(Math.random(), 0.45) * 5);
+    let count = Math.max(Math.floor(Math.pow(Math.random(), 0.45) * 5), 1);
 
     for (let i = 0; i < count; i++) {
       const puff1 = new THREE.SphereGeometry(1.2, 7, 7);
@@ -85,7 +133,7 @@ export default class Island {
       ]);
       cloudGeo.translate(
         Math.random() * 20 - 10,
-        Math.random() * 7 + 7,
+        Math.random() * 5 + this.Parameters.clouds_min_height,
         Math.random() * 20 - 10
       );
       cloudGeo.rotateY(Math.random() * Math.PI * 2);
@@ -106,7 +154,7 @@ export default class Island {
     return mesh;
   }
 
-  public addToScene(scene) {
+  public addToScene(scene): void {
     let stoneGeo: THREE.BufferGeometry = new THREE.BoxGeometry(0, 0, 0);
     let dirtGeo: THREE.BufferGeometry = new THREE.BoxGeometry(0, 0, 0);
     let dirt2Geo: THREE.BufferGeometry = new THREE.BoxGeometry(0, 0, 0);
@@ -141,8 +189,6 @@ export default class Island {
       features.add(tileGeometries[5]);
       items.add(tileGeometries[6]);
     }
-
-    console.log(features);
 
     let stoneMesh = new THREE.Mesh(
       stoneGeo,
@@ -185,7 +231,7 @@ export default class Island {
     );
 
     let waterMesh = new THREE.Mesh(
-      new THREE.CylinderGeometry(17, 17, this.max_height * 0.2, 50),
+      new THREE.CylinderGeometry(17, 17, this.Parameters.max_height * 0.2, 50),
       new THREE.MeshPhysicalMaterial({
         color: 0x55aaff,
         transparent: true,
@@ -199,13 +245,13 @@ export default class Island {
       })
     );
     waterMesh.receiveShadow = true;
-    waterMesh.position.set(0, this.max_height * 0.11, 0);
+    waterMesh.position.set(0, this.Parameters.max_height * 0.11, 0);
 
     let islandContainerMesh = new THREE.Mesh(
       new THREE.CylinderGeometry(
         17.1,
         17.1,
-        this.max_height * 0.25,
+        this.Parameters.max_height * 0.25,
         1,
         10,
         true
@@ -217,19 +263,22 @@ export default class Island {
       })
     );
     islandContainerMesh.receiveShadow = true;
-    islandContainerMesh.position.set(0, this.max_height * 0.125, 0);
+    islandContainerMesh.position.set(0, this.Parameters.max_height * 0.125, 0);
 
     let islandFloorMesh = new THREE.Mesh(
-      new THREE.CylinderGeometry(17.1, 17.1, this.max_height * 0.1, 50),
+      new THREE.CylinderGeometry(
+        17.1,
+        17.1,
+        this.Parameters.max_height * 0.1,
+        50
+      ),
       new THREE.MeshBasicMaterial({
         color: 0x888888,
         side: THREE.DoubleSide,
       })
     );
     islandFloorMesh.receiveShadow = true;
-    islandFloorMesh.position.set(0, this.max_height * 0.02, 0);
-
-    let clouds = this.getClouds();
+    islandFloorMesh.position.set(0, this.Parameters.max_height * 0.02, 0);
 
     let island = new THREE.Group();
     island.add(
@@ -238,18 +287,24 @@ export default class Island {
       dirt2Mesh,
       sandMesh,
       grassMesh,
-      waterMesh,
       islandContainerMesh,
       islandFloorMesh,
-      clouds,
       features,
       items
     );
 
+    if (this.Parameters.clouds) {
+      island.add(this.getClouds());
+    }
+
+    if (this.Parameters.water) {
+      island.add(waterMesh);
+    }
+
     scene.add(island);
   }
 
-  distanceToPoint(x, y, z) {
+  distanceToPoint(x, y, z): number {
     return Math.sqrt(
       Math.pow(this.x - x, 2) +
         Math.pow(this.y - y, 2) +
