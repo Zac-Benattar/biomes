@@ -2,9 +2,15 @@ import * as THREE from "three";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 import * as BufferGeometryUtils from "three/addons/utils/BufferGeometryUtils.js";
 import Island from "./island";
+import Player from "./player";
 import { Biome } from "./island";
 import * as CANNON from "cannon-es";
 import CannonDebugger from "cannon-es-debugger";
+
+const windowSize = {
+  width: window.innerWidth,
+  height: window.innerHeight
+}
 
 const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera(
@@ -21,43 +27,30 @@ controls.dampingFactor = 0.05;
 controls.target.set(0, 0, 0);
 document.body.appendChild(renderer.domElement);
 
-camera.position.y = 30;
-camera.position.z = 30;
-
-const light = new THREE.PointLight(0xffcb8e, 100, 200);
-light.position.set(10, 20, 10);
-light.castShadow = true;
-light.shadow.mapSize.width = 512;
-light.shadow.mapSize.height = 512;
-light.shadow.camera.near = 1;
-light.shadow.camera.far = 200;
-scene.add(light);
-
-const sun = new THREE.DirectionalLight(0xffcb8e, 1.5);
-sun.position.set(40, 200, 40);
-sun.castShadow = true;
-sun.shadow.mapSize.width = 512;
-sun.shadow.mapSize.height = 512;
-sun.shadow.camera.near = 1;
-sun.shadow.camera.far = 200;
-sun.target.position.set(0, 0, 0);
-scene.add(sun);
-
-const moon = new THREE.DirectionalLight(0xffcb8e, 0.1);
-moon.position.set(-40, -200, -40);
-moon.castShadow = true;
-moon.shadow.mapSize.width = 512;
-moon.shadow.mapSize.height = 512;
-moon.shadow.camera.near = 1;
-moon.shadow.camera.far = 200;
-moon.target.position.set(0, 0, 0);
-scene.add(moon);
+camera.position.y = 25;
+camera.position.z = 25;
 
 const MAX_HEIGHT = 10;
+
+window.addEventListener("resize", () => {
+  windowSize.width = window.innerWidth;
+  windowSize.height = window.innerHeight;
+
+  camera.aspect = windowSize.width / windowSize.height;
+  camera.updateProjectionMatrix();
+
+  renderer.setSize(windowSize.width, windowSize.height);
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+});
 
 (async function () {
   let island = new Island(Biome.Alpine, 0, 15, 0, 0, 0, MAX_HEIGHT, 2);
   island.addToScene(scene);
+  island.enableLights(scene);
+
+  let player = new Player(new THREE.Vector3(0, 10, 0), 1);
+  player.addToScene(scene);
+
   const physicsWorld = new CANNON.World({
     gravity: new CANNON.Vec3(0, -9.82, 0),
   });
@@ -72,25 +65,17 @@ const MAX_HEIGHT = 10;
     -Math.PI / 2
   );
   physicsWorld.addBody(groundBody);
-
-  const testSphere = new CANNON.Body({
-    mass: 1,
-    type: CANNON.Body.DYNAMIC,
-    shape: new CANNON.Sphere(1),
-    material: new CANNON.Material(),
-  });
-  testSphere.position.set(0, 10, 0);
-  physicsWorld.addBody(testSphere);
+  physicsWorld.addBody(player.body);
 
   let cannonDebugger = new CannonDebugger(scene, physicsWorld);
 
-  // add the cannon bodies of the island to the physics world
   island.getCannonBodies().forEach((body) => {
     physicsWorld.addBody(body);
   });
 
   renderer.setAnimationLoop(() => {
     physicsWorld.fixedStep();
+    player.updateVisuals();
     cannonDebugger.update();
     controls.update();
     island.update();

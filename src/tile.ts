@@ -200,7 +200,7 @@ export default class Tile {
     let shape = new CANNON.Cylinder(1, 1, this.height, 6);
     let body = new CANNON.Body({
       mass: 0,
-      position: new CANNON.Vec3(this.position.x, this.height, this.position.y),
+      position: new CANNON.Vec3(this.position.x, this.height/2, this.position.y),
       shape: shape,
     });
 
