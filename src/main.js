@@ -9,8 +9,8 @@ import CannonDebugger from "cannon-es-debugger";
 
 const windowSize = {
   width: window.innerWidth,
-  height: window.innerHeight
-}
+  height: window.innerHeight,
+};
 
 const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera(
@@ -71,6 +71,26 @@ window.addEventListener("resize", () => {
 
   island.getCannonBodies().forEach((body) => {
     physicsWorld.addBody(body);
+  });
+
+  // event listeners for arrow keys
+  window.addEventListener("keydown", (e) => {
+    if (e.key === "a") {
+      player.move(new THREE.Vector3(-1, 0, 0));
+    } else if (e.key === "d") {
+      player.move(new THREE.Vector3(1, 0, 0));
+    } else if (e.key === "w") {
+      player.move(new THREE.Vector3(0, 0, -1));
+    } else if (e.key === "s") {
+      player.move(new THREE.Vector3(0, 0, 1));
+    } else if (e.key === " ") {
+      let feetPosition = player.getFeetPosition();
+      let tileBelow = island.getTileBelow(feetPosition.x, feetPosition.z);
+      let distanceToTileBelow = feetPosition.y - tileBelow.getTileTopPosition().z;
+      if (distanceToTileBelow < 0.01) {
+        player.jump();
+      }
+    }
   });
 
   renderer.setAnimationLoop(() => {

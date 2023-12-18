@@ -577,6 +577,23 @@ export default class Island {
     scene.add(island);
   }
 
+  public getTileBelow(x, y): Tile | null {
+    // Find the tile with the closest center x,y to the given position
+    let closestTile: Tile | null = null;
+    let closestDistance = 1000;
+    for (let i = 0; i < this.tiles.length; i++) {
+      let distance = Math.sqrt(
+        Math.pow(this.tiles[i].position.x - x,2) +
+          Math.pow(this.tiles[i].position.y - y,2)
+      );
+      if (distance < closestDistance) {
+        closestDistance = distance;
+        closestTile = this.tiles[i];
+      }
+    }
+    return closestTile;
+  }
+
   public distanceToPoint(x, y, z): number {
     return Math.sqrt(
       Math.pow(this.x - x, 2) +

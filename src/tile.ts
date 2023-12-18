@@ -196,11 +196,23 @@ export default class Tile {
     return tree;
   }
 
+  public getTileTopPosition() {
+    return new THREE.Vector3(
+      this.position.x,
+      this.position.y,
+      this.height + 0.5
+    );
+  }
+
   public getCannonBody() {
     let shape = new CANNON.Cylinder(1, 1, this.height, 6);
     let body = new CANNON.Body({
       mass: 0,
-      position: new CANNON.Vec3(this.position.x, this.height/2, this.position.y),
+      position: new CANNON.Vec3(
+        this.position.x,
+        this.height / 2,
+        this.position.y
+      ),
       shape: shape,
     });
 

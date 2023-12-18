@@ -1,5 +1,6 @@
 import * as THREE from "three";
 import * as CANNON from "cannon-es";
+import Tile from "./tile";
 
 export default class Player {
   body: CANNON.Body;
@@ -20,6 +21,37 @@ export default class Player {
     body.position.copy(position);
     body.velocity.copy(this.velocity);
     this.body = body;
+  }
+
+  public getFeetPosition() {
+    return new THREE.Vector3(
+      this.mesh.position.x,
+      this.mesh.position.y - 0.5,
+      this.mesh.position.z
+    );
+  }
+
+  public move(direction: THREE.Vector3) {
+    this.velocity.copy(direction);
+    this.body.velocity.copy(direction);
+  }
+
+  public jump() {
+    this.body.velocity.y = 5;
+  }
+
+  public distanceToTile(currentTile: Tile) {
+    return this.mesh.position.distanceTo(currentTile.position);
+  }
+
+  public distanceFromFeetToTopOfTileBelow(currentTile: Tile) {
+    const topOfTile = new THREE.Vector3(
+      currentTile.position.x,
+      currentTile.position.y,
+      currentTile.height + 0.5
+    );
+    const distance = this.getFeetPosition().distanceTo(topOfTile);
+    return distance;
   }
 
   public addToScene(scene: THREE.Scene) {
