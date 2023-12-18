@@ -2,6 +2,7 @@ import * as THREE from "three";
 import * as BufferGeometryUtils from "three/examples/jsm/utils/BufferGeometryUtils.js";
 import Item from "./items";
 import { Biome } from "./island";
+import * as CANNON from "cannon-es";
 
 export enum TileType {
   Stone,
@@ -193,5 +194,16 @@ export default class Tile {
     tree.add(trunkMesh, leavesMesh);
 
     return tree;
+  }
+
+  public getCannonBody() {
+    let shape = new CANNON.Cylinder(1, 1, this.height, 6);
+    let body = new CANNON.Body({
+      mass: 0,
+      position: new CANNON.Vec3(this.position.x, this.height, this.position.y),
+      shape: shape,
+    });
+
+    return body;
   }
 }

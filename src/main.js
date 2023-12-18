@@ -3,6 +3,8 @@ import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 import * as BufferGeometryUtils from "three/addons/utils/BufferGeometryUtils.js";
 import Island from "./island";
 import { Biome } from "./island";
+import * as CANNON from "cannon-es";
+import CannonDebugger from "cannon-es-debugger";
 
 const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera(
@@ -56,8 +58,40 @@ const MAX_HEIGHT = 10;
 (async function () {
   let island = new Island(Biome.Alpine, 0, 15, 0, 0, 0, MAX_HEIGHT, 2);
   island.addToScene(scene);
+  const physicsWorld = new CANNON.World({
+    gravity: new CANNON.Vec3(0, -9.82, 0),
+  });
+  const groundBody = new CANNON.Body({
+    mass: 0,
+    type: CANNON.Body.STATIC,
+    shape: new CANNON.Plane(),
+    material: new CANNON.Material(),
+  });
+  groundBody.quaternion.setFromAxisAngle(
+    new CANNON.Vec3(1, 0, 0),
+    -Math.PI / 2
+  );
+  physicsWorld.addBody(groundBody);
+
+  const testSphere = new CANNON.Body({
+    mass: 1,
+    type: CANNON.Body.DYNAMIC,
+    shape: new CANNON.Sphere(1),
+    material: new CANNON.Material(),
+  });
+  testSphere.position.set(0, 10, 0);
+  physicsWorld.addBody(testSphere);
+
+  let cannonDebugger = new CannonDebugger(scene, physicsWorld);
+
+  // add the cannon bodies of the island to the physics world
+  island.getCannonBodies().forEach((body) => {
+    physicsWorld.addBody(body);
+  });
 
   renderer.setAnimationLoop(() => {
+    physicsWorld.fixedStep();
+    cannonDebugger.update();
     controls.update();
     island.update();
     renderer.render(scene, camera);

@@ -3,6 +3,7 @@ import * as BufferGeometryUtils from "three/examples/jsm/utils/BufferGeometryUti
 import { createNoise2D } from "simplex-noise";
 import Item from "./items";
 import Tile, { TileFeature, TileTop, TileType } from "./tile";
+import * as CANNON from "cannon-es";
 
 export enum Biome {
   Jungle,
@@ -576,11 +577,20 @@ export default class Island {
     scene.add(island);
   }
 
-  distanceToPoint(x, y, z): number {
+  public distanceToPoint(x, y, z): number {
     return Math.sqrt(
       Math.pow(this.x - x, 2) +
         Math.pow(this.y - y, 2) +
         Math.pow(this.z - z, 2)
     );
+  }
+
+  public getCannonBodies(): CANNON.Body[] {
+    // return each tile as a cannon body
+    let bodies: CANNON.Body[] = [];
+    for (let i = 0; i < this.tiles.length; i++) {
+      bodies.push(this.tiles[i].getCannonBody());
+    }
+    return bodies;
   }
 }
