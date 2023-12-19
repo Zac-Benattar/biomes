@@ -6,7 +6,11 @@ import { Biome } from "./island";
 import * as CANNON from "cannon-es";
 import CannonDebugger from "cannon-es-debugger";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
-import { BasicCharacterController, ControlsParams } from "../characterControls";
+import { FBXLoader } from "three/examples/jsm/loaders/FBXLoader";
+import {
+  BasicCharacterController,
+  ControlsParams,
+} from "./CharacterController";
 
 export default class Game {
   private threejs: THREE.WebGLRenderer;

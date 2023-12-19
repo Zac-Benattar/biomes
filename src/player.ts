@@ -1,7 +1,7 @@
 import * as THREE from "three";
 import * as CANNON from "cannon-es";
 import Tile from "./tile";
-import { CharacterControls, Action } from "../characterControls";
+import { CharacterControls, Action } from "./CharacterController";
 
 export default class Player {
   body: CANNON.Body;
