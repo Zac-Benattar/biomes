@@ -216,7 +216,7 @@ export default class Island {
           }
         }
 
-        let tileType: TileType =
+        const tileType: TileType =
           tileLayer.tileTypes[
             Math.floor(Math.random() * tileLayer.tileTypes.length)
           ];
@@ -233,8 +233,8 @@ export default class Island {
     }
   }
 
-  public update(): void {
-    this.updateParticles();
+  public update(t: number): void {
+    this.updateParticles(t);
   }
 
   private getMinHeight(): number {
@@ -318,9 +318,9 @@ export default class Island {
         Math.floor((Math.random() - 0.5) * (this.radius * 1.7))
       );
       velocities.push(
-        (Math.random() - 0.5) * 0.05,
-        (Math.random() - 0.05) * -0.05 - 0.01,
-        (Math.random() - 0.5) * 0.05
+        (Math.random() - 0.5) * 0.005,
+        (Math.random() - 0.05) * -0.005 - 0.0005,
+        (Math.random() - 0.5) * 0.005
       );
     }
 
@@ -347,7 +347,7 @@ export default class Island {
     return particles;
   }
 
-  private updateParticles() {
+  private updateParticles(t: number) {
     const min_height = this.getMinHeight();
     if (this.particles) {
       for (
@@ -372,21 +372,21 @@ export default class Island {
           this.particles.geometry.attributes.position.array[i * 3 + 2] =
             Math.floor((Math.random() - 0.5) * (this.radius * 1.7));
           this.particles.geometry.attributes.velocity.array[i * 3] =
-            (Math.random() - 0.5) * 0.05;
+            (Math.random() - 0.5) * 0.005;
           this.particles.geometry.attributes.velocity.array[i * 3 + 1] =
-            (Math.random() - 0.05) * -0.05 - 0.01;
+            (Math.random() - 0.05) * -0.005 - 0.0005;
           this.particles.geometry.attributes.velocity.array[i * 3 + 2] =
-            (Math.random() - 0.5) * 0.05;
+            (Math.random() - 0.5) * 0.005;
           this.particles.geometry.attributes.position.needsUpdate = true;
           continue;
         }
 
         this.particles.geometry.attributes.position.array[i * 3] =
-          x + this.particles.geometry.attributes.velocity.array[i * 3];
+          x + this.particles.geometry.attributes.velocity.array[i * 3] * t;
         this.particles.geometry.attributes.position.array[i * 3 + 1] =
-          y + this.particles.geometry.attributes.velocity.array[i * 3 + 1];
+          y + this.particles.geometry.attributes.velocity.array[i * 3 + 1] * t;
         this.particles.geometry.attributes.position.array[i * 3 + 2] =
-          z + this.particles.geometry.attributes.velocity.array[i * 3 + 2];
+          z + this.particles.geometry.attributes.velocity.array[i * 3 + 2] * t;
 
         this.particles.geometry.attributes.position.needsUpdate = true;
       }
@@ -583,8 +583,8 @@ export default class Island {
     let closestDistance = 1000;
     for (let i = 0; i < this.tiles.length; i++) {
       let distance = Math.sqrt(
-        Math.pow(this.tiles[i].position.x - x,2) +
-          Math.pow(this.tiles[i].position.y - y,2)
+        Math.pow(this.tiles[i].position.x - x, 2) +
+          Math.pow(this.tiles[i].position.y - y, 2)
       );
       if (distance < closestDistance) {
         closestDistance = distance;

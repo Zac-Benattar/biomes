@@ -1,26 +1,26 @@
 import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 import Island from "./island";
-import Player from "./player";
 import { Biome } from "./island";
-import * as CANNON from "cannon-es";
-import CannonDebugger from "cannon-es-debugger";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
 import { FBXLoader } from "three/examples/jsm/loaders/FBXLoader";
 import {
   BasicCharacterController,
   ControlsParams,
 } from "./CharacterController";
+import * as CANNON from "cannon-es";
+import CannonDebugger from "cannon-es-debugger";
 
 export default class Game {
   private threejs: THREE.WebGLRenderer;
   private camera: THREE.PerspectiveCamera;
   private scene: THREE.Scene;
   private island: Island;
-  private player: Player;
   private controls: BasicCharacterController;
   private mixers: THREE.AnimationMixer[];
   private previousRAF: number;
+  private physicsWorld: CANNON.World;
+  private cannonDebugger: typeof CannonDebugger;
 
   constructor() {
     this.Init();
@@ -64,11 +64,36 @@ export default class Game {
     this.island.addToScene(this.scene);
     this.island.enableLights(this.scene);
 
+    this.CreatePhysicsWorld();
+
     this.mixers = [];
     this.previousRAF = -1;
 
     this.LoadAnimatedModel();
     this.RAF();
+  }
+
+  CreatePhysicsWorld() {
+    this.physicsWorld = new CANNON.World({
+      gravity: new CANNON.Vec3(0, -0.0001, 0),
+    });
+    const groundBody = new CANNON.Body({
+      mass: 0,
+      type: CANNON.Body.STATIC,
+      shape: new CANNON.Plane(),
+      material: new CANNON.Material(),
+    });
+    groundBody.quaternion.setFromAxisAngle(
+      new CANNON.Vec3(1, 0, 0),
+      -Math.PI / 2
+    );
+    this.physicsWorld.addBody(groundBody);
+
+    this.cannonDebugger = new CannonDebugger(this.scene, this.physicsWorld);
+
+    this.island.getCannonBodies().forEach((body) => {
+      this.physicsWorld.addBody(body);
+    });
   }
 
   LoadAnimatedModel() {
@@ -77,6 +102,8 @@ export default class Game {
       scene: this.scene,
     };
     this.controls = new BasicCharacterController(params);
+
+    this.physicsWorld.addBody(this.controls.getPhysicsBody());
   }
 
   LoadAnimatedModelAndPlay(path, modelFile, animFile, offset) {
@@ -127,6 +154,9 @@ export default class Game {
 
       this.threejs.render(this.scene, this.camera);
       this.Step(t - this.previousRAF);
+      this.physicsWorld.step(t - this.previousRAF);
+      this.cannonDebugger.update();
+      this.island.update(t - this.previousRAF);
       this.previousRAF = t;
     });
   }
@@ -142,46 +172,3 @@ export default class Game {
     }
   }
 }
-
-// (async function () {
-//   const physicsWorld = new CANNON.World({
-//     gravity: new CANNON.Vec3(0, -9.82, 0),
-//   });
-//   const groundBody = new CANNON.Body({
-//     mass: 0,
-//     type: CANNON.Body.STATIC,
-//     shape: new CANNON.Plane(),
-//     material: new CANNON.Material(),
-//   });
-//   groundBody.quaternion.setFromAxisAngle(
-//     new CANNON.Vec3(1, 0, 0),
-//     -Math.PI / 2
-//   );
-//   physicsWorld.addBody(groundBody);
-
-//   let cannonDebugger = new CannonDebugger(scene, physicsWorld);
-
-//   island.getCannonBodies().forEach((body) => {
-//     physicsWorld.addBody(body);
-//   });
-
-//   // // event listeners for arrow keys
-//   // window.addEventListener("keydown", (e) => {
-//   //   if (e.key === "a") {
-//   //     player.move(new THREE.Vector3(-1, 0, 0));
-//   //   } else if (e.key === "d") {
-//   //     player.move(new THREE.Vector3(1, 0, 0));
-//   //   } else if (e.key === "w") {
-//   //     player.move(new THREE.Vector3(0, 0, -1));
-//   //   } else if (e.key === "s") {
-//   //     player.move(new THREE.Vector3(0, 0, 1));
-//   //   } else if (e.key === " ") {
-//   //     let feetPosition = player.getFeetPosition();
-//   //     let tileBelow = island.getTileBelow(feetPosition.x, feetPosition.z);
-//   //     let distanceToTileBelow = feetPosition.y - tileBelow.getTileTopPosition().z;
-//   //     if (distanceToTileBelow < 0.01) {
-//   //       player.jump();
-//   //     }
-//   //   }
-//   // });
-// })();

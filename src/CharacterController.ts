@@ -1,6 +1,8 @@
 import * as THREE from "three";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
 import { FBXLoader } from "three/examples/jsm/loaders/FBXLoader";
+import * as CANNON from "cannon-es";
+import Tile from "./tile";
 
 export const W = "w";
 export const A = "a";
@@ -33,10 +35,10 @@ export class BasicCharacterController {
   protected stateMachine: CharacterFSM;
   protected animations: Map<string, THREE.AnimationAction>; // Walk, Run, Idle
   protected target: any;
-  protected velocity: THREE.Vector3;
   protected acceleration: THREE.Vector3;
   protected decceleration: THREE.Vector3;
   protected input: any;
+  protected physicsBody: CANNON.Body;
 
   constructor(params: ControlsParams) {
     this.Init(params);
@@ -46,12 +48,14 @@ export class BasicCharacterController {
     this.params = params;
     this.decceleration = new THREE.Vector3(-0.0005, -0.0001, -5.0);
     this.acceleration = new THREE.Vector3(1, 0.25, 50.0);
-    this.velocity = new THREE.Vector3(0, 0, 0);
     this.animations = new Map<string, THREE.AnimationAction>();
     this.input = new BasicCharacterControllerInput();
-    this.stateMachine = new CharacterFSM(new BasicCharacterControllerProxy(this.animations));
+    this.stateMachine = new CharacterFSM(
+      new BasicCharacterControllerProxy(this.animations)
+    );
 
     this.LoadModels();
+    this.CreatePhysicsBody();
   }
 
   protected LoadModels() {
@@ -101,6 +105,41 @@ export class BasicCharacterController {
     });
   }
 
+  private CreatePhysicsBody() {
+    this.physicsBody = new CANNON.Body({
+      mass: 1,
+      type: CANNON.Body.DYNAMIC,
+      shape: new CANNON.Box(new CANNON.Vec3(0.5, 1, 0.5)),
+      position: new CANNON.Vec3(0, 10, 0),
+    });
+  }
+
+  public getPhysicsBody() {
+    return this.physicsBody;
+  }
+
+  public getFeetPosition() {
+    return new THREE.Vector3(
+      this.physicsBody.position.x,
+      this.physicsBody.position.y - 0.5,
+      this.physicsBody.position.z
+    );
+  }
+
+  public distanceToTile(currentTile: Tile) {
+    return this.physicsBody.position.distanceTo(currentTile.position);
+  }
+
+  public distanceFromFeetToTopOfTileBelow(currentTile: Tile) {
+    const topOfTile = new THREE.Vector3(
+      currentTile.position.x,
+      currentTile.position.y,
+      currentTile.height + 0.5
+    );
+    const distance = this.getFeetPosition().distanceTo(topOfTile);
+    return distance;
+  }
+
   Update(timeInSeconds: number) {
     if (!this.target) {
       return;
@@ -108,30 +147,32 @@ export class BasicCharacterController {
 
     this.stateMachine.Update(timeInSeconds, this.input);
 
-    const velocity = this.velocity;
-    const frameDecceleration = new THREE.Vector3(
+    const velocity = this.physicsBody.velocity;
+    const frameDecceleration = new CANNON.Vec3(
       velocity.x * this.decceleration.x,
       velocity.y * this.decceleration.y,
       velocity.z * this.decceleration.z
     );
-    frameDecceleration.multiplyScalar(timeInSeconds);
+    frameDecceleration.scale(timeInSeconds);
     frameDecceleration.z =
       Math.sign(frameDecceleration.z) *
       Math.min(Math.abs(frameDecceleration.z), Math.abs(velocity.z));
 
-    velocity.add(frameDecceleration);
+    this.physicsBody.velocity.vadd(frameDecceleration);
 
-    const controlObject = this.target;
-    const Q = new THREE.Quaternion();
-    const A = new THREE.Vector3();
-    const R = controlObject.quaternion.clone();
+    const Q = new CANNON.Quaternion();
+    const A = new CANNON.Vec3();
+    const R = this.physicsBody.quaternion.clone();
 
     const acc = this.acceleration.clone();
     if (this.input.keys.shift) {
       acc.multiplyScalar(2.0);
     }
 
-    if (this.stateMachine.GetState().Name == "Dance") {
+    if (
+      this.stateMachine.GetState() == null ||
+      this.stateMachine.GetState().Name == "Dance"
+    ) {
       acc.multiplyScalar(0.0);
     }
 
@@ -147,7 +188,7 @@ export class BasicCharacterController {
         A,
         4.0 * Math.PI * timeInSeconds * this.acceleration.y
       );
-      R.multiply(Q);
+      R.mult(Q);
     }
     if (this.input.keys.right) {
       A.set(0, 1, 0);
@@ -155,29 +196,49 @@ export class BasicCharacterController {
         A,
         4.0 * -Math.PI * timeInSeconds * this.acceleration.y
       );
-      R.multiply(Q);
+      R.mult(Q);
     }
 
-    controlObject.quaternion.copy(R);
+    this.physicsBody.quaternion.copy(R);
 
-    const oldPosition = new THREE.Vector3();
-    oldPosition.copy(controlObject.position);
+    const oldPosition = new CANNON.Vec3();
+    oldPosition.copy(this.physicsBody.position);
 
     const forward = new THREE.Vector3(0, 0, 1);
-    forward.applyQuaternion(controlObject.quaternion);
+    const threeQuatForward = new THREE.Quaternion(
+      this.physicsBody.quaternion.x,
+      this.physicsBody.quaternion.y,
+      this.physicsBody.quaternion.z,
+      this.physicsBody.quaternion.w
+    );
+    forward.applyQuaternion(threeQuatForward);
     forward.normalize();
 
     const sideways = new THREE.Vector3(1, 0, 0);
-    sideways.applyQuaternion(controlObject.quaternion);
+    const threeQuatSideways = new THREE.Quaternion(
+      this.physicsBody.quaternion.x,
+      this.physicsBody.quaternion.y,
+      this.physicsBody.quaternion.z,
+      this.physicsBody.quaternion.w
+    );
+    sideways.applyQuaternion(threeQuatSideways);
     sideways.normalize();
 
-    sideways.multiplyScalar(velocity.x * timeInSeconds);
-    forward.multiplyScalar(velocity.z * timeInSeconds);
+    const sidewaysCANNON = new CANNON.Vec3(sideways.x, sideways.y, sideways.z);
+    const forwardCANNON = new CANNON.Vec3(forward.x, forward.y, forward.z);
 
-    controlObject.position.add(forward);
-    controlObject.position.add(sideways);
+    sidewaysCANNON.scale(velocity.x * timeInSeconds);
+    forwardCANNON.scale(velocity.z * timeInSeconds);
 
-    oldPosition.copy(controlObject.position);
+    this.physicsBody.position.vadd(forwardCANNON);
+    this.physicsBody.position.vadd(sidewaysCANNON);
+
+    this.target.position.copy(this.physicsBody.position);
+    this.target.quaternion.copy(this.physicsBody.quaternion);
+
+    oldPosition.copy(this.physicsBody.position);
+
+    console.log(this.physicsBody.position);
 
     if (this.mixer) {
       this.mixer.update(timeInSeconds);
@@ -196,10 +257,10 @@ class BasicCharacterControllerInput {
   };
 
   constructor() {
-    this._Init();
+    this.Init();
   }
 
-  _Init() {
+  private Init() {
     this.keys = {
       forward: false,
       backward: false,
@@ -208,11 +269,11 @@ class BasicCharacterControllerInput {
       space: false,
       shift: false,
     };
-    document.addEventListener("keydown", (e) => this._onKeyDown(e), false);
-    document.addEventListener("keyup", (e) => this._onKeyUp(e), false);
+    document.addEventListener("keydown", (e) => this.onKeyDown(e), false);
+    document.addEventListener("keyup", (e) => this.onKeyUp(e), false);
   }
 
-  _onKeyDown(event) {
+  private onKeyDown(event) {
     switch (event.keyCode) {
       case 87: // w
         this.keys.forward = true;
@@ -235,7 +296,7 @@ class BasicCharacterControllerInput {
     }
   }
 
-  _onKeyUp(event) {
+  private onKeyUp(event) {
     switch (event.keyCode) {
       case 87: // w
         this.keys.forward = false;
@@ -325,6 +386,13 @@ class State {
   Exit() {}
   Update(timeElapsed, input) {}
 }
+
+//   //     let feetPosition = player.getFeetPosition();
+//   //     let tileBelow = island.getTileBelow(feetPosition.x, feetPosition.z);
+//   //     let distanceToTileBelow = feetPosition.y - tileBelow.getTileTopPosition().z;
+//   //     if (distanceToTileBelow < 0.01) {
+//   //       player.jump();
+//   //     }
 
 class DanceState extends State {
   FinishedCallback = () => {};
