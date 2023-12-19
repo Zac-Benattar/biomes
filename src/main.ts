@@ -1,6 +1,5 @@
 import * as THREE from "three";
-import { OrbitControls } from "three/addons/controls/OrbitControls.js";
-import * as BufferGeometryUtils from "three/addons/utils/BufferGeometryUtils.js";
+import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 import Island from "./island";
 import Player from "./player";
 import { Biome } from "./island";
@@ -30,7 +29,8 @@ document.body.appendChild(renderer.domElement);
 camera.position.y = 25;
 camera.position.z = 25;
 
-const MAX_HEIGHT = 10;
+let keysPressed = {};
+let mixerUpdateDelta = 0.01;
 
 window.addEventListener("resize", () => {
   windowSize.width = window.innerWidth;
@@ -44,11 +44,11 @@ window.addEventListener("resize", () => {
 });
 
 (async function () {
-  let island = new Island(Biome.Alpine, 0, 15, 0, 0, 0, MAX_HEIGHT, 2);
+  let island = new Island(Biome.Alpine, 0, 15, 0, 0, 0);
   island.addToScene(scene);
   island.enableLights(scene);
 
-  let player = new Player(new THREE.Vector3(0, 10, 0), 1);
+  let player = new Player(new THREE.Vector3(0, 10, 0), 1, controls, camera);
   player.addToScene(scene);
 
   const physicsWorld = new CANNON.World({
@@ -73,29 +73,38 @@ window.addEventListener("resize", () => {
     physicsWorld.addBody(body);
   });
 
-  // event listeners for arrow keys
+  // // event listeners for arrow keys
+  // window.addEventListener("keydown", (e) => {
+  //   if (e.key === "a") {
+  //     player.move(new THREE.Vector3(-1, 0, 0));
+  //   } else if (e.key === "d") {
+  //     player.move(new THREE.Vector3(1, 0, 0));
+  //   } else if (e.key === "w") {
+  //     player.move(new THREE.Vector3(0, 0, -1));
+  //   } else if (e.key === "s") {
+  //     player.move(new THREE.Vector3(0, 0, 1));
+  //   } else if (e.key === " ") {
+  //     let feetPosition = player.getFeetPosition();
+  //     let tileBelow = island.getTileBelow(feetPosition.x, feetPosition.z);
+  //     let distanceToTileBelow = feetPosition.y - tileBelow.getTileTopPosition().z;
+  //     if (distanceToTileBelow < 0.01) {
+  //       player.jump();
+  //     }
+  //   }
+  // });
+
   window.addEventListener("keydown", (e) => {
-    if (e.key === "a") {
-      player.move(new THREE.Vector3(-1, 0, 0));
-    } else if (e.key === "d") {
-      player.move(new THREE.Vector3(1, 0, 0));
-    } else if (e.key === "w") {
-      player.move(new THREE.Vector3(0, 0, -1));
-    } else if (e.key === "s") {
-      player.move(new THREE.Vector3(0, 0, 1));
-    } else if (e.key === " ") {
-      let feetPosition = player.getFeetPosition();
-      let tileBelow = island.getTileBelow(feetPosition.x, feetPosition.z);
-      let distanceToTileBelow = feetPosition.y - tileBelow.getTileTopPosition().z;
-      if (distanceToTileBelow < 0.01) {
-        player.jump();
-      }
-    }
+    if (e.shiftKey && player) player.switchRunToggle();
+    else (keysPressed as any)[e.key.toLowerCase()] = true;
+  });
+  
+  window.addEventListener("keyup", (e) => {
+    (keysPressed as any)[e.key.toLowerCase()] = false;
   });
 
   renderer.setAnimationLoop(() => {
     physicsWorld.fixedStep();
-    player.updateVisuals();
+    player.update(mixerUpdateDelta, keysPressed);
     cannonDebugger.update();
     controls.update();
     island.update();

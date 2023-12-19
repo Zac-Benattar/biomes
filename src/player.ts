@@ -1,33 +1,42 @@
 import * as THREE from "three";
 import * as CANNON from "cannon-es";
 import Tile from "./tile";
+import { CharacterControls, Action } from "../characterControls";
+import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 
 export default class Player {
+  model: THREE.Group;
+  mixer: THREE.AnimationMixer;
+  animationsMap: Map<string, THREE.AnimationAction>;
   body: CANNON.Body;
-  mesh: THREE.Mesh;
   velocity: CANNON.Vec3 = new CANNON.Vec3(0, 0, 0);
   rotation: THREE.Euler;
+  controls: CharacterControls;
 
-  constructor(position, rotation) {
+  constructor(position, rotation, orbitControl, camera) {
     this.rotation = rotation;
-    const geometry = new THREE.BoxGeometry(0.5, 1, 0.5);
-    const material = new THREE.MeshBasicMaterial({ color: 0xffff00 });
-    const box = new THREE.Mesh(geometry, material);
-    box.position.copy(position);
-    this.mesh = box;
     const shape = new CANNON.Box(new CANNON.Vec3(0.25, 0.5, 0.25));
     const body = new CANNON.Body({ mass: 1 });
     body.addShape(shape);
     body.position.copy(position);
     body.velocity.copy(this.velocity);
     this.body = body;
+    this.loadGLTFModel();
+    this.controls = new CharacterControls(
+      this.model,
+      this.mixer,
+      this.animationsMap,
+      orbitControl,
+      camera,
+      Action.Idle
+    );
   }
 
   public getFeetPosition() {
     return new THREE.Vector3(
-      this.mesh.position.x,
-      this.mesh.position.y - 0.5,
-      this.mesh.position.z
+      this.body.position.x,
+      this.body.position.y - 0.5,
+      this.body.position.z
     );
   }
 
@@ -40,8 +49,12 @@ export default class Player {
     this.body.velocity.y = 5;
   }
 
+  public switchRunToggle() {
+    this.controls.switchRunToggle();
+  }
+
   public distanceToTile(currentTile: Tile) {
-    return this.mesh.position.distanceTo(currentTile.position);
+    return this.body.position.distanceTo(currentTile.position);
   }
 
   public distanceFromFeetToTopOfTileBelow(currentTile: Tile) {
@@ -55,11 +68,28 @@ export default class Player {
   }
 
   public addToScene(scene: THREE.Scene) {
-    scene.add(this.mesh);
+    scene.add(this.model);
   }
 
-  public updateVisuals() {
-    this.mesh.position.copy(this.body.position);
-    this.mesh.quaternion.copy(this.body.quaternion);
+  public update(delta: number, keysPressed: any) {
+    this.controls.update(delta, keysPressed);
+  }
+
+  public loadGLTFModel() {
+    new GLTFLoader().load("models/Soldier.glb", function (gltf) {
+      this.model = gltf.scene;
+      this.model.traverse(function (object: any) {
+        if (object.isMesh) object.castShadow = true;
+      });
+
+      const gltfAnimations: THREE.AnimationClip[] = gltf.animations;
+      this.mixer = new THREE.AnimationMixer(this.model);
+      this.animationsMap = new Map();
+      gltfAnimations
+        .filter((a) => a.name != "TPose")
+        .forEach((a: THREE.AnimationClip) => {
+          this.animationsMap.set(a.name, this.mixer.clipAction(a));
+        });
+    });
   }
 }
