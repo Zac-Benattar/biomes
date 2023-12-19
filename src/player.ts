@@ -2,18 +2,14 @@ import * as THREE from "three";
 import * as CANNON from "cannon-es";
 import Tile from "./tile";
 import { CharacterControls, Action } from "../characterControls";
-import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 
 export default class Player {
-  model: THREE.Group;
-  mixer: THREE.AnimationMixer;
-  animationsMap: Map<string, THREE.AnimationAction>;
   body: CANNON.Body;
   velocity: CANNON.Vec3 = new CANNON.Vec3(0, 0, 0);
   rotation: THREE.Euler;
   controls: CharacterControls;
 
-  constructor(position, rotation, orbitControl, camera) {
+  constructor(position, rotation, orbitControl, camera, scene) {
     this.rotation = rotation;
     const shape = new CANNON.Box(new CANNON.Vec3(0.25, 0.5, 0.25));
     const body = new CANNON.Body({ mass: 1 });
@@ -21,15 +17,7 @@ export default class Player {
     body.position.copy(position);
     body.velocity.copy(this.velocity);
     this.body = body;
-    this.loadGLTFModel();
-    this.controls = new CharacterControls(
-      this.model,
-      this.mixer,
-      this.animationsMap,
-      orbitControl,
-      camera,
-      Action.Idle
-    );
+    this.controls = new CharacterControls();
   }
 
   public getFeetPosition() {
@@ -67,29 +55,7 @@ export default class Player {
     return distance;
   }
 
-  public addToScene(scene: THREE.Scene) {
-    scene.add(this.model);
-  }
-
   public update(delta: number, keysPressed: any) {
     this.controls.update(delta, keysPressed);
-  }
-
-  public loadGLTFModel() {
-    new GLTFLoader().load("models/Soldier.glb", function (gltf) {
-      this.model = gltf.scene;
-      this.model.traverse(function (object: any) {
-        if (object.isMesh) object.castShadow = true;
-      });
-
-      const gltfAnimations: THREE.AnimationClip[] = gltf.animations;
-      this.mixer = new THREE.AnimationMixer(this.model);
-      this.animationsMap = new Map();
-      gltfAnimations
-        .filter((a) => a.name != "TPose")
-        .forEach((a: THREE.AnimationClip) => {
-          this.animationsMap.set(a.name, this.mixer.clipAction(a));
-        });
-    });
   }
 }
