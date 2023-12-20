@@ -1,13 +1,9 @@
 import * as THREE from "three";
 import * as BufferGeometryUtils from "three/examples/jsm/utils/BufferGeometryUtils.js";
 import { createNoise2D } from "simplex-noise";
-import Item from "./items";
-import Tile, { TileFeature, TileTop, TileType } from "./tile";
+import Item from "./Items";
+import Tile, { TileFeature, TileTop, TileType } from "./Tile";
 import * as CANNON from "cannon-es";
-
-const orbirtRadius = 100;
-const orbitSpeed = 0.05;
-const lightDebug = false;
 
 export enum BiomeType {
   Jungle,
@@ -61,7 +57,26 @@ class Layer {
   }
 }
 
-class Parameters {
+export class BiomeParameters {
+  scene: THREE.Scene;
+  biome: BiomeType;
+  seed: number = Math.random();
+  radius: number = 15;
+
+  constructor(
+    scene: THREE.Scene,
+    biome: BiomeType,
+    seed: number,
+    radius: number
+  ) {
+    this.scene = scene;
+    this.biome = biome;
+    this.seed = seed;
+    this.radius = radius;
+  }
+}
+
+export class BiomeGenerationParameters {
   max_height: number;
   height_variance: number;
   weather: Weather;
@@ -72,43 +87,36 @@ class Parameters {
 }
 
 export default class Biome {
-  Biome: BiomeType;
-  Parameters: Parameters;
-  seed: number;
-  x: number;
-  y: number;
-  z: number;
-  radius: number;
-  tiles: Array<Tile>;
-  items: Array<Item>;
-  particles: THREE.Points<THREE.BufferGeometry> | null;
-  sun: THREE.DirectionalLight;
-  moon: THREE.DirectionalLight;
-  sunHelper: THREE.DirectionalLightHelper;
-  moonHelper: THREE.DirectionalLightHelper;
-  previousRAF: number = 0;
+  private Params: BiomeParameters;
+  private GenerationParams: BiomeGenerationParameters;
+  private tiles: Array<Tile>;
+  private items: Array<Item>;
+  private particles: THREE.Points<THREE.BufferGeometry> | null;
+  private sun: THREE.DirectionalLight;
+  private moon: THREE.DirectionalLight;
+  private sunHelper: THREE.DirectionalLightHelper;
+  private moonHelper: THREE.DirectionalLightHelper;
+  private sunShadowHelper: THREE.CameraHelper;
+  private moonShadowHelper: THREE.CameraHelper;
+  private sunAngle: number;
+  private moonAngle: number;
+  private previousRAF: number = 0;
+  private orbitRadius: number = 100;
+  private orbitSpeed: number = 0.05;
+  private lightDebug: boolean = true;
 
-  constructor(
-    scene: THREE.Scene,
-    biome: BiomeType,
-    seed: number,
-    radius: number,
-    x: number,
-    y: number,
-    z: number
-  ) {
-    this.Biome = biome;
-    this.seed = seed;
-    this.radius = radius;
-    this.x = x;
-    this.y = y;
-    this.z = z;
+  constructor(params: BiomeParameters) {
+    this.Init(params);
+  }
+
+  private Init(params: BiomeParameters) {
+    this.Params = params;
     this.tiles = [];
     this.items = [];
 
-    switch (biome) {
+    switch (this.Params.biome) {
       case BiomeType.Alpine:
-        this.Parameters = {
+        this.GenerationParams = {
           max_height: 14,
           height_variance: 1.5,
           weather: Weather.Snowy,
@@ -139,7 +147,7 @@ export default class Biome {
         };
         break;
       case BiomeType.Desert:
-        this.Parameters = {
+        this.GenerationParams = {
           max_height: 3,
           height_variance: 0.5,
           weather: Weather.Sunny,
@@ -160,7 +168,7 @@ export default class Biome {
         };
         break;
       case BiomeType.MartianDesert:
-        this.Parameters = {
+        this.GenerationParams = {
           max_height: 3,
           height_variance: 0.5,
           weather: Weather.Sunny,
@@ -181,28 +189,28 @@ export default class Biome {
         };
         break;
       default:
-        this.Parameters = new Parameters();
+        this.GenerationParams = new BiomeGenerationParameters();
         break;
     }
 
-    const noise2D = createNoise2D(this.RandomFunction); // Create a seeded 2D noise function - gives values between -1 and 1
+    const noise2D = createNoise2D(this.RandomFunction(this.Params.seed)); // Create a seeded 2D noise function - gives values between -1 and 1
 
-    for (let y = -radius; y < radius; y++) {
-      for (let x = -radius; x < radius; x++) {
+    for (let y = -this.Params.radius; y < this.Params.radius; y++) {
+      for (let x = -this.Params.radius; x < this.Params.radius; x++) {
         let position = this.TileToPosition(x, y);
-        if (position.length() > radius - 1) continue; // Skip tiles outside of the island radius
+        if (position.length() > this.Params.radius - 1) continue; // Skip tiles outside of the island radius
 
         let noise = (noise2D(x * 0.1, y * 0.1) + 1) / 2; // Normalize noise to 0-1
-        noise = Math.pow(noise, this.Parameters.height_variance); // Smooth out the noise
+        noise = Math.pow(noise, this.GenerationParams.height_variance); // Smooth out the noise
         let height = Math.min(
-          noise * (this.Parameters.max_height - this.GetMinHeight()) +
+          noise * (this.GenerationParams.max_height - this.GetMinHeight()) +
             this.GetMinHeight(),
-          this.Parameters.max_height
+          this.GenerationParams.max_height
         );
         let feature: TileFeature = TileFeature.None;
         let item: Item = null;
 
-        let tileLayer: Layer | undefined = this.Parameters.layers.find(
+        let tileLayer: Layer | undefined = this.GenerationParams.layers.find(
           (layer) => {
             return height >= layer.min_height;
           }
@@ -232,7 +240,7 @@ export default class Biome {
           ];
 
         let tiletop: TileTop = TileTop.None;
-        if (biome === BiomeType.Alpine) {
+        if (this.Params.biome === BiomeType.Alpine) {
           tiletop = TileTop.Snow;
         }
 
@@ -242,34 +250,47 @@ export default class Biome {
       }
     }
 
-    this.EnableLights(scene);
-    this.addToScene(scene);
+    this.EnableLights(this.Params.scene);
+    this.addToScene(this.Params.scene);
   }
 
-  public update(t: number): void {
+  public Update(t: number): void {
     this.UpdateParticles(t);
     this.UpdateLightOrbits(t);
     this.previousRAF += t;
   }
 
   private GetMaxHeight(): number {
-    return this.Parameters.layers.reduce((max, layer) => {
+    return this.GenerationParams.layers.reduce((max, layer) => {
       return Math.max(max, layer.min_height);
     }, 0);
   }
 
   private GetMinHeight(): number {
-    return this.Parameters.layers.reduce((min, layer) => {
+    return this.GenerationParams.layers.reduce((min, layer) => {
       return Math.min(min, layer.min_height);
-    }, this.Parameters.max_height);
+    }, this.GenerationParams.max_height);
   }
 
   private TileToPosition(tileX, tileY): THREE.Vector2 {
     return new THREE.Vector2((tileX + (tileY % 2) * 0.5) * 1.77, tileY * 1.535);
   }
 
-  private RandomFunction(): number {
-    return Math.random();
+  private RandomFunction(seed: number): Function {
+    // Constants (A and M) for the LCG algorithm
+    const A = 1664525;
+    const M = 2 ** 32;
+
+    let state = seed;
+
+    function lcg() {
+        state = (A * state) % M;
+        return state / M;
+    }
+
+    return function () {
+        return lcg();
+    };
   }
 
   private GetClouds(): THREE.Mesh<
@@ -279,7 +300,7 @@ export default class Biome {
   > {
     let geo: THREE.BufferGeometry = new THREE.SphereGeometry(0, 0, 0);
     let min_clouds = 0;
-    if (this.Parameters.weather !== Weather.Clear) {
+    if (this.GenerationParams.weather !== Weather.Clear) {
       min_clouds = 3;
     }
     let count = Math.max(
@@ -302,9 +323,9 @@ export default class Biome {
         puff3,
       ]);
       cloudGeo.translate(
-        Math.random() * this.radius - 5,
-        Math.random() * 5 + this.Parameters.clouds_min_height,
-        Math.random() * this.radius - 5
+        Math.random() * this.Params.radius - 5,
+        Math.random() * 5 + this.GenerationParams.clouds_min_height,
+        Math.random() * this.Params.radius - 5
       );
       cloudGeo.rotateY(Math.random() * Math.PI * 2);
 
@@ -320,6 +341,8 @@ export default class Biome {
         opacity: 0.9,
       })
     );
+    mesh.receiveShadow = true;
+    mesh.castShadow = true;
 
     return mesh;
   }
@@ -334,9 +357,9 @@ export default class Biome {
 
     for (let i = 0; i < particleCount; i++) {
       positions.push(
-        Math.floor((Math.random() - 0.5) * (this.radius * 1.7)),
+        Math.floor((Math.random() - 0.5) * (this.Params.radius * 1.7)),
         Math.floor(Math.random() * this.GetMaxHeight()),
-        Math.floor((Math.random() - 0.5) * (this.radius * 1.7))
+        Math.floor((Math.random() - 0.5) * (this.Params.radius * 1.7))
       );
       velocities.push(
         (Math.random() - 0.5) * 0.5,
@@ -382,16 +405,16 @@ export default class Biome {
 
         if (
           y < min_height ||
-          Math.abs(x) > this.radius - 1 ||
-          Math.abs(z) > this.radius - 1
+          Math.abs(x) > this.Params.radius - 1 ||
+          Math.abs(z) > this.Params.radius - 1
         ) {
           this.particles.geometry.attributes.position.array[i * 3] = Math.floor(
-            (Math.random() - 0.5) * (this.radius * 1.7)
+            (Math.random() - 0.5) * (this.Params.radius * 1.7)
           );
           this.particles.geometry.attributes.position.array[i * 3 + 1] =
-            Math.floor(Math.random() * 5 + this.Parameters.clouds_min_height);
+            Math.floor(Math.random() * 5 + this.GenerationParams.clouds_min_height);
           this.particles.geometry.attributes.position.array[i * 3 + 2] =
-            Math.floor((Math.random() - 0.5) * (this.radius * 1.7));
+            Math.floor((Math.random() - 0.5) * (this.Params.radius * 1.7));
           this.particles.geometry.attributes.velocity.array[i * 3] =
             (Math.random() - 0.5) * 0.5;
           this.particles.geometry.attributes.velocity.array[i * 3 + 1] =
@@ -467,6 +490,8 @@ export default class Biome {
         flatShading: true,
       })
     );
+    stoneMesh.castShadow = true;
+    stoneMesh.receiveShadow = true;
 
     let dirtMesh = new THREE.Mesh(
       dirtGeo,
@@ -475,6 +500,8 @@ export default class Biome {
         flatShading: true,
       })
     );
+    dirtMesh.castShadow = true;
+    dirtMesh.receiveShadow = true;
 
     let dirt2Mesh = new THREE.Mesh(
       dirt2Geo,
@@ -483,6 +510,8 @@ export default class Biome {
         flatShading: true,
       })
     );
+    dirt2Mesh.castShadow = true;
+    dirt2Mesh.receiveShadow = true;
 
     let sandMesh = new THREE.Mesh(
       sandGeo,
@@ -491,6 +520,8 @@ export default class Biome {
         flatShading: true,
       })
     );
+    sandMesh.castShadow = true;
+    sandMesh.receiveShadow = true;
 
     let grassMesh = new THREE.Mesh(
       grassGeo,
@@ -499,6 +530,8 @@ export default class Biome {
         flatShading: true,
       })
     );
+    grassMesh.castShadow = true;
+    grassMesh.receiveShadow = true;
 
     let martianSandMesh = new THREE.Mesh(
       martianSandGeo,
@@ -507,6 +540,8 @@ export default class Biome {
         flatShading: true,
       })
     );
+    martianSandMesh.castShadow = true;
+    martianSandMesh.receiveShadow = true;
 
     let snowMesh = new THREE.Mesh(
       snowGeo,
@@ -515,9 +550,10 @@ export default class Biome {
         flatShading: true,
       })
     );
+    snowMesh.receiveShadow = true;
 
     let waterMesh = new THREE.Mesh(
-      new THREE.CylinderGeometry(17, 17, this.Parameters.max_height * 0.2, 50),
+      new THREE.CylinderGeometry(17, 17, this.GenerationParams.max_height * 0.2, 50),
       new THREE.MeshPhysicalMaterial({
         color: 0x55aaff,
         transparent: true,
@@ -530,14 +566,13 @@ export default class Biome {
         thickness: 1.5,
       })
     );
-    waterMesh.receiveShadow = true;
-    waterMesh.position.set(0, this.Parameters.max_height * 0.11, 0);
+    waterMesh.position.set(0, this.GenerationParams.max_height * 0.11, 0);
 
     let islandContainerMesh = new THREE.Mesh(
       new THREE.CylinderGeometry(
-        this.radius + 2,
-        this.radius + 2,
-        this.Parameters.max_height * 0.25,
+        this.Params.radius + 2,
+        this.Params.radius + 2,
+        this.GenerationParams.max_height * 0.25,
         1,
         6,
         true
@@ -548,14 +583,13 @@ export default class Biome {
         side: THREE.DoubleSide,
       })
     );
-    islandContainerMesh.receiveShadow = true;
-    islandContainerMesh.position.set(0, this.Parameters.max_height * 0.125, 0);
+    islandContainerMesh.position.set(0, this.GenerationParams.max_height * 0.125, 0);
 
     let islandFloorMesh = new THREE.Mesh(
       new THREE.CylinderGeometry(
-        this.radius + 2,
-        this.radius + 2,
-        this.Parameters.max_height * 0.1,
+        this.Params.radius + 2,
+        this.Params.radius + 2,
+        this.GenerationParams.max_height * 0.1,
         6
       ),
       new THREE.MeshStandardMaterial({
@@ -564,8 +598,7 @@ export default class Biome {
         side: THREE.DoubleSide,
       })
     );
-    islandFloorMesh.receiveShadow = true;
-    islandFloorMesh.position.set(0, this.Parameters.max_height * 0.02, 0);
+    islandFloorMesh.position.set(0, this.GenerationParams.max_height * 0.02, 0);
 
     let island = new THREE.Group();
     island.add(
@@ -582,15 +615,15 @@ export default class Biome {
       items
     );
 
-    if (this.Parameters.water) {
+    if (this.GenerationParams.water) {
       island.add(waterMesh);
     }
 
-    if (this.Parameters.clouds) {
+    if (this.GenerationParams.clouds) {
       island.add(this.GetClouds());
     }
 
-    if (this.Parameters.weather === Weather.Snowy) {
+    if (this.GenerationParams.weather === Weather.Snowy) {
       this.particles = this.GetSnow();
       island.add(this.particles);
     }
@@ -615,14 +648,6 @@ export default class Biome {
     return closestTile;
   }
 
-  public DistanceToPoint(x, y, z): number {
-    return Math.sqrt(
-      Math.pow(this.x - x, 2) +
-        Math.pow(this.y - y, 2) +
-        Math.pow(this.z - z, 2)
-    );
-  }
-
   public GetCannonBodies(): CANNON.Body[] {
     // return each tile as a cannon body
     let bodies: CANNON.Body[] = [];
@@ -633,61 +658,73 @@ export default class Biome {
   }
 
   private EnableLights(scene: THREE.Scene): void {
-    const light = new THREE.PointLight(0xffcb8e, 100, 200);
-    light.position.set(10, 20, 10);
-    light.castShadow = true;
-    light.shadow.mapSize.width = 512;
-    light.shadow.mapSize.height = 512;
-    light.shadow.camera.near = 1;
-    light.shadow.camera.far = orbirtRadius;
+    const light = new THREE.PointLight(0xffcb8e, 10, 200);
+    light.position.set(0, 20, 0);
     scene.add(light);
 
+    this.sunAngle = Math.random() * Math.PI * 2;
     this.sun = new THREE.DirectionalLight(0xffcb8e, 4);
-    this.sun.position.set(0, orbirtRadius, 0);
+    this.SetLightAngle(this.sun, this.sunAngle);
     this.sun.castShadow = true;
+    this.sun.shadow.camera.zoom = 0.3;
     this.sun.shadow.mapSize.width = 512;
     this.sun.shadow.mapSize.height = 512;
-    this.sun.shadow.camera.near = 1;
-    this.sun.shadow.camera.far = 200;
+    this.sun.shadow.camera.near = this.orbitRadius - this.Params.radius * 1.3;
+    this.sun.shadow.camera.far = this.orbitRadius + this.Params.radius * 1.3;
     this.sun.target.position.set(0, 0, 0);
     scene.add(this.sun);
-    if (lightDebug) {
+    if (this.lightDebug) {
       this.sunHelper = new THREE.DirectionalLightHelper(this.sun, 5);
       scene.add(this.sunHelper);
+      this.sunShadowHelper = new THREE.CameraHelper(this.sun.shadow.camera);
+      scene.add(this.sunShadowHelper);
     }
 
-    this.moon = new THREE.DirectionalLight(0xffffff, 0.4);
-    this.moon.position.set(0, -orbirtRadius, 0);
+    this.moonAngle = this.sunAngle + Math.PI;
+    this.moon = new THREE.DirectionalLight(0xffffff, 1);
+    this.SetLightAngle(this.moon, this.moonAngle);
     this.moon.castShadow = true;
+    this.moon.shadow.camera.zoom = 0.3;
     this.moon.shadow.mapSize.width = 512;
     this.moon.shadow.mapSize.height = 512;
-    this.moon.shadow.camera.near = 1;
-    this.moon.shadow.camera.far = 200;
+    this.moon.shadow.camera.near = this.orbitRadius - this.Params.radius * 1.3;
+    this.moon.shadow.camera.far = this.orbitRadius + this.Params.radius * 1.3;
     this.moon.target.position.set(0, 0, 0);
     scene.add(this.moon);
-    if (lightDebug) {
+    if (this.lightDebug) {
       this.moonHelper = new THREE.DirectionalLightHelper(this.moon, 5);
       scene.add(this.moonHelper);
+      this.moonShadowHelper = new THREE.CameraHelper(this.moon.shadow.camera);
+      scene.add(this.moonShadowHelper);
     }
   }
 
+  private SetLightAngle(light: THREE.DirectionalLight, angle: number) {
+    light.position.set(
+      this.orbitRadius * Math.sin(angle),
+      this.orbitRadius * Math.cos(angle),
+      0
+    );
+  }
+
   private UpdateLightOrbits(t: number) {
-    const totalElapsedTime = t + this.previousRAF;
-    this.sun.position.set(
-      orbirtRadius * Math.sin(totalElapsedTime * orbitSpeed),
-      orbirtRadius * Math.cos(totalElapsedTime * orbitSpeed),
-      0
-    );
+    this.sunAngle += t * this.orbitSpeed;
+    if (this.sunAngle > Math.PI * 2) this.sunAngle -= Math.PI * 2;
+    this.SetLightAngle(this.sun, this.sunAngle);
 
-    this.moon.position.set(
-      orbirtRadius * Math.sin(totalElapsedTime * orbitSpeed + Math.PI),
-      orbirtRadius * Math.cos(totalElapsedTime * orbitSpeed + Math.PI),
-      0
-    );
+    this.moonAngle += t * this.orbitSpeed;
+    if (this.moonAngle > Math.PI * 2) this.moonAngle -= Math.PI * 2;
+    this.SetLightAngle(this.moon, this.moonAngle);
 
-    if (lightDebug) {
+    if (this.lightDebug) {
       this.sunHelper.update();
       this.moonHelper.update();
+      this.sun.target.updateMatrixWorld();
+      this.moon.target.updateMatrixWorld();
+      this.sun.shadow.camera.updateProjectionMatrix();
+      this.moon.shadow.camera.updateProjectionMatrix();
+      this.sunShadowHelper.update();
+      this.moonShadowHelper.update();
     }
   }
 }

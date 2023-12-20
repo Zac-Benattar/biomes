@@ -2,7 +2,7 @@ import * as THREE from "three";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
 import { FBXLoader } from "three/examples/jsm/loaders/FBXLoader";
 import * as CANNON from "cannon-es";
-import Tile from "./tile";
+import Tile from "./Tile";
 
 const characterHeight = 0.6;
 export const W = "w";

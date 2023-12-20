@@ -1,7 +1,7 @@
 import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 import Biome from "./BiomeController";
-import { BiomeType } from "./BiomeController";
+import { BiomeType, BiomeParameters } from "./BiomeController";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
 import { FBXLoader } from "three/examples/jsm/loaders/FBXLoader";
 import {
@@ -21,6 +21,7 @@ export default class Game {
   private previousRAF: number;
   private physicsWorld: CANNON.World;
   private cannonDebugger: typeof CannonDebugger;
+  private seed: number = 0;
 
   constructor() {
     this.Init();
@@ -60,6 +61,7 @@ export default class Game {
     controls.dampingFactor = 0.05;
     controls.update();
 
+    this.seed = Math.random();
     this.CreateIsland();
     this.CreatePhysicsWorld();
 
@@ -94,7 +96,8 @@ export default class Game {
   }
 
   CreateIsland() {
-    this.island = new Biome(this.scene, BiomeType.Alpine, 0, 15, 0, 0, 0);
+    const params = new BiomeParameters(this.scene, BiomeType.Alpine, this.seed, 15);
+    this.island = new Biome(params);
   }
 
   LoadAnimatedModel() {
@@ -170,7 +173,7 @@ export default class Game {
     }
 
     if (this.island) {
-      this.island.update(timeElapsedS);
+      this.island.Update(timeElapsedS);
     }
 
     if (this.physicsWorld) {

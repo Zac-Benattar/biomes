@@ -1,6 +1,6 @@
 import * as THREE from "three";
 import * as BufferGeometryUtils from "three/examples/jsm/utils/BufferGeometryUtils.js";
-import Item from "./items";
+import Item from "./Items";
 import { BiomeType } from "./BiomeController";
 import * as CANNON from "cannon-es";
 
@@ -112,6 +112,9 @@ export default class Tile {
       featureMesh.add(this.alpineTree(this.height, this.position));
     }
 
+    featureMesh.castShadow = true;
+    featureMesh.receiveShadow = true;
+
     // return a list of geometries
     return [
       stoneGeo,
@@ -139,6 +142,8 @@ export default class Tile {
     });
 
     let rockMesh = new THREE.Mesh(geo, rockMaterial);
+    rockMesh.castShadow = true;
+    rockMesh.receiveShadow = true;
 
     return rockMesh;
   }
@@ -187,8 +192,12 @@ export default class Tile {
     });
 
     let trunkMesh = new THREE.Mesh(trunkGeo, trunkMaterial);
+    trunkMesh.castShadow = true;
+    trunkMesh.receiveShadow = true;
 
     let leavesMesh = new THREE.Mesh(leaves, leavesMaterial);
+    leavesMesh.castShadow = true;
+    leavesMesh.receiveShadow = true;
 
     let tree = new THREE.Group();
     tree.add(trunkMesh, leavesMesh);
