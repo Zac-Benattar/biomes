@@ -83,6 +83,7 @@ export class BiomeGenerationParameters {
   clouds: boolean;
   clouds_min_height: number;
   water: boolean;
+  water_height: number = 0.5;
   layers: Layer[];
 }
 
@@ -123,6 +124,7 @@ export default class Biome {
           clouds: true,
           clouds_min_height: 13,
           water: false,
+          water_height: 0.5,
           layers: [
             new Layer(
               8,
@@ -154,6 +156,7 @@ export default class Biome {
           clouds: false,
           clouds_min_height: 11,
           water: false,
+          water_height: 0.5,
           layers: [
             new Layer(
               1,
@@ -175,6 +178,7 @@ export default class Biome {
           clouds: false,
           clouds_min_height: 11,
           water: false,
+          water_height: 0.5,
           layers: [
             new Layer(
               1,
@@ -184,6 +188,42 @@ export default class Biome {
                 new TileFeatureProbability(TileFeature.Tumbleweed, 0.2),
                 new TileFeatureProbability(TileFeature.Cactus, 0.2),
               ]
+            ),
+          ],
+        };
+        break;
+      case BiomeType.Forest:
+        this.GenerationParams = {
+          max_height: 8,
+          height_variance: 1,
+          weather: Weather.Sunny,
+          clouds: true,
+          clouds_min_height: 11,
+          water: true,
+          water_height: 2,
+          layers: [
+            new Layer(
+              7,
+              [TileType.Stone],
+              [new TileFeatureProbability(TileFeature.Rock, 0.1)]
+            ),
+            new Layer(
+              6,
+              [TileType.Dirt],
+              [
+                new TileFeatureProbability(TileFeature.BasicTree, 0.2),
+                new TileFeatureProbability(TileFeature.Grass, 0.8),
+              ]
+            ),
+            new Layer(
+              4,
+              [TileType.Dirt],
+              [new TileFeatureProbability(TileFeature.BasicTree, 0.2)]
+            ),
+            new Layer(
+              1,
+              [TileType.Grass],
+              [new TileFeatureProbability(TileFeature.BasicTree, 0.2)]
             ),
           ],
         };
@@ -556,10 +596,10 @@ export default class Biome {
 
     let waterMesh = new THREE.Mesh(
       new THREE.CylinderGeometry(
-        17,
-        17,
-        this.GenerationParams.max_height * 0.2,
-        50
+        this.Params.radius + 1,
+        this.Params.radius + 1,
+        this.GenerationParams.water_height,
+        6
       ),
       new THREE.MeshPhysicalMaterial({
         color: 0x55aaff,
@@ -573,7 +613,7 @@ export default class Biome {
         thickness: 1.5,
       })
     );
-    waterMesh.position.set(0, this.GenerationParams.max_height * 0.11, 0);
+    waterMesh.position.set(0, this.GenerationParams.water_height / 2, 0);
 
     let islandContainerMesh = new THREE.Mesh(
       new THREE.CylinderGeometry(
