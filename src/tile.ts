@@ -1,7 +1,7 @@
 import * as THREE from "three";
 import * as BufferGeometryUtils from "three/examples/jsm/utils/BufferGeometryUtils.js";
 import Item from "./items";
-import { Biome } from "./island";
+import { BiomeType } from "./BiomeController";
 import * as CANNON from "cannon-es";
 
 export enum TileType {

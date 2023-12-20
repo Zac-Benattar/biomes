@@ -5,7 +5,11 @@ import Item from "./items";
 import Tile, { TileFeature, TileTop, TileType } from "./tile";
 import * as CANNON from "cannon-es";
 
-export enum Biome {
+const orbirtRadius = 100;
+const orbitSpeed = 0.0001;
+const lightDebug = false;
+
+export enum BiomeType {
   Jungle,
   Forest,
   Desert,
@@ -67,8 +71,8 @@ class Parameters {
   layers: Layer[];
 }
 
-export default class Island {
-  Biome: Biome;
+export default class Biome {
+  Biome: BiomeType;
   Parameters: Parameters;
   seed: number;
   x: number;
@@ -78,9 +82,15 @@ export default class Island {
   tiles: Array<Tile>;
   items: Array<Item>;
   particles: THREE.Points<THREE.BufferGeometry> | null;
+  sun: THREE.DirectionalLight;
+  moon: THREE.DirectionalLight;
+  sunHelper: THREE.DirectionalLightHelper;
+  moonHelper: THREE.DirectionalLightHelper;
+  previousRAF: number = 0;
 
   constructor(
-    biome: Biome,
+    scene: THREE.Scene,
+    biome: BiomeType,
     seed: number,
     radius: number,
     x: number,
@@ -97,7 +107,7 @@ export default class Island {
     this.items = [];
 
     switch (biome) {
-      case Biome.Alpine:
+      case BiomeType.Alpine:
         this.Parameters = {
           max_height: 14,
           height_variance: 1.5,
@@ -128,7 +138,7 @@ export default class Island {
           ],
         };
         break;
-      case Biome.Desert:
+      case BiomeType.Desert:
         this.Parameters = {
           max_height: 3,
           height_variance: 0.5,
@@ -149,7 +159,7 @@ export default class Island {
           ],
         };
         break;
-      case Biome.MartianDesert:
+      case BiomeType.MartianDesert:
         this.Parameters = {
           max_height: 3,
           height_variance: 0.5,
@@ -175,18 +185,18 @@ export default class Island {
         break;
     }
 
-    const noise2D = createNoise2D(this.randomFunction); // Create a seeded 2D noise function - gives values between -1 and 1
+    const noise2D = createNoise2D(this.RandomFunction); // Create a seeded 2D noise function - gives values between -1 and 1
 
     for (let y = -radius; y < radius; y++) {
       for (let x = -radius; x < radius; x++) {
-        let position = this.tileToPosition(x, y);
+        let position = this.TileToPosition(x, y);
         if (position.length() > radius - 1) continue; // Skip tiles outside of the island radius
 
         let noise = (noise2D(x * 0.1, y * 0.1) + 1) / 2; // Normalize noise to 0-1
         noise = Math.pow(noise, this.Parameters.height_variance); // Smooth out the noise
         let height = Math.min(
-          noise * (this.Parameters.max_height - this.getMinHeight()) +
-            this.getMinHeight(),
+          noise * (this.Parameters.max_height - this.GetMinHeight()) +
+            this.GetMinHeight(),
           this.Parameters.max_height
         );
         let feature: TileFeature = TileFeature.None;
@@ -222,7 +232,7 @@ export default class Island {
           ];
 
         let tiletop: TileTop = TileTop.None;
-        if (biome === Biome.Alpine) {
+        if (biome === BiomeType.Alpine) {
           tiletop = TileTop.Snow;
         }
 
@@ -231,27 +241,38 @@ export default class Island {
         );
       }
     }
+
+    this.EnableLights(scene);
+    this.addToScene(scene);
   }
 
   public update(t: number): void {
-    this.updateParticles(t);
+    this.UpdateParticles(t);
+    this.UpdateLightOrbits(t);
+    this.previousRAF += t;
   }
 
-  private getMinHeight(): number {
+  private GetMaxHeight(): number {
+    return this.Parameters.layers.reduce((max, layer) => {
+      return Math.max(max, layer.min_height);
+    }, 0);
+  }
+
+  private GetMinHeight(): number {
     return this.Parameters.layers.reduce((min, layer) => {
       return Math.min(min, layer.min_height);
     }, this.Parameters.max_height);
   }
 
-  private tileToPosition(tileX, tileY): THREE.Vector2 {
+  private TileToPosition(tileX, tileY): THREE.Vector2 {
     return new THREE.Vector2((tileX + (tileY % 2) * 0.5) * 1.77, tileY * 1.535);
   }
 
-  private randomFunction(): number {
+  private RandomFunction(): number {
     return Math.random();
   }
 
-  public getClouds(): THREE.Mesh<
+  private GetClouds(): THREE.Mesh<
     THREE.BufferGeometry<THREE.NormalBufferAttributes>,
     THREE.MeshStandardMaterial,
     THREE.Object3DEventMap
@@ -303,7 +324,7 @@ export default class Island {
     return mesh;
   }
 
-  public getSnow() {
+  private GetSnow() {
     let particles;
     let positions: number[] = [];
     let velocities: number[] = [];
@@ -314,7 +335,7 @@ export default class Island {
     for (let i = 0; i < particleCount; i++) {
       positions.push(
         Math.floor((Math.random() - 0.5) * (this.radius * 1.7)),
-        Math.floor(Math.random() * 5 + this.Parameters.clouds_min_height),
+        Math.floor(Math.random() * this.GetMaxHeight()),
         Math.floor((Math.random() - 0.5) * (this.radius * 1.7))
       );
       velocities.push(
@@ -347,8 +368,8 @@ export default class Island {
     return particles;
   }
 
-  private updateParticles(t: number) {
-    const min_height = this.getMinHeight();
+  private UpdateParticles(t: number) {
+    const min_height = this.GetMinHeight();
     if (this.particles) {
       for (
         let i = 0;
@@ -566,18 +587,18 @@ export default class Island {
     }
 
     if (this.Parameters.clouds) {
-      island.add(this.getClouds());
+      island.add(this.GetClouds());
     }
 
     if (this.Parameters.weather === Weather.Snowy) {
-      this.particles = this.getSnow();
+      this.particles = this.GetSnow();
       island.add(this.particles);
     }
 
     scene.add(island);
   }
 
-  public getTileBelow(x, y): Tile | null {
+  public GetTileBelow(x, y): Tile | null {
     // Find the tile with the closest center x,y to the given position
     let closestTile: Tile | null = null;
     let closestDistance = 1000;
@@ -594,7 +615,7 @@ export default class Island {
     return closestTile;
   }
 
-  public distanceToPoint(x, y, z): number {
+  public DistanceToPoint(x, y, z): number {
     return Math.sqrt(
       Math.pow(this.x - x, 2) +
         Math.pow(this.y - y, 2) +
@@ -602,7 +623,7 @@ export default class Island {
     );
   }
 
-  public getCannonBodies(): CANNON.Body[] {
+  public GetCannonBodies(): CANNON.Body[] {
     // return each tile as a cannon body
     let bodies: CANNON.Body[] = [];
     for (let i = 0; i < this.tiles.length; i++) {
@@ -611,34 +632,62 @@ export default class Island {
     return bodies;
   }
 
-  public enableLights(scene: THREE.Scene): void {
+  private EnableLights(scene: THREE.Scene): void {
     const light = new THREE.PointLight(0xffcb8e, 100, 200);
     light.position.set(10, 20, 10);
     light.castShadow = true;
     light.shadow.mapSize.width = 512;
     light.shadow.mapSize.height = 512;
     light.shadow.camera.near = 1;
-    light.shadow.camera.far = 200;
+    light.shadow.camera.far = orbirtRadius;
     scene.add(light);
 
-    const sun = new THREE.DirectionalLight(0xffcb8e, 1.5);
-    sun.position.set(40, 200, 40);
-    sun.castShadow = true;
-    sun.shadow.mapSize.width = 512;
-    sun.shadow.mapSize.height = 512;
-    sun.shadow.camera.near = 1;
-    sun.shadow.camera.far = 200;
-    sun.target.position.set(0, 0, 0);
-    scene.add(sun);
+    this.sun = new THREE.DirectionalLight(0xffcb8e, 4);
+    this.sun.position.set(0, orbirtRadius, 0);
+    this.sun.castShadow = true;
+    this.sun.shadow.mapSize.width = 512;
+    this.sun.shadow.mapSize.height = 512;
+    this.sun.shadow.camera.near = 1;
+    this.sun.shadow.camera.far = 200;
+    this.sun.target.position.set(0, 0, 0);
+    scene.add(this.sun);
+    if (lightDebug) {
+      this.sunHelper = new THREE.DirectionalLightHelper(this.sun, 5);
+      scene.add(this.sunHelper);
+    }
 
-    const moon = new THREE.DirectionalLight(0xffcb8e, 0.1);
-    moon.position.set(-40, -200, -40);
-    moon.castShadow = true;
-    moon.shadow.mapSize.width = 512;
-    moon.shadow.mapSize.height = 512;
-    moon.shadow.camera.near = 1;
-    moon.shadow.camera.far = 200;
-    moon.target.position.set(0, 0, 0);
-    scene.add(moon);
+    this.moon = new THREE.DirectionalLight(0xffffff, 0.4);
+    this.moon.position.set(0, -orbirtRadius, 0);
+    this.moon.castShadow = true;
+    this.moon.shadow.mapSize.width = 512;
+    this.moon.shadow.mapSize.height = 512;
+    this.moon.shadow.camera.near = 1;
+    this.moon.shadow.camera.far = 200;
+    this.moon.target.position.set(0, 0, 0);
+    scene.add(this.moon);
+    if (lightDebug) {
+      this.moonHelper = new THREE.DirectionalLightHelper(this.moon, 5);
+      scene.add(this.moonHelper);
+    }
+  }
+
+  private UpdateLightOrbits(t: number) {
+    const totalElapsedTime = t + this.previousRAF;
+    this.sun.position.set(
+      orbirtRadius * Math.sin(totalElapsedTime * orbitSpeed),
+      orbirtRadius * Math.cos(totalElapsedTime * orbitSpeed),
+      0
+    );
+
+    this.moon.position.set(
+      orbirtRadius * Math.sin(totalElapsedTime * orbitSpeed + Math.PI),
+      orbirtRadius * Math.cos(totalElapsedTime * orbitSpeed + Math.PI),
+      0
+    );
+
+    if (lightDebug) {
+      this.sunHelper.update();
+      this.moonHelper.update();
+    }
   }
 }

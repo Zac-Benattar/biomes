@@ -1,7 +1,7 @@
 import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
-import Island from "./island";
-import { Biome } from "./island";
+import Biome from "./BiomeController";
+import { BiomeType } from "./BiomeController";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
 import { FBXLoader } from "three/examples/jsm/loaders/FBXLoader";
 import {
@@ -15,7 +15,7 @@ export default class Game {
   private threejs: THREE.WebGLRenderer;
   private camera: THREE.PerspectiveCamera;
   private scene: THREE.Scene;
-  private island: Island;
+  private island: Biome;
   private controls: BasicCharacterController;
   private mixers: THREE.AnimationMixer[];
   private previousRAF: number;
@@ -60,10 +60,7 @@ export default class Game {
     controls.dampingFactor = 0.05;
     controls.update();
 
-    this.island = new Island(Biome.Alpine, 0, 15, 0, 0, 0);
-    this.island.addToScene(this.scene);
-    this.island.enableLights(this.scene);
-
+    this.CreateIsland();
     this.CreatePhysicsWorld();
 
     this.mixers = [];
@@ -91,9 +88,13 @@ export default class Game {
 
     this.cannonDebugger = new CannonDebugger(this.scene, this.physicsWorld);
 
-    this.island.getCannonBodies().forEach((body) => {
+    this.island.GetCannonBodies().forEach((body) => {
       this.physicsWorld.addBody(body);
     });
+  }
+
+  CreateIsland() {
+    this.island = new Biome(this.scene, BiomeType.Alpine, 0, 15, 0, 0, 0);
   }
 
   LoadAnimatedModel() {

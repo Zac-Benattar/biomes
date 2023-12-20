@@ -238,7 +238,7 @@ export class BasicCharacterController {
 
     oldPosition.copy(this.physicsBody.position);
 
-    console.log(this.physicsBody.position);
+    // console.log(this.physicsBody.position);
 
     if (this.mixer) {
       this.mixer.update(timeInSeconds);
