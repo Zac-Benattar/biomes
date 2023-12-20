@@ -50,7 +50,7 @@ export default class Game {
     const near = 1.0;
     const far = 1000.0;
     this.camera = new THREE.PerspectiveCamera(fov, aspect, near, far);
-    this.camera.position.set(25, 10, 25);
+    this.camera.position.set(20, 20, 20);
 
     this.scene = new THREE.Scene();
 
@@ -155,9 +155,6 @@ export default class Game {
 
       this.threejs.render(this.scene, this.camera);
       this.Step(t - this.previousRAF);
-      this.physicsWorld.step(t - this.previousRAF);
-      this.cannonDebugger.update();
-      this.island.update(t - this.previousRAF);
       this.previousRAF = t;
     });
   }
@@ -170,6 +167,17 @@ export default class Game {
 
     if (this.controls) {
       this.controls.Update(timeElapsedS);
+    }
+
+    if (this.island) {
+      this.island.update(timeElapsedS);
+    }
+
+    if (this.physicsWorld) {
+      this.physicsWorld.step(timeElapsedS);
+      if (this.cannonDebugger) {
+        this.cannonDebugger.update();
+      }
     }
   }
 }

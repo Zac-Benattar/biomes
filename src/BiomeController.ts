@@ -6,7 +6,7 @@ import Tile, { TileFeature, TileTop, TileType } from "./tile";
 import * as CANNON from "cannon-es";
 
 const orbirtRadius = 100;
-const orbitSpeed = 0.0001;
+const orbitSpeed = 0.05;
 const lightDebug = false;
 
 export enum BiomeType {
@@ -339,9 +339,9 @@ export default class Biome {
         Math.floor((Math.random() - 0.5) * (this.radius * 1.7))
       );
       velocities.push(
-        (Math.random() - 0.5) * 0.005,
-        (Math.random() - 0.05) * -0.005 - 0.0005,
-        (Math.random() - 0.5) * 0.005
+        (Math.random() - 0.5) * 0.5,
+        (Math.random() - 0.05) * -5 - 0.05,
+        (Math.random() - 0.5) * 0.5
       );
     }
 
@@ -393,11 +393,11 @@ export default class Biome {
           this.particles.geometry.attributes.position.array[i * 3 + 2] =
             Math.floor((Math.random() - 0.5) * (this.radius * 1.7));
           this.particles.geometry.attributes.velocity.array[i * 3] =
-            (Math.random() - 0.5) * 0.005;
+            (Math.random() - 0.5) * 0.5;
           this.particles.geometry.attributes.velocity.array[i * 3 + 1] =
-            (Math.random() - 0.05) * -0.005 - 0.0005;
+            (Math.random() - 0.05) * -5 - 0.5;
           this.particles.geometry.attributes.velocity.array[i * 3 + 2] =
-            (Math.random() - 0.5) * 0.005;
+            (Math.random() - 0.5) * 0.5;
           this.particles.geometry.attributes.position.needsUpdate = true;
           continue;
         }

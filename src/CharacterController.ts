@@ -4,6 +4,7 @@ import { FBXLoader } from "three/examples/jsm/loaders/FBXLoader";
 import * as CANNON from "cannon-es";
 import Tile from "./tile";
 
+const characterHeight = 0.6;
 export const W = "w";
 export const A = "a";
 export const S = "s";
@@ -109,7 +110,7 @@ export class BasicCharacterController {
     this.physicsBody = new CANNON.Body({
       mass: 1,
       type: CANNON.Body.DYNAMIC,
-      shape: new CANNON.Box(new CANNON.Vec3(0.5, 1, 0.5)),
+      shape: new CANNON.Box(new CANNON.Vec3(0.25, characterHeight, 0.25)),
       position: new CANNON.Vec3(0, 10, 0),
     });
   }
@@ -121,7 +122,7 @@ export class BasicCharacterController {
   public getFeetPosition() {
     return new THREE.Vector3(
       this.physicsBody.position.x,
-      this.physicsBody.position.y - 0.5,
+      this.physicsBody.position.y - characterHeight,
       this.physicsBody.position.z
     );
   }
@@ -233,12 +234,10 @@ export class BasicCharacterController {
     this.physicsBody.position.vadd(forwardCANNON);
     this.physicsBody.position.vadd(sidewaysCANNON);
 
-    this.target.position.copy(this.physicsBody.position);
+    this.target.position.copy(this.getFeetPosition());
     this.target.quaternion.copy(this.physicsBody.quaternion);
 
     oldPosition.copy(this.physicsBody.position);
-
-    // console.log(this.physicsBody.position);
 
     if (this.mixer) {
       this.mixer.update(timeInSeconds);
