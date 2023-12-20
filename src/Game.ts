@@ -63,18 +63,26 @@ export default class Game {
 
     this.seed = Math.random();
     this.CreateIsland();
-    this.CreatePhysicsWorld();
 
     this.mixers = [];
     this.previousRAF = -1;
 
+    this.CreatePhysicsWorld();
+
     this.LoadAnimatedModel();
+    this.island.CreateGoal(
+      this.island.GetTileBelow(
+        this.controls.getFeetPosition().x,
+        this.controls.getFeetPosition().z
+      )
+    );
+
     this.RAF();
   }
 
   CreatePhysicsWorld() {
     this.physicsWorld = new CANNON.World({
-      gravity: new CANNON.Vec3(0, -0.0001, 0),
+      gravity: new CANNON.Vec3(0, -9.81, 0),
     });
     const groundBody = new CANNON.Body({
       mass: 0,
@@ -96,7 +104,12 @@ export default class Game {
   }
 
   CreateIsland() {
-    const params = new BiomeParameters(this.scene, BiomeType.Alpine, this.seed, 15);
+    const params = new BiomeParameters(
+      this.scene,
+      BiomeType.Alpine,
+      this.seed,
+      15
+    );
     this.island = new Biome(params);
   }
 

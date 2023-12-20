@@ -108,8 +108,8 @@ export class BasicCharacterController {
 
   private CreatePhysicsBody() {
     this.physicsBody = new CANNON.Body({
-      mass: 1,
-      type: CANNON.Body.DYNAMIC,
+      mass: 60,
+      type: CANNON.Body.STATIC,
       shape: new CANNON.Box(new CANNON.Vec3(0.25, characterHeight, 0.25)),
       position: new CANNON.Vec3(0, 10, 0),
     });
@@ -228,11 +228,13 @@ export class BasicCharacterController {
     const sidewaysCANNON = new CANNON.Vec3(sideways.x, sideways.y, sideways.z);
     const forwardCANNON = new CANNON.Vec3(forward.x, forward.y, forward.z);
 
-    sidewaysCANNON.scale(velocity.x * timeInSeconds);
-    forwardCANNON.scale(velocity.z * timeInSeconds);
-
     this.physicsBody.position.vadd(forwardCANNON);
     this.physicsBody.position.vadd(sidewaysCANNON);
+    // this.physicsBody.position = new CANNON.Vec3(
+    //   this.physicsBody.position.x + forwardCANNON.x,
+    //   this.physicsBody.position.y + forwardCANNON.y,
+    //   this.physicsBody.position.z + forwardCANNON.z
+    // );
 
     this.target.position.copy(this.getFeetPosition());
     this.target.quaternion.copy(this.physicsBody.quaternion);

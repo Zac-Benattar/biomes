@@ -1,7 +1,7 @@
 import * as THREE from "three";
 import * as BufferGeometryUtils from "three/examples/jsm/utils/BufferGeometryUtils.js";
 import { createNoise2D } from "simplex-noise";
-import Item from "./Items";
+import Item, { AnimalType } from "./Items";
 import Tile, { TileFeature, TileTop, TileType } from "./Tile";
 import * as CANNON from "cannon-es";
 
@@ -102,8 +102,8 @@ export default class Biome {
   private moonAngle: number;
   private previousRAF: number = 0;
   private orbitRadius: number = 100;
-  private orbitSpeed: number = 0.05;
-  private lightDebug: boolean = true;
+  private orbitSpeed: number = 0; // 0.05 for production
+  private lightDebug: boolean = false;
 
   constructor(params: BiomeParameters) {
     this.Init(params);
@@ -284,12 +284,12 @@ export default class Biome {
     let state = seed;
 
     function lcg() {
-        state = (A * state) % M;
-        return state / M;
+      state = (A * state) % M;
+      return state / M;
     }
 
     return function () {
-        return lcg();
+      return lcg();
     };
   }
 
@@ -412,7 +412,9 @@ export default class Biome {
             (Math.random() - 0.5) * (this.Params.radius * 1.7)
           );
           this.particles.geometry.attributes.position.array[i * 3 + 1] =
-            Math.floor(Math.random() * 5 + this.GenerationParams.clouds_min_height);
+            Math.floor(
+              Math.random() * 5 + this.GenerationParams.clouds_min_height
+            );
           this.particles.geometry.attributes.position.array[i * 3 + 2] =
             Math.floor((Math.random() - 0.5) * (this.Params.radius * 1.7));
           this.particles.geometry.attributes.velocity.array[i * 3] =
@@ -553,7 +555,12 @@ export default class Biome {
     snowMesh.receiveShadow = true;
 
     let waterMesh = new THREE.Mesh(
-      new THREE.CylinderGeometry(17, 17, this.GenerationParams.max_height * 0.2, 50),
+      new THREE.CylinderGeometry(
+        17,
+        17,
+        this.GenerationParams.max_height * 0.2,
+        50
+      ),
       new THREE.MeshPhysicalMaterial({
         color: 0x55aaff,
         transparent: true,
@@ -583,7 +590,11 @@ export default class Biome {
         side: THREE.DoubleSide,
       })
     );
-    islandContainerMesh.position.set(0, this.GenerationParams.max_height * 0.125, 0);
+    islandContainerMesh.position.set(
+      0,
+      this.GenerationParams.max_height * 0.125,
+      0
+    );
 
     let islandFloorMesh = new THREE.Mesh(
       new THREE.CylinderGeometry(
@@ -652,7 +663,7 @@ export default class Biome {
     // return each tile as a cannon body
     let bodies: CANNON.Body[] = [];
     for (let i = 0; i < this.tiles.length; i++) {
-      bodies.push(this.tiles[i].getCannonBody());
+      bodies.push(this.tiles[i].getCannonBodies());
     }
     return bodies;
   }
@@ -726,5 +737,15 @@ export default class Biome {
       this.sunShadowHelper.update();
       this.moonShadowHelper.update();
     }
+  }
+
+  public CreateGoal(playerTile: Tile): void {
+    let goalTile: Tile | null = null;
+    while (goalTile === null || goalTile === playerTile) {
+      goalTile = this.tiles[Math.floor(Math.random() * this.tiles.length)];
+      goalTile.SetGoal(AnimalType.Penguin);
+    }
+
+    this.Params.scene.add(goalTile.GetItem().getMesh());
   }
 }

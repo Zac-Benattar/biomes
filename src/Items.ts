@@ -1,17 +1,37 @@
 import * as THREE from "three";
 
-enum ItemType {
-  Coin,
+export enum ItemType {
+  Animal,
+}
+
+export enum AnimalType {
+  Giraffe,
+  Penguin,
 }
 
 export default abstract class Item {
-  position: THREE.Vector3;
-  type: ItemType;
-
-  constructor(position, type) {
-    this.position = position;
-    this.type = type;
-  }
+  constructor() {}
 
   public abstract getMesh(): THREE.Mesh;
+}
+
+export class Animal extends Item {
+  animalType: AnimalType;
+  mesh: THREE.Mesh;
+
+  constructor(params) {
+    super();
+    this.Init(params);
+  }
+
+  private Init(params) {
+    this.animalType = params.animalType;
+    const geometry = new THREE.BoxGeometry(0.5, 0.5, 0.5);
+    const material = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
+    this.mesh = new THREE.Mesh(geometry, material);
+  }
+
+  public getMesh(): THREE.Mesh {
+    return this.mesh;
+  }
 }

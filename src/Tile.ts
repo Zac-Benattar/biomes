@@ -1,6 +1,7 @@
 import * as THREE from "three";
 import * as BufferGeometryUtils from "three/examples/jsm/utils/BufferGeometryUtils.js";
-import Item from "./Items";
+import Item, { Animal, AnimalType } from "./Items";
+import { ItemType } from "./Items";
 import { BiomeType } from "./BiomeController";
 import * as CANNON from "cannon-es";
 
@@ -115,6 +116,10 @@ export default class Tile {
     featureMesh.castShadow = true;
     featureMesh.receiveShadow = true;
 
+    if (this.item != null) {
+      itemMesh.add(this.item.getMesh());
+    }
+
     // return a list of geometries
     return [
       stoneGeo,
@@ -213,9 +218,9 @@ export default class Tile {
     );
   }
 
-  public getCannonBody() {
+  public getCannonBodies() {
     let shape = new CANNON.Cylinder(1, 1, this.height, 6);
-    let body = new CANNON.Body({
+    let tileBody = new CANNON.Body({
       mass: 0,
       position: new CANNON.Vec3(
         this.position.x,
@@ -225,6 +230,27 @@ export default class Tile {
       shape: shape,
     });
 
-    return body;
+    // let featureBody = new CANNON.Body();
+    // if (this.feature === TileFeature.Rock) {
+    //   featureBody = this.getRockCannonBody();
+    // } else if (this.feature === TileFeature.AlpineTree) {
+    //   featureBody = this.getAlpineTreeCannonBody();
+    // }
+    
+    let itemBody = new CANNON.Body();
+    if (this.item != null) {
+      itemBody = this.getItemCannonBody();
+    }
+
+    return tileBody;
+  }
+
+  public GetItem() {
+    return this.item;
+  }
+
+  public SetGoal(animal: AnimalType) {
+    this.item = new Animal(animal);
+    this.item.getMesh().position.set(this.getTileTopPosition().x, this.getTileTopPosition().z, this.getTileTopPosition().y);
   }
 }
