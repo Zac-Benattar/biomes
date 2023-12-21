@@ -986,9 +986,8 @@ export default class Biome {
   }
 
   private EnableLights(scene: THREE.Scene): void {
-    const light = new THREE.PointLight(0xffcb8e, 10, 200);
-    light.position.set(0, 20, 0);
-    scene.add(light);
+    const ambientLight = new THREE.AmbientLight(0xffcb8e, 0.1);
+    scene.add(ambientLight);
 
     this.sunAngle = Math.random() * Math.PI * 2;
     this.sun = new THREE.DirectionalLight(0xffcb8e, 4);
@@ -1064,5 +1063,6 @@ export default class Biome {
     }
 
     this.Params.scene.add(goalTile.GetItem().getMesh());
+    this.Params.scene.add(goalTile.GetItem().getLight());
   }
 }

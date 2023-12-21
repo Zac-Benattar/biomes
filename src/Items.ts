@@ -10,9 +10,15 @@ export enum AnimalType {
 }
 
 export default abstract class Item {
-  constructor() {}
+  light: THREE.PointLight;
+  constructor() {
+    this.light = new THREE.PointLight(0x404040, 2);
+  }
 
   public abstract getMesh(): THREE.Mesh;
+  public getLight(): THREE.PointLight {
+    return this.light;
+  }
 }
 
 export class Animal extends Item {

@@ -366,5 +366,14 @@ export default class Tile {
         this.getTileTopPosition().z,
         this.getTileTopPosition().y
       );
+    this.item.getMesh().castShadow = true;
+    this.item.getMesh().receiveShadow = true;
+    this.item
+      .getLight()
+      .position.set(
+        this.getTileTopPosition().x,
+        this.getTileTopPosition().z,
+        this.getTileTopPosition().y
+      );
   }
 }
