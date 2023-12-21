@@ -7,7 +7,7 @@ import { VectorSpringSimulator } from "./physics/SpringSimulation/VectorSpringSi
 import { Idle } from "./CharacterStates/Idle";
 import * as CANNON from "cannon-es";
 import Tile from "./Tile";
-import { World } from "./Game";
+import { World } from "./World";
 import * as Utils from "./Utils";
 import { ICharacterState } from "./CharacterStates/ICharacterState";
 
