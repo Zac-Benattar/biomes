@@ -9,7 +9,7 @@ export class DropRolling extends CharacterStateBase {
     this.character.velocitySimulator.mass = 1;
     this.character.velocitySimulator.damping = 0.6;
 
-    this.character.setVelocityTarget(new THREE.Vector3(1, 0, 0));
+    this.character.setVelocityTarget(new THREE.Vector3(0, 0, 0.8));
     this.playAnimation("drop_running_roll", 0.03);
   }
 

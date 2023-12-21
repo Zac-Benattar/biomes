@@ -42,9 +42,8 @@ export class Character extends THREE.Object3D {
   public velocityInfluence: THREE.Vector3 = new THREE.Vector3(0, 0, 0);
   public acceleration: THREE.Vector3 = new THREE.Vector3(0, 0, 0);
   public decceleration: THREE.Vector3 = new THREE.Vector3(0, 0, 0);
-  public input: any;
 
-  public movementSpeed: number = 1.0;
+  public movementSpeed: number = 4.0;
   public angularVelocity: number = 0.0;
   public orientation: THREE.Vector3 = new THREE.Vector3(0, 0, 1);
   public orientationTarget: THREE.Vector3 = new THREE.Vector3(0, 0, 1);
@@ -125,12 +124,9 @@ export class Character extends THREE.Object3D {
       this.physicsPreStep(this.collider.body, this);
     });
 
-    this.world.physicsWorld.addEventListener(
-      "postStep",
-      () => {
-        this.physicsPostStep(this.collider.body, this);
-      }
-    );
+    this.world.physicsWorld.addEventListener("postStep", () => {
+      this.physicsPostStep(this.collider.body, this);
+    });
 
     this.setState(new Idle(this));
   }
@@ -156,7 +152,6 @@ export class Character extends THREE.Object3D {
         anim.animations[0].name = animName;
         const clip = anim.animations[0];
         this.animations.push(clip);
-        console.log(this.animations);
       };
 
       const loader = new FBXLoader(this.manager);
@@ -227,8 +222,9 @@ export class Character extends THREE.Object3D {
     );
   }
 
-  public jump(): void {
+  public jump(initialJumpSpeed): void {
     this.wantsToJump = true;
+    this.initJumpSpeed = initialJumpSpeed;
   }
 
   public handleKeyboardEvent(
@@ -246,25 +242,19 @@ export class Character extends THREE.Object3D {
   }
 
   public triggerAction(actionName: string, value: boolean): void {
-    // Get action and set it's parameters
     let action = this.actions[actionName];
 
     if (action.isPressed !== value) {
-      // Set value
       action.isPressed = value;
 
-      // Reset the 'just' attributes
       action.justPressed = false;
       action.justReleased = false;
 
-      // Set the 'just' attributes
       if (value) action.justPressed = true;
       else action.justReleased = true;
 
-      // hande action
       this.state.onInputChange();
 
-      // Reset the 'just' attributes
       action.justPressed = false;
       action.justReleased = false;
     }
@@ -586,11 +576,36 @@ export class Character extends THREE.Object3D {
     }
   }
 
-  public getCameraRelativeMovementVector(): THREE.Vector3
-	{
-		const localDirection = this.getLocalMovementDirection();
-		const flatViewVector = new THREE.Vector3(this.viewVector.x, 0, this.viewVector.z).normalize();
+  public getCameraRelativeMovementVector(): THREE.Vector3 {
+    const localDirection = this.getLocalMovementDirection();
+    const flatViewVector = new THREE.Vector3(
+      this.viewVector.x,
+      0,
+      this.viewVector.z
+    ).normalize();
 
-		return Utils.applyVectorMatrixXZ(flatViewVector, localDirection);
-	}
+    return Utils.applyVectorMatrixXZ(flatViewVector, localDirection);
+  }
+
+  public setCameraRelativeOrientationTarget(): void {
+    let moveVector = this.getCameraRelativeMovementVector();
+
+    if (moveVector.x === 0 && moveVector.y === 0 && moveVector.z === 0) {
+      this.setOrientation(this.orientation);
+    } else {
+      this.setOrientation(moveVector);
+    }
+  }
+
+  public setOrientation(
+    vector: THREE.Vector3,
+    instantly: boolean = false
+  ): void {
+    let lookVector = new THREE.Vector3().copy(vector).setY(0).normalize();
+    this.orientationTarget.copy(lookVector);
+
+    if (instantly) {
+      this.orientation.copy(lookVector);
+    }
+  }
 }

@@ -2,7 +2,7 @@ import * as Utils from "../Utils";
 import {
   DropIdle,
   DropRolling,
-  DropRunning,
+  DropWalking as DropWalking,
   Falling,
   StartWalkBackLeft,
   StartWalkBackRight,
@@ -17,10 +17,6 @@ export abstract class CharacterStateBase {
   public character: Character;
   public timer: number;
   public animationLength: any;
-
-  public canFindVehiclesToEnter: boolean;
-  public canEnterVehicles: boolean;
-  public canLeaveVehicles: boolean;
 
   constructor(character: Character) {
     this.character = character;
@@ -37,10 +33,6 @@ export abstract class CharacterStateBase {
 
     this.character.velocityIsAdditive = false;
     this.character.setVelocityInfluence(1, 0, 1);
-
-    this.canFindVehiclesToEnter = true;
-    this.canEnterVehicles = false;
-    this.canLeaveVehicles = true;
 
     this.timer = 0;
   }
@@ -96,7 +88,7 @@ export abstract class CharacterStateBase {
       this.character.setState(new DropRolling(this.character));
     } else if (this.anyDirection()) {
       if (this.character.groundImpactData.y < -2) {
-        this.character.setState(new DropRunning(this.character));
+        this.character.setState(new DropWalking(this.character));
       } else {
         this.character.setState(new Walk(this.character));
       }

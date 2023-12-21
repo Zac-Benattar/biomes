@@ -11,8 +11,7 @@ export class Walk extends CharacterStateBase {
   constructor(character: Character) {
     super(character);
 
-    this.canEnterVehicles = true;
-    this.character.setVelocityTarget(new THREE.Vector3(1, 0, 0));
+    this.character.setVelocityTarget(new THREE.Vector3(0, 0, 0.8));
     this.playAnimation("Walk", 0.1);
   }
 

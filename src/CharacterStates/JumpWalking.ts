@@ -16,16 +16,15 @@ export class JumpWalking extends CharacterStateBase {
   public update(timeStep: number): void {
     super.update(timeStep);
 
-    
-
     // Move in air
     if (this.alreadyJumped) {
       this.character.setVelocityTarget(
         this.anyDirection()
-          ? new THREE.Vector3(1, 0, 0)
+          ? new THREE.Vector3(0, 0, 0.8)
           : new THREE.Vector3(0, 0, 0)
       );
     }
+    
     // Physically jump
     if (this.timer > 0.13 && !this.alreadyJumped) {
       this.character.jump(4);

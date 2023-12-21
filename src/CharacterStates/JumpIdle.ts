@@ -23,7 +23,7 @@ export class JumpIdle extends CharacterStateBase {
       
       this.character.setVelocityTarget(
         this.anyDirection()
-          ? new THREE.Vector3(1, 0, 0)
+          ? new THREE.Vector3(0, 0, 0.8)
           : new THREE.Vector3(0, 0, 0)
       );
     }

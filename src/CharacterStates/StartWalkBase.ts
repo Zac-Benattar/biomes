@@ -17,9 +17,7 @@ export class StartWalkBase extends CharacterStateBase {
     this.character.rotationSimulator.mass = 20;
     this.character.rotationSimulator.damping = 0.7;
 
-    this.character.setVelocityTarget(new THREE.Vector3(1, 0, 0));
-    // this.character.velocitySimulator.damping = 0.5;
-    // this.character.velocitySimulator.mass = 1;
+    this.character.setVelocityTarget(new THREE.Vector3(0, 0, 0.8));
   }
 
   public update(timeStep: number): void {

@@ -993,7 +993,7 @@ export default class Island {
   }
 
   private EnableLights(scene: THREE.Scene): void {
-    const ambientLight = new THREE.AmbientLight(0xffcb8e, 0.1);
+    const ambientLight = new THREE.AmbientLight(0xffcb8e, 0.05);
     ambientLight.castShadow = false;
     scene.add(ambientLight);
 

@@ -42,9 +42,8 @@ export function getSignedAngleBetweenVectors(
 ): number {
   let angle = this.getAngleBetweenVectors(v1, v2, dotTreshold);
 
-  // Get vector pointing up or down
   let cross = new THREE.Vector3().crossVectors(v1, v2);
-  // Compare cross with normal to find out direction
+
   if (normal.dot(cross) < 0) {
     angle = -angle;
   }
