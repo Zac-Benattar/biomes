@@ -20,6 +20,8 @@ export enum TileFeature {
   Rock,
   BasicTree,
   AlpineTree,
+  JungleTree,
+  SavannaTree, // TODO
   Grass,
   Snow,
   Cactus,
@@ -114,6 +116,8 @@ export default class Tile {
       featureMesh.add(this.alpineTree(this.height, this.position));
     } else if (this.feature === TileFeature.BasicTree) {
       featureMesh.add(this.basicTree(this.height, this.position));
+    } else if (this.feature === TileFeature.JungleTree) {
+      featureMesh.add(this.jungleTree(this.height, this.position));
     }
 
     featureMesh.castShadow = true;
@@ -233,7 +237,61 @@ export default class Tile {
     puff3.translate(puff3Radius, 0, 0);
     puff3.rotateY(puff3Radius * Math.PI * 2);
 
-    const leavesGeo = BufferGeometryUtils.mergeGeometries([puff1, puff2, puff3]);
+    const leavesGeo = BufferGeometryUtils.mergeGeometries([
+      puff1,
+      puff2,
+      puff3,
+    ]);
+    leavesGeo.translate(position.x, height + treeHeight * 0.9, position.y);
+
+    let leavesMaterial = new THREE.MeshStandardMaterial({
+      color: 0x4f7942,
+      flatShading: true,
+    });
+
+    let trunkMaterial = new THREE.MeshStandardMaterial({
+      color: 0x8b4513,
+      flatShading: true,
+    });
+
+    let trunkMesh = new THREE.Mesh(trunkGeo, trunkMaterial);
+    trunkMesh.castShadow = true;
+    trunkMesh.receiveShadow = true;
+
+    let leavesMesh = new THREE.Mesh(leavesGeo, leavesMaterial);
+    leavesMesh.castShadow = true;
+    leavesMesh.receiveShadow = true;
+
+    let tree = new THREE.Group();
+    tree.add(trunkMesh, leavesMesh);
+
+    return tree;
+  }
+
+  private jungleTree(height, position) {
+    const treeHeight = Math.random() * 3 + 3;
+
+    const trunkGeo = new THREE.CylinderGeometry(0.3, 0.4, treeHeight, 10);
+    trunkGeo.translate(position.x, height + treeHeight * 0.4, position.y);
+
+    const puff1Radius = Math.random() * 0.8 + 0.5;
+    const puff2Radius = Math.random() * 0.8 + 0.8;
+    const puff3Radius = Math.random() * 0.8 + 0.5;
+    const puff1 = new THREE.SphereGeometry(puff1Radius, 7, 7);
+    const puff2 = new THREE.SphereGeometry(puff2Radius, 7, 7);
+    const puff3 = new THREE.SphereGeometry(puff3Radius, 7, 7);
+
+    puff1.translate(-puff1Radius, 0, 0);
+    puff1.rotateY(puff1Radius * Math.PI * 2);
+    puff2.translate(0, 0, 0);
+    puff3.translate(puff3Radius, 0, 0);
+    puff3.rotateY(puff3Radius * Math.PI * 2);
+
+    const leavesGeo = BufferGeometryUtils.mergeGeometries([
+      puff1,
+      puff2,
+      puff3,
+    ]);
     leavesGeo.translate(position.x, height + treeHeight * 0.9, position.y);
 
     let leavesMaterial = new THREE.MeshStandardMaterial({

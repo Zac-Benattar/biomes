@@ -106,7 +106,7 @@ export default class Game {
   CreateIsland() {
     const params = new BiomeParameters(
       this.scene,
-      BiomeType.Forest,
+      BiomeType.Ocean,
       this.seed,
       15
     );

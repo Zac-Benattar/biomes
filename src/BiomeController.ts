@@ -10,7 +10,7 @@ export enum BiomeType {
   Forest,
   Desert,
   Alpine,
-  Savana,
+  Savanna,
   Ocean,
   Mesa,
   Volcano,
@@ -211,19 +211,296 @@ export default class Biome {
               6,
               [TileType.Dirt],
               [
-                new TileFeatureProbability(TileFeature.BasicTree, 0.2),
-                new TileFeatureProbability(TileFeature.Grass, 0.8),
+                new TileFeatureProbability(TileFeature.BasicTree, 0.3),
+                new TileFeatureProbability(TileFeature.Grass, 0.7),
               ]
             ),
             new Layer(
               4,
               [TileType.Dirt],
-              [new TileFeatureProbability(TileFeature.BasicTree, 0.2)]
+              [new TileFeatureProbability(TileFeature.BasicTree, 0.4)]
             ),
             new Layer(
               1,
               [TileType.Grass],
               [new TileFeatureProbability(TileFeature.BasicTree, 0.2)]
+            ),
+          ],
+        };
+        break;
+      case BiomeType.Jungle:
+        this.GenerationParams = {
+          max_height: 8,
+          height_variance: 1,
+          weather: Weather.Sunny,
+          clouds: true,
+          clouds_min_height: 13,
+          water: true,
+          water_height: 2,
+          layers: [
+            new Layer(
+              5,
+              [TileType.Dirt],
+              [
+                new TileFeatureProbability(TileFeature.JungleTree, 0.3),
+                new TileFeatureProbability(TileFeature.Grass, 0.7),
+              ]
+            ),
+            new Layer(
+              3,
+              [TileType.Dirt],
+              [new TileFeatureProbability(TileFeature.JungleTree, 0.2)]
+            ),
+            new Layer(
+              1,
+              [TileType.Grass],
+              [new TileFeatureProbability(TileFeature.JungleTree, 0.2)]
+            ),
+          ],
+        };
+        break;
+      case BiomeType.Savanna:
+        this.GenerationParams = {
+          max_height: 4,
+          height_variance: 1,
+          weather: Weather.Sunny,
+          clouds: true,
+          clouds_min_height: 11,
+          water: false,
+          water_height: 1,
+          layers: [
+            new Layer(
+              1,
+              [TileType.Dirt],
+              [
+                new TileFeatureProbability(TileFeature.BasicTree, 0.1),
+                new TileFeatureProbability(TileFeature.Grass, 0.7),
+              ]
+            ),
+          ],
+        };
+        break;
+      case BiomeType.Ocean:
+        this.GenerationParams = {
+          max_height: 6,
+          height_variance: 0.7,
+          weather: Weather.Sunny,
+          clouds: true,
+          clouds_min_height: 11,
+          water: true,
+          water_height: 5,
+          layers: [
+            new Layer(
+              5.5,
+              [TileType.Dirt],
+              [
+                new TileFeatureProbability(TileFeature.BasicTree, 0.05),
+                new TileFeatureProbability(TileFeature.Grass, 0.2),
+              ]
+            ),
+            new Layer(
+              1,
+              [TileType.Sand],
+              [
+                new TileFeatureProbability(TileFeature.Seaweed, 0.1),
+                new TileFeatureProbability(TileFeature.Rock, 0.1),
+              ]
+            ),
+            new Layer(
+              0,
+              [TileType.Stone],
+              [
+                new TileFeatureProbability(TileFeature.Seaweed, 0.05),
+                new TileFeatureProbability(TileFeature.Rock, 0.1),
+              ]
+            ),
+          ],
+        };
+        break;
+      case BiomeType.Mesa:
+        this.GenerationParams = {
+          max_height: 5,
+          height_variance: 0.7,
+          weather: Weather.Sunny,
+          clouds: true,
+          clouds_min_height: 11,
+          water: false,
+          water_height: 0.5,
+          layers: [
+            new Layer(
+              4,
+              [TileType.Dirt],
+              [
+                new TileFeatureProbability(TileFeature.Rock, 0.1),
+                new TileFeatureProbability(TileFeature.Cactus, 0.1),
+              ]
+            ),
+            new Layer(
+              1,
+              [TileType.Sand],
+              [
+                new TileFeatureProbability(TileFeature.Rock, 0.1),
+                new TileFeatureProbability(TileFeature.Cactus, 0.1),
+              ]
+            ),
+          ],
+        };
+        break;
+      case BiomeType.Meadow:
+        this.GenerationParams = {
+          max_height: 4,
+          height_variance: 0.7,
+          weather: Weather.Sunny,
+          clouds: true,
+          clouds_min_height: 11,
+          water: false,
+          water_height: 0.5,
+          layers: [
+            new Layer(
+              3,
+              [TileType.Dirt],
+              [
+                new TileFeatureProbability(TileFeature.Grass, 0.1),
+                new TileFeatureProbability(TileFeature.BasicTree, 0.1),
+              ]
+            ),
+            new Layer(
+              1,
+              [TileType.Grass],
+              [
+                new TileFeatureProbability(TileFeature.Grass, 0.1),
+                new TileFeatureProbability(TileFeature.BasicTree, 0.1),
+              ]
+            ),
+          ],
+        };
+        break;
+      case BiomeType.Plains:
+        this.GenerationParams = {
+          max_height: 4,
+          height_variance: 0.7,
+          weather: Weather.Sunny,
+          clouds: true,
+          clouds_min_height: 11,
+          water: false,
+          water_height: 0.5,
+          layers: [
+            new Layer(
+              3,
+              [TileType.Dirt],
+              [
+                new TileFeatureProbability(TileFeature.Grass, 0.1),
+                new TileFeatureProbability(TileFeature.BasicTree, 0.1),
+              ]
+            ),
+            new Layer(
+              1,
+              [TileType.Grass],
+              [
+                new TileFeatureProbability(TileFeature.Grass, 0.1),
+                new TileFeatureProbability(TileFeature.BasicTree, 0.1),
+              ]
+            ),
+          ],
+        };
+        break;
+      case BiomeType.Taiga:
+        this.GenerationParams = {
+          max_height: 8,
+          height_variance: 1,
+          weather: Weather.Sunny,
+          clouds: true,
+          clouds_min_height: 11,
+          water: true,
+          water_height: 2,
+          layers: [
+            new Layer(
+              7,
+              [TileType.Stone],
+              [new TileFeatureProbability(TileFeature.Rock, 0.1)]
+            ),
+            new Layer(
+              6,
+              [TileType.Dirt],
+              [
+                new TileFeatureProbability(TileFeature.BasicTree, 0.3),
+                new TileFeatureProbability(TileFeature.Grass, 0.7),
+              ]
+            ),
+            new Layer(
+              4,
+              [TileType.Dirt],
+              [new TileFeatureProbability(TileFeature.BasicTree, 0.4)]
+            ),
+            new Layer(
+              1,
+              [TileType.Grass],
+              [new TileFeatureProbability(TileFeature.BasicTree, 0.2)]
+            ),
+          ],
+        };
+        break;
+      case BiomeType.Tundra:
+        this.GenerationParams = {
+          max_height: 8,
+          height_variance: 1,
+          weather: Weather.Snowy,
+          clouds: true,
+          clouds_min_height: 11,
+          water: true,
+          water_height: 2,
+          layers: [
+            new Layer(
+              7,
+              [TileType.Stone],
+              [new TileFeatureProbability(TileFeature.Rock, 0.1)]
+            ),
+            new Layer(
+              6,
+              [TileType.Dirt],
+              [
+                new TileFeatureProbability(TileFeature.BasicTree, 0.3),
+                new TileFeatureProbability(TileFeature.Grass, 0.7),
+              ]
+            ),
+            new Layer(
+              4,
+              [TileType.Dirt],
+              [new TileFeatureProbability(TileFeature.BasicTree, 0.4)]
+            ),
+            new Layer(
+              1,
+              [TileType.Grass],
+              [new TileFeatureProbability(TileFeature.BasicTree, 0.2)]
+            ),
+          ],
+        };
+        break;
+      case BiomeType.Swamp:
+        this.GenerationParams = {
+          max_height: 4,
+          height_variance: 0.7,
+          weather: Weather.Rainy,
+          clouds: true,
+          clouds_min_height: 11,
+          water: true,
+          water_height: 2,
+          layers: [
+            new Layer(
+              3,
+              [TileType.Dirt],
+              [
+                new TileFeatureProbability(TileFeature.Grass, 0.1),
+                new TileFeatureProbability(TileFeature.BasicTree, 0.1),
+              ]
+            ),
+            new Layer(
+              1,
+              [TileType.Grass],
+              [
+                new TileFeatureProbability(TileFeature.Grass, 0.1),
+                new TileFeatureProbability(TileFeature.BasicTree, 0.1),
+              ]
             ),
           ],
         };
