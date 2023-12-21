@@ -610,6 +610,13 @@ export default class Island {
     };
   }
 
+  public setShadowMapSize(width: number, height: number): void {
+    this.sun.shadow.mapSize.width = width;
+    this.sun.shadow.mapSize.height = height;
+    this.moon.shadow.mapSize.width = width;
+    this.moon.shadow.mapSize.height = height;
+  }
+
   private GetClouds(): THREE.Mesh<
     THREE.BufferGeometry<THREE.NormalBufferAttributes>,
     THREE.MeshStandardMaterial,
@@ -664,7 +671,7 @@ export default class Island {
     return mesh;
   }
 
-  private GetSnow() {
+  private GetSnow(): THREE.Points<THREE.BufferGeometry> {
     let particles;
     let positions: number[] = [];
     let velocities: number[] = [];
@@ -708,7 +715,7 @@ export default class Island {
     return particles;
   }
 
-  private UpdateParticles(t: number) {
+  private UpdateParticles(t: number): void {
     const min_height = this.GetMinHeight();
     if (this.particles) {
       for (
@@ -995,8 +1002,6 @@ export default class Island {
     this.SetLightAngle(this.sun, this.sunAngle);
     this.sun.castShadow = true;
     this.sun.shadow.camera.zoom = 0.3;
-    this.sun.shadow.mapSize.width = 512;
-    this.sun.shadow.mapSize.height = 512;
     this.sun.shadow.camera.near = this.orbitRadius - this.Params.radius * 1.3;
     this.sun.shadow.camera.far = this.orbitRadius + this.Params.radius * 1.3;
     this.sun.target.position.set(0, 0, 0);
@@ -1007,12 +1012,12 @@ export default class Island {
     this.SetLightAngle(this.moon, this.moonAngle);
     this.moon.castShadow = true;
     this.moon.shadow.camera.zoom = 0.3;
-    this.moon.shadow.mapSize.width = 512;
-    this.moon.shadow.mapSize.height = 512;
     this.moon.shadow.camera.near = this.orbitRadius - this.Params.radius * 1.3;
     this.moon.shadow.camera.far = this.orbitRadius + this.Params.radius * 1.3;
     this.moon.target.position.set(0, 0, 0);
     scene.add(this.moon);
+
+    this.setShadowMapSize(512, 512);
   }
 
   public toggleLightDebug(): void {
@@ -1038,7 +1043,7 @@ export default class Island {
     }
   }
 
-  private SetLightAngle(light: THREE.DirectionalLight, angle: number) {
+  private SetLightAngle(light: THREE.DirectionalLight, angle: number): void {
     light.position.set(
       this.orbitRadius * Math.sin(angle),
       this.orbitRadius * Math.cos(angle),

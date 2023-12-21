@@ -1,4 +1,5 @@
 import * as THREE from "three";
+import * as CANNON from "cannon-es";
 import { SimulationFrame } from "./physics/SpringSimulation/SimulationFrame";
 
 /**
@@ -80,4 +81,27 @@ export function springV(
   velocity.add(acceleration);
   velocity.multiplyScalar(damping);
   source.add(velocity);
+}
+
+export function haveSameSigns(n1: number, n2: number): boolean {
+  return n1 < 0 === n2 < 0;
+}
+
+export function haveDifferentSigns(n1: number, n2: number): boolean {
+  return n1 < 0 !== n2 < 0;
+}
+
+export function threeVector(vec: CANNON.Vec3): THREE.Vector3 {
+  return new THREE.Vector3(vec.x, vec.y, vec.z);
+}
+
+export function cannonVector(vec: THREE.Vector3): CANNON.Vec3 {
+  return new CANNON.Vec3(vec.x, vec.y, vec.z);
+}
+
+export function applyVectorMatrixXZ(
+  a: THREE.Vector3,
+  b: THREE.Vector3
+): THREE.Vector3 {
+  return new THREE.Vector3(a.x * b.z + a.z * b.x, b.y, a.z * b.z + -a.x * b.x);
 }

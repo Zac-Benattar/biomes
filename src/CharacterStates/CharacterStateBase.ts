@@ -92,17 +92,13 @@ export abstract class CharacterStateBase {
   }
 
   public setAppropriateDropState(): void {
-    if (this.character.groundImpactData.velocity.y < -6) {
+    if (this.character.groundImpactData.y < -6) {
       this.character.setState(new DropRolling(this.character));
     } else if (this.anyDirection()) {
-      if (this.character.groundImpactData.velocity.y < -2) {
+      if (this.character.groundImpactData.y < -2) {
         this.character.setState(new DropRunning(this.character));
       } else {
-        if (this.character.actions.run.isPressed) {
-          this.character.setState(new Sprint(this.character));
-        } else {
-          this.character.setState(new Walk(this.character));
-        }
+        this.character.setState(new Walk(this.character));
       }
     } else {
       this.character.setState(new DropIdle(this.character));

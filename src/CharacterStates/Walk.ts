@@ -13,13 +13,11 @@ export class Walk extends CharacterStateBase {
 
     this.canEnterVehicles = true;
     this.character.setVelocityTarget(new THREE.Vector3(1, 0, 0));
-    this.playAnimation("run", 0.1);
+    this.playAnimation("Walk", 0.1);
   }
 
   public update(timeStep: number): void {
     super.update(timeStep);
-
-    
 
     this.fallInAir();
   }

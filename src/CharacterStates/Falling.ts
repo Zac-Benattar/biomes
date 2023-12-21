@@ -12,7 +12,7 @@ export class Falling extends CharacterStateBase {
     this.character.velocityIsAdditive = true;
     this.character.setVelocityInfluence(0.05, 0, 0.05);
 
-    this.playAnimation("falling", 0.3);
+    this.playAnimation("Falling", 0.3);
   }
 
   public update(timeStep: number): void {

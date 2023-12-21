@@ -2,8 +2,6 @@ import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 import Island from "./Island";
 import { BiomeType, IslandParameters } from "./Island";
-import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
-import { FBXLoader } from "three/examples/jsm/loaders/FBXLoader";
 import { Character } from "./Character";
 import * as CANNON from "cannon-es";
 import CannonDebugger from "cannon-es-debugger";
@@ -16,7 +14,8 @@ export class World {
   private island: Island;
   private character: Character;
   private seed: number = 0;
-  private physicsFrameTime: number = 1 / 60;
+  public physicsFrameRate: number = 60;
+  public physicsFrameTime: number = 1 / this.physicsFrameRate;
   private timeScaleTarget: number = 1;
   private timeScale: number = 1;
   private clock: THREE.Clock = new THREE.Clock();
@@ -29,7 +28,7 @@ export class World {
     this.Init();
   }
 
-  private Init() {
+  private Init(): void {
     this.renderer = new THREE.WebGLRenderer({
       antialias: true,
     });
@@ -53,6 +52,8 @@ export class World {
         this.EnablePhsyicsDebug();
       } else if (e.key === "l") {
         this.island.toggleLightDebug();
+      } else if (e.key === "h") {
+        this.toggleShadows();
       } else {
         this.character.handleKeyboardEvent(e, e.code, true);
       }
@@ -93,6 +94,10 @@ export class World {
     this.render(this);
   }
 
+  public toggleShadows(): void {
+    this.renderer.shadowMap.enabled = !this.renderer.shadowMap.enabled;
+  }
+
   EnablePhsyicsDebug(): void {
     if (!this.physicsDebug) {
       this.physicsDebug = true;
@@ -108,19 +113,6 @@ export class World {
       broadphase: new CANNON.SAPBroadphase(this.physicsWorld),
       allowSleep: true,
     });
-
-    const groundBody = new CANNON.Body({
-      mass: 0,
-      type: CANNON.Body.STATIC,
-      shape: new CANNON.Plane(),
-      material: new CANNON.Material(),
-    });
-    groundBody.quaternion.setFromAxisAngle(
-      new CANNON.Vec3(1, 0, 0),
-      -Math.PI / 2
-    );
-
-    this.physicsWorld.addBody(groundBody);
 
     // TODO: combine all tiles to a single body
     this.island.GetCannonBodies().forEach((body) => {

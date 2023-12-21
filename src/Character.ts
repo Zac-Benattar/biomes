@@ -1,7 +1,11 @@
 import * as THREE from "three";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
 import { FBXLoader } from "three/examples/jsm/loaders/FBXLoader";
-import { CapsuleCollider, CapsuleColliderOptions } from "./Colliders";
+import {
+  CapsuleCollider,
+  CapsuleColliderOptions,
+  CollisionGroups,
+} from "./Colliders";
 import { RelativeSpringSimulator } from "./physics/SpringSimulation/RelativeSpringSimulator";
 import { VectorSpringSimulator } from "./physics/SpringSimulation/VectorSpringSimulator";
 import { Idle } from "./CharacterStates/Idle";
@@ -29,7 +33,6 @@ export class Character extends THREE.Object3D {
   public mixer: THREE.AnimationMixer;
   public manager: THREE.LoadingManager;
   public actions: { [action: string]: KeyBinding };
-  public animations: any[]; // Walk, Run, Idle
   public model: THREE.Group;
   public height: number = 0.6;
 
@@ -57,8 +60,10 @@ export class Character extends THREE.Object3D {
   // Raycasting
   public rayResult: CANNON.RaycastResult = new CANNON.RaycastResult();
   public rayHasHit: boolean = false;
-  public rayCastlength: number = 0.5;
-  public wantsTojump: boolean = false;
+  public rayCastLength: number = 0.5;
+  public raySafeOffset: number = 0.03;
+  public wantsToJump: boolean = false;
+  public initJumpSpeed: number = -1;
   public raycastBox: THREE.Mesh;
 
   public world: World;
@@ -116,6 +121,17 @@ export class Character extends THREE.Object3D {
 
     this.setPhysicsEnabled(true);
 
+    this.world.physicsWorld.addEventListener("preStep", () => {
+      this.physicsPreStep(this.collider.body, this);
+    });
+
+    this.world.physicsWorld.addEventListener(
+      "postStep",
+      () => {
+        this.physicsPostStep(this.collider.body, this);
+      }
+    );
+
     this.setState(new Idle(this));
   }
 
@@ -137,22 +153,16 @@ export class Character extends THREE.Object3D {
       this.manager = new THREE.LoadingManager();
 
       const OnLoad = (animName: string, anim: any) => {
+        anim.animations[0].name = animName;
         const clip = anim.animations[0];
-        const action = this.mixer.clipAction(clip);
-
-        this.animations[animName] = {
-          clip: clip,
-          action: action,
-        };
+        this.animations.push(clip);
+        console.log(this.animations);
       };
 
       const loader = new FBXLoader(this.manager);
       loader.setPath("./assets/models/zombie/");
       loader.load("walk.fbx", (a) => {
         OnLoad("Walk", a);
-      });
-      loader.load("run.fbx", (a) => {
-        OnLoad("Run", a);
       });
       loader.load("idle.fbx", (a) => {
         OnLoad("Idle", a);
@@ -206,14 +216,19 @@ export class Character extends THREE.Object3D {
       this.position.y + this.orientation.y,
       this.position.z + this.orientation.z
     );
-    this.model.translateX(this.collider.body.position.x - this.model.position.x);
-    this.model.translateY(this.collider.body.position.y - this.model.position.y - characterHeight);
-    this.model.translateZ(this.collider.body.position.z - this.model.position.z);
-    console.log(this.model.position);
+    this.model.translateX(
+      this.collider.body.position.x - this.model.position.x
+    );
+    this.model.translateY(
+      this.collider.body.position.y - this.model.position.y - characterHeight
+    );
+    this.model.translateZ(
+      this.collider.body.position.z - this.model.position.z
+    );
   }
 
   public jump(): void {
-    this.wantsTojump = true;
+    this.wantsToJump = true;
   }
 
   public handleKeyboardEvent(
@@ -323,12 +338,10 @@ export class Character extends THREE.Object3D {
       this.orientationTarget
     );
 
-    // Simulator
     this.rotationSimulator.target = angle;
     this.rotationSimulator.simulate(timeStep);
     let rot = this.rotationSimulator.position;
 
-    // Updating values
     this.orientation.applyAxisAngle(new THREE.Vector3(0, 1, 0), rot);
     this.angularVelocity = this.rotationSimulator.velocity;
   }
@@ -374,4 +387,210 @@ export class Character extends THREE.Object3D {
     }
     return -1;
   }
+
+  public physicsPreStep(body: CANNON.Body, character: Character): void {
+    character.feetRaycast();
+
+    if (character.rayHasHit) {
+      if (character.raycastBox.visible) {
+        character.raycastBox.position.x = character.rayResult.hitPointWorld.x;
+        character.raycastBox.position.y = character.rayResult.hitPointWorld.y;
+        character.raycastBox.position.z = character.rayResult.hitPointWorld.z;
+      }
+    } else {
+      if (character.raycastBox.visible) {
+        character.raycastBox.position.set(
+          body.position.x,
+          body.position.y - character.rayCastLength - character.raySafeOffset,
+          body.position.z
+        );
+      }
+    }
+  }
+
+  public feetRaycast(): void {
+    let body = this.collider.body;
+    const start = new CANNON.Vec3(
+      body.position.x,
+      body.position.y,
+      body.position.z
+    );
+    const end = new CANNON.Vec3(
+      body.position.x,
+      body.position.y - this.rayCastLength - this.raySafeOffset,
+      body.position.z
+    );
+    const rayCastOptions = {
+      collisionFilterMask: CollisionGroups.Default,
+      skipBackfaces: true,
+    };
+    this.rayHasHit = this.world.physicsWorld.raycastClosest(
+      start,
+      end,
+      rayCastOptions,
+      this.rayResult
+    );
+  }
+
+  public physicsPostStep(body: CANNON.Body, character: Character): void {
+    let simulatedVelocity = new THREE.Vector3(
+      body.velocity.x,
+      body.velocity.y,
+      body.velocity.z
+    );
+
+    let velocity = new THREE.Vector3()
+      .copy(character.velocity)
+      .multiplyScalar(character.movementSpeed);
+
+    // Convert local velocity to global
+    velocity = Utils.applyVectorMatrixXZ(character.orientation, velocity);
+
+    let newVelocity = new THREE.Vector3();
+
+    if (character.velocityIsAdditive) {
+      newVelocity.copy(simulatedVelocity);
+
+      let globalVelocityTarget = Utils.applyVectorMatrixXZ(
+        character.orientation,
+        character.velocityTarget
+      );
+      let add = new THREE.Vector3()
+        .copy(velocity)
+        .multiply(character.velocityInfluence);
+
+      if (
+        Math.abs(simulatedVelocity.x) <
+          Math.abs(globalVelocityTarget.x * character.movementSpeed) ||
+        Utils.haveDifferentSigns(simulatedVelocity.x, velocity.x)
+      ) {
+        newVelocity.x += add.x;
+      }
+      if (
+        Math.abs(simulatedVelocity.y) <
+          Math.abs(globalVelocityTarget.y * character.movementSpeed) ||
+        Utils.haveDifferentSigns(simulatedVelocity.y, velocity.y)
+      ) {
+        newVelocity.y += add.y;
+      }
+      if (
+        Math.abs(simulatedVelocity.z) <
+          Math.abs(globalVelocityTarget.z * character.movementSpeed) ||
+        Utils.haveDifferentSigns(simulatedVelocity.z, velocity.z)
+      ) {
+        newVelocity.z += add.z;
+      }
+    } else {
+      newVelocity = new THREE.Vector3(
+        THREE.MathUtils.lerp(
+          simulatedVelocity.x,
+          velocity.x,
+          character.velocityInfluence.x
+        ),
+        THREE.MathUtils.lerp(
+          simulatedVelocity.y,
+          velocity.y,
+          character.velocityInfluence.y
+        ),
+        THREE.MathUtils.lerp(
+          simulatedVelocity.z,
+          velocity.z,
+          character.velocityInfluence.z
+        )
+      );
+    }
+
+    // If we're hitting the ground, stick to ground
+    if (character.rayHasHit) {
+      // Flatten velocity
+      newVelocity.y = 0;
+
+      // Move on top of moving objects
+      if (character.rayResult.body.mass > 0) {
+        let pointVelocity = new CANNON.Vec3();
+        character.rayResult.body.getVelocityAtWorldPoint(
+          character.rayResult.hitPointWorld,
+          pointVelocity
+        );
+        newVelocity.add(
+          new THREE.Vector3(pointVelocity.x, pointVelocity.y, pointVelocity.z)
+        );
+      }
+
+      // Measure the normal vector offset from direct "up" vector and transform it into a matrix
+      let up = new THREE.Vector3(0, 1, 0);
+      let normal = new THREE.Vector3(
+        character.rayResult.hitNormalWorld.x,
+        character.rayResult.hitNormalWorld.y,
+        character.rayResult.hitNormalWorld.z
+      );
+      let q = new THREE.Quaternion().setFromUnitVectors(up, normal);
+      let m = new THREE.Matrix4().makeRotationFromQuaternion(q);
+
+      // Rotate the velocity vector
+      newVelocity.applyMatrix4(m);
+
+      // Compensate for gravity
+      // newVelocity.y -= body.world.physicsWorld.gravity.y / body.character.world.physicsFrameRate;
+
+      // Apply velocity
+      body.velocity.x = newVelocity.x;
+      body.velocity.y = newVelocity.y;
+      body.velocity.z = newVelocity.z;
+      // Ground character
+      body.position.y =
+        character.rayResult.hitPointWorld.y +
+        character.rayCastLength +
+        newVelocity.y / character.world.physicsFrameRate;
+    } else {
+      // If we're in air
+      body.velocity.x = newVelocity.x;
+      body.velocity.y = newVelocity.y;
+      body.velocity.z = newVelocity.z;
+
+      // Save last in-air information
+      character.groundImpactData.x = body.velocity.x;
+      character.groundImpactData.y = body.velocity.y;
+      character.groundImpactData.z = body.velocity.z;
+    }
+
+    // Jumping
+    if (character.wantsToJump) {
+      // If initJumpSpeed is set
+      if (character.initJumpSpeed > -1) {
+        // Flatten velocity
+        body.velocity.y = 0;
+        let speed = Math.max(
+          character.velocitySimulator.position.length() * 4,
+          character.initJumpSpeed
+        );
+        body.velocity = Utils.cannonVector(
+          character.orientation.clone().multiplyScalar(speed)
+        );
+      } else {
+        // Moving objects compensation
+        let add = new CANNON.Vec3();
+        character.rayResult.body.getVelocityAtWorldPoint(
+          character.rayResult.hitPointWorld,
+          add
+        );
+        body.velocity.vsub(add, body.velocity);
+      }
+
+      // Add positive vertical velocity
+      body.velocity.y += 4;
+      // Move above ground by 2x safe offset value
+      body.position.y += character.raySafeOffset * 2;
+      // Reset flag
+      character.wantsToJump = false;
+    }
+  }
+
+  public getCameraRelativeMovementVector(): THREE.Vector3
+	{
+		const localDirection = this.getLocalMovementDirection();
+		const flatViewVector = new THREE.Vector3(this.viewVector.x, 0, this.viewVector.z).normalize();
+
+		return Utils.applyVectorMatrixXZ(flatViewVector, localDirection);
+	}
 }

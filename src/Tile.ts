@@ -63,21 +63,22 @@ export default class Tile {
     this.top = top;
   }
 
-  private hexGeometry(height, position) {
+  private hexGeometry(height, position): THREE.BufferGeometry {
     let geo = new THREE.CylinderGeometry(1, 1, height, 6, 1, false);
     geo.translate(position.x, height / 2, position.y);
 
     return geo;
   }
 
-  private snowGeometry(position) {
+  private snowGeometry(position): THREE.BufferGeometry {
     let geo = new THREE.CylinderGeometry(1, 1, 0.1, 6, 1, false);
     geo.translate(position.x, position.z, position.y);
 
     return geo;
   }
 
-  public getHexTileGeometry() {
+  //improve this
+  public getHexTileGeometry(): any[] {
     let geo = this.hexGeometry(this.height, this.position);
     let stoneGeo: THREE.BufferGeometry = new THREE.BoxGeometry(0, 0, 0);
     let dirtGeo: THREE.BufferGeometry = new THREE.BoxGeometry(0, 0, 0);
@@ -141,7 +142,7 @@ export default class Tile {
     ];
   }
 
-  private rock(height, position) {
+  private rock(height, position): THREE.Mesh {
     const px = Math.random() * 0.5 - 0.25;
     const py = Math.random() * 0.5 - 0.25;
 
@@ -160,7 +161,7 @@ export default class Tile {
     return rockMesh;
   }
 
-  private alpineTree(height, position) {
+  private alpineTree(height, position): THREE.Group {
     const treeHeight = Math.random() * 1 + 1.25;
 
     const trunkGeo = new THREE.CylinderGeometry(0.1, 0.2, treeHeight, 10);
@@ -217,7 +218,7 @@ export default class Tile {
     return tree;
   }
 
-  private basicTree(height, position) {
+  private basicTree(height, position): THREE.Group {
     const treeHeight = Math.random() * 1 + 1.25;
 
     const trunkGeo = new THREE.CylinderGeometry(0.1, 0.2, treeHeight, 10);
@@ -268,7 +269,7 @@ export default class Tile {
     return tree;
   }
 
-  private jungleTree(height, position) {
+  private jungleTree(height, position): THREE.Group {
     const treeHeight = Math.random() * 3 + 3;
 
     const trunkGeo = new THREE.CylinderGeometry(0.3, 0.4, treeHeight, 10);
@@ -318,7 +319,7 @@ export default class Tile {
     return tree;
   }
 
-  public getTileTopPosition() {
+  public getTileTopPosition(): THREE.Vector3 {
     return new THREE.Vector3(
       this.position.x,
       this.position.y,
@@ -326,7 +327,7 @@ export default class Tile {
     );
   }
 
-  public getCannonBodies() {
+  public getCannonBodies(): CANNON.Body[] {
     let shape = new CANNON.Cylinder(1, 1, this.height, 6);
     let tileBody = new CANNON.Body({
       mass: 0,
@@ -353,11 +354,11 @@ export default class Tile {
     return tileBody;
   }
 
-  public GetItem() {
+  public GetItem(): Item {
     return this.item;
   }
 
-  public SetGoal(animal: AnimalType) {
+  public SetGoal(animal: AnimalType): void {
     this.item = new Animal(animal);
     this.item
       .getMesh()

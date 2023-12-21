@@ -2,6 +2,12 @@ import * as CANNON from "cannon-es";
 
 const SEGMENTS = 8;
 
+export enum CollisionGroups {
+	Default = 1,
+	Characters = 2,
+	TrimeshColliders = 4
+}
+
 export class CapsuleColliderOptions {
   public mass: number;
   public position: CANNON.Vec3;
