@@ -1,0 +1,46 @@
+import {
+  CharacterStateBase,
+  EndWalk,
+  Idle,
+  JumpWalking,
+} from "./_stateLibrary";
+import { Character } from "../Character";
+import * as THREE from "three";
+
+export class Walk extends CharacterStateBase {
+  constructor(character: Character) {
+    super(character);
+
+    this.canEnterVehicles = true;
+    this.character.setVelocityTarget(new THREE.Vector3(1, 0, 0));
+    this.playAnimation("run", 0.1);
+  }
+
+  public update(timeStep: number): void {
+    super.update(timeStep);
+
+    
+
+    this.fallInAir();
+  }
+
+  public onInputChange(): void {
+    super.onInputChange();
+
+    if (this.noDirection()) {
+      this.character.setState(new EndWalk(this.character));
+    }
+
+    if (this.character.actions.jump.justPressed) {
+      this.character.setState(new JumpWalking(this.character));
+    }
+
+    if (this.noDirection()) {
+      if (this.character.velocity.length() > 1) {
+        this.character.setState(new EndWalk(this.character));
+      } else {
+        this.character.setState(new Idle(this.character));
+      }
+    }
+  }
+}

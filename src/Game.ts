@@ -4,22 +4,19 @@ import Biome from "./BiomeController";
 import { BiomeType, BiomeParameters } from "./BiomeController";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
 import { FBXLoader } from "three/examples/jsm/loaders/FBXLoader";
-import {
-  BasicCharacterController,
-  ControlsParams,
-} from "./CharacterController";
+import { Character, ControlsParams } from "./Character";
 import * as CANNON from "cannon-es";
 import CannonDebugger from "cannon-es-debugger";
 
-export default class Game {
+export class World {
   private threejs: THREE.WebGLRenderer;
   private camera: THREE.PerspectiveCamera;
-  private scene: THREE.Scene;
+  public scene: THREE.Scene;
   private island: Biome;
-  private controls: BasicCharacterController;
+  private character: Character;
   private mixers: THREE.AnimationMixer[];
   private previousRAF: number;
-  private physicsWorld: CANNON.World;
+  public physicsWorld: CANNON.World;
   private cannonDebugger: typeof CannonDebugger;
   private seed: number = 0;
 
@@ -69,11 +66,11 @@ export default class Game {
 
     this.CreatePhysicsWorld();
 
-    this.LoadAnimatedModel();
+    this.character = new Character(this);
     this.island.CreateGoal(
       this.island.GetTileBelow(
-        this.controls.getFeetPosition().x,
-        this.controls.getFeetPosition().z
+        this.character.getFeetPosition().x,
+        this.character.getFeetPosition().z
       )
     );
 
@@ -98,6 +95,7 @@ export default class Game {
 
     this.cannonDebugger = new CannonDebugger(this.scene, this.physicsWorld);
 
+    // TODO: combine all tiles to a single body
     this.island.GetCannonBodies().forEach((body) => {
       this.physicsWorld.addBody(body);
     });
@@ -111,16 +109,6 @@ export default class Game {
       15
     );
     this.island = new Biome(params);
-  }
-
-  LoadAnimatedModel() {
-    const params: ControlsParams = {
-      camera: this.camera,
-      scene: this.scene,
-    };
-    this.controls = new BasicCharacterController(params);
-
-    this.physicsWorld.addBody(this.controls.getPhysicsBody());
   }
 
   LoadAnimatedModelAndPlay(path, modelFile, animFile, offset) {
@@ -181,8 +169,8 @@ export default class Game {
       this.mixers.map((m) => m.update(timeElapsedS));
     }
 
-    if (this.controls) {
-      this.controls.Update(timeElapsedS);
+    if (this.character) {
+      this.character.update(timeElapsedS);
     }
 
     if (this.island) {
@@ -196,4 +184,10 @@ export default class Game {
       }
     }
   }
+}
+
+export default class Game {
+  world = new World();
+
+  constructor() {}
 }

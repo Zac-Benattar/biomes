@@ -103,8 +103,8 @@ export default class Biome {
   private moonAngle: number;
   private previousRAF: number = 0;
   private orbitRadius: number = 100;
-  private orbitSpeed: number = 0; // 0.05 for production
-  private lightDebug: boolean = false;
+  private orbitSpeed: number = 0.05; // 0.05 for production
+  private lightDebug: boolean = true;
 
   constructor(params: BiomeParameters) {
     this.Init(params);
@@ -987,6 +987,7 @@ export default class Biome {
 
   private EnableLights(scene: THREE.Scene): void {
     const ambientLight = new THREE.AmbientLight(0xffcb8e, 0.1);
+    ambientLight.castShadow = false;
     scene.add(ambientLight);
 
     this.sunAngle = Math.random() * Math.PI * 2;
