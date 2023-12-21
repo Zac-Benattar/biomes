@@ -9,16 +9,20 @@ import * as CANNON from "cannon-es";
 import CannonDebugger from "cannon-es-debugger";
 
 export class World {
-  private threejs: THREE.WebGLRenderer;
+  private renderer: THREE.WebGLRenderer;
   private camera: THREE.PerspectiveCamera;
   public scene: THREE.Scene;
   public physicsWorld: CANNON.World;
   private island: Island;
   private character: Character;
-  private mixers: THREE.AnimationMixer[];
-  private previousRAF: number;
-  private cannonDebugger: typeof CannonDebugger;
   private seed: number = 0;
+  private physicsFrameTime: number = 1 / 60;
+  private timeScaleTarget: number = 1;
+  private timeScale: number = 1;
+  private clock: THREE.Clock = new THREE.Clock();
+  private delta: number = 0;
+
+  private cannonDebugger: typeof CannonDebugger;
   private physicsDebug: boolean = false;
 
   constructor() {
@@ -26,15 +30,15 @@ export class World {
   }
 
   private Init() {
-    this.threejs = new THREE.WebGLRenderer({
+    this.renderer = new THREE.WebGLRenderer({
       antialias: true,
     });
-    this.threejs.shadowMap.enabled = true;
-    this.threejs.shadowMap.type = THREE.PCFSoftShadowMap;
-    this.threejs.setPixelRatio(window.devicePixelRatio);
-    this.threejs.setSize(window.innerWidth, window.innerHeight);
+    this.renderer.shadowMap.enabled = true;
+    this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    this.renderer.setPixelRatio(window.devicePixelRatio);
+    this.renderer.setSize(window.innerWidth, window.innerHeight);
 
-    document.body.appendChild(this.threejs.domElement);
+    document.body.appendChild(this.renderer.domElement);
 
     window.addEventListener(
       "resize",
@@ -67,7 +71,7 @@ export class World {
 
     this.scene = new THREE.Scene();
 
-    const controls = new OrbitControls(this.camera, this.threejs.domElement);
+    const controls = new OrbitControls(this.camera, this.renderer.domElement);
     controls.target.set(0, 10, 0);
     controls.enableDamping = true;
     controls.dampingFactor = 0.05;
@@ -75,9 +79,6 @@ export class World {
 
     this.seed = Math.random();
     this.CreateIsland();
-
-    this.mixers = [];
-    this.previousRAF = -1;
 
     this.CreatePhysicsWorld();
 
@@ -89,10 +90,10 @@ export class World {
       )
     );
 
-    this.RAF();
+    this.render(this);
   }
 
-  EnablePhsyicsDebug() {
+  EnablePhsyicsDebug(): void {
     if (!this.physicsDebug) {
       this.physicsDebug = true;
       if (this.physicsDebug) {
@@ -101,7 +102,7 @@ export class World {
     }
   }
 
-  CreatePhysicsWorld() {
+  CreatePhysicsWorld(): void {
     this.physicsWorld = new CANNON.World({
       gravity: new CANNON.Vec3(0, -9.81, 0),
       broadphase: new CANNON.SAPBroadphase(this.physicsWorld),
@@ -127,7 +128,7 @@ export class World {
     });
   }
 
-  CreateIsland() {
+  CreateIsland(): void {
     const params = new IslandParameters(
       this.scene,
       BiomeType.Alpine,
@@ -137,77 +138,42 @@ export class World {
     this.island = new Island(params);
   }
 
-  LoadAnimatedModelAndPlay(path, modelFile, animFile, offset) {
-    const loader = new FBXLoader();
-    loader.setPath(path);
-    loader.load(modelFile, (fbx) => {
-      fbx.scale.setScalar(0.1);
-      fbx.traverse((c) => {
-        c.castShadow = true;
-      });
-      fbx.position.copy(offset);
-
-      const anim = new FBXLoader();
-      anim.setPath(path);
-      anim.load(animFile, (anim) => {
-        const m = new THREE.AnimationMixer(fbx);
-        this.mixers.push(m);
-        const idle = m.clipAction(anim.animations[0]);
-        idle.play();
-      });
-      this.scene.add(fbx);
-    });
-  }
-
-  LoadModel() {
-    const loader = new GLTFLoader();
-    loader.load("./resources/thing.glb", (gltf) => {
-      gltf.scene.traverse((c) => {
-        c.castShadow = true;
-      });
-      this.scene.add(gltf.scene);
-    });
-  }
-
-  OnWindowResize() {
+  OnWindowResize(): void {
     this.camera.aspect = window.innerWidth / window.innerHeight;
     this.camera.updateProjectionMatrix();
-    this.threejs.setSize(window.innerWidth, window.innerHeight);
+    this.renderer.setSize(window.innerWidth, window.innerHeight);
   }
 
-  RAF() {
-    requestAnimationFrame((t) => {
-      if (this.previousRAF === -1) {
-        this.previousRAF = t;
-      }
+  render(world: World): void {
+    this.delta = this.clock.getDelta();
 
-      this.RAF();
-
-      this.threejs.render(this.scene, this.camera);
-      this.Step(t - this.previousRAF);
-      this.previousRAF = t;
+    requestAnimationFrame(() => {
+      world.render(world);
     });
+
+    let timeStep = this.delta * this.timeScale;
+    timeStep = Math.min(timeStep, 1 / 30);
+
+    world.update(timeStep);
+
+    this.renderer.render(this.scene, this.camera);
   }
 
-  Step(timeElapsed) {
-    const timeElapsedS = timeElapsed * 0.001;
-    if (this.mixers) {
-      this.mixers.map((m) => m.update(timeElapsedS));
+  update(timeStep: number): void {
+    this.physicsWorld.step(this.physicsFrameTime, timeStep);
+
+    this.character.update(timeStep);
+
+    this.island.Update(timeStep);
+
+    if (this.physicsDebug) {
+      this.cannonDebugger.update();
     }
 
-    if (this.character) {
-      this.character.update(timeElapsedS - this.previousRAF);
-    }
-
-    if (this.island) {
-      this.island.Update(timeElapsedS);
-    }
-
-    if (this.physicsWorld) {
-      this.physicsWorld.step(timeElapsedS);
-      if (this.physicsDebug) {
-        this.cannonDebugger.update();
-      }
-    }
+    this.timeScale = THREE.MathUtils.lerp(
+      this.timeScale,
+      this.timeScaleTarget,
+      0.2
+    );
   }
 }
