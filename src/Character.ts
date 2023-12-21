@@ -9,6 +9,7 @@ import * as CANNON from "cannon-es";
 import Tile from "./Tile";
 import { World } from "./Game";
 import * as Utils from "./Utils";
+import { ICharacterState } from "./CharacterStates/ICharacterState";
 
 const characterHeight = 0.6;
 
@@ -24,7 +25,7 @@ export class KeyBinding {
 }
 
 export class Character extends THREE.Object3D {
-  public state: CharacterState;
+  public state: ICharacterState;
   public mixer: THREE.AnimationMixer;
   public manager: THREE.LoadingManager;
   public actions: { [action: string]: KeyBinding };
@@ -51,6 +52,7 @@ export class Character extends THREE.Object3D {
   public defaultRotationSimulatorMass: number = 10;
   public viewVector: THREE.Vector3;
   public velocityIsAdditive: boolean = false;
+  public groundImpactData: THREE.Vector3 = new THREE.Vector3();
 
   // Raycasting
   public rayResult: CANNON.RaycastResult = new CANNON.RaycastResult();
@@ -136,9 +138,6 @@ export class Character extends THREE.Object3D {
       this.mixer = new THREE.AnimationMixer(this.model);
 
       this.manager = new THREE.LoadingManager();
-      this.manager.onLoad = () => {
-        this.SetAction("Idle");
-      };
 
       const OnLoad = (animName: string, anim: any) => {
         const clip = anim.animations[0];
@@ -264,10 +263,6 @@ export class Character extends THREE.Object3D {
     );
   }
 
-  public distanceToTile(currentTile: Tile): number {
-    return this.collider.body.position.distanceTo(currentTile.position);
-  }
-
   public distanceFromFeetToTopOfTileBelow(currentTile: Tile) {
     const topOfTile = new THREE.Vector3(
       currentTile.position.x,
@@ -349,9 +344,8 @@ export class Character extends THREE.Object3D {
     ).normalize();
   }
 
-  public setState(state: CharacterState): void {
+  public setState(state: ICharacterState): void {
     this.state = state;
-    this.state.onInputChange();
   }
 
   public setVelocityInfluence(x: number, y: number = x, z: number = x): void {
@@ -376,260 +370,5 @@ export class Character extends THREE.Object3D {
       return action.getClip().duration;
     }
     return -1;
-  }
-}
-
-class FiniteStateMachine {
-  public states;
-  public currentState;
-
-  constructor() {
-    this.states = {};
-    this.currentState = null;
-  }
-
-  AddState(name, type) {
-    this.states[name] = type;
-  }
-
-  GetState() {
-    return this.currentState;
-  }
-
-  SetState(name) {
-    const prevState = this.currentState;
-
-    if (prevState) {
-      if (prevState.Name == name) {
-        return;
-      }
-      prevState.Exit();
-    }
-
-    const state = new this.states[name](this);
-
-    this.currentState = state;
-    state.Enter(prevState);
-  }
-
-  Update(timeElapsed, input) {
-    if (this.currentState) {
-      this.currentState.Update(timeElapsed, input);
-    }
-  }
-}
-
-class CharacterFSM extends FiniteStateMachine {
-  public proxy;
-  constructor(proxy) {
-    super();
-    this.proxy = proxy;
-    this.Init();
-  }
-
-  private Init() {
-    this.AddState("Idle", IdleState);
-    this.AddState("Walk", WalkState);
-    this.AddState("Run", RunState);
-    this.AddState("Dance", DanceState);
-  }
-}
-
-class State {
-  public parent;
-  constructor(parent) {
-    this.parent = parent;
-  }
-
-  Enter(prevState) {}
-  Exit() {}
-  Update(timeElapsed, input) {}
-}
-
-//   //     let feetPosition = player.getFeetPosition();
-//   //     let tileBelow = island.getTileBelow(feetPosition.x, feetPosition.z);
-//   //     let distanceToTileBelow = feetPosition.y - tileBelow.getTileTopPosition().z;
-//   //     if (distanceToTileBelow < 0.01) {
-//   //       player.jump();
-//   //     }
-
-class DanceState extends State {
-  FinishedCallback = () => {};
-  CleanupCallback = () => {};
-
-  constructor(parent) {
-    super(parent);
-
-    this.FinishedCallback = () => {
-      this.Finished();
-    };
-  }
-
-  get Name() {
-    return "Dance";
-  }
-
-  Enter(prevState) {
-    const curAction = this.parent.proxy.animations["Dance"].action;
-    const mixer = curAction.getMixer();
-    mixer.addEventListener("finished", this.FinishedCallback);
-
-    if (prevState) {
-      const prevAction = this.parent.proxy.animations[prevState.Name].action;
-
-      curAction.reset();
-      curAction.setLoop(THREE.LoopOnce, 1);
-      curAction.clampWhenFinished = true;
-      curAction.crossFadeFrom(prevAction, 0.2, true);
-      curAction.play();
-    } else {
-      curAction.play();
-    }
-  }
-
-  Finished() {
-    this.Cleanup();
-    this.parent.SetState("Idle");
-  }
-
-  Cleanup() {
-    const action = this.parent.proxy.animations["Dance"].action;
-
-    action.getMixer().removeEventListener("finished", this.CleanupCallback);
-  }
-
-  Exit() {
-    this.Cleanup();
-  }
-
-  Update(_) {}
-}
-
-class WalkState extends State {
-  constructor(parent) {
-    super(parent);
-  }
-
-  get Name() {
-    return "Walk";
-  }
-
-  Enter(prevState) {
-    const curAction = this.parent.proxy.animations["Walk"].action;
-    if (prevState) {
-      const prevAction = this.parent.proxy.animations[prevState.Name].action;
-
-      curAction.enabled = true;
-
-      if (prevState.Name == "Run") {
-        const ratio =
-          curAction.getClip().duration / prevAction.getClip().duration;
-        curAction.time = prevAction.time * ratio;
-      } else {
-        curAction.time = 0.0;
-        curAction.setEffectiveTimeScale(1.0);
-        curAction.setEffectiveWeight(1.0);
-      }
-
-      curAction.crossFadeFrom(prevAction, 0.5, true);
-      curAction.play();
-    } else {
-      curAction.play();
-    }
-  }
-
-  Exit() {}
-
-  Update(timeElapsed, input) {
-    if (input.keys.forward || input.keys.backward) {
-      if (input.keys.shift) {
-        this.parent.SetState("Run");
-      }
-      return;
-    }
-
-    this.parent.SetState("Idle");
-  }
-}
-
-class RunState extends State {
-  constructor(parent) {
-    super(parent);
-  }
-
-  get Name() {
-    return "Run";
-  }
-
-  Enter(prevState) {
-    const curAction = this.parent.proxy.animations["Run"].action;
-    if (prevState) {
-      const prevAction = this.parent.proxy.animations[prevState.Name].action;
-
-      curAction.enabled = true;
-
-      if (prevState.Name == "Walk") {
-        const ratio =
-          curAction.getClip().duration / prevAction.getClip().duration;
-        curAction.time = prevAction.time * ratio;
-      } else {
-        curAction.time = 0.0;
-        curAction.setEffectiveTimeScale(1.0);
-        curAction.setEffectiveWeight(1.0);
-      }
-
-      curAction.crossFadeFrom(prevAction, 0.5, true);
-      curAction.play();
-    } else {
-      curAction.play();
-    }
-  }
-
-  Exit() {}
-
-  Update(timeElapsed, input) {
-    if (input.keys.forward || input.keys.backward) {
-      if (!input.keys.shift) {
-        this.parent.SetState("Walk");
-      }
-      return;
-    }
-
-    this.parent.SetState("Idle");
-  }
-}
-
-class IdleState extends State {
-  constructor(parent) {
-    super(parent);
-  }
-
-  get Name() {
-    return "Idle";
-  }
-
-  Enter(prevState) {
-    const IdleAction = this.parent.proxy.animations["Idle"].action;
-    if (prevState) {
-      const prevAction = this.parent.proxy.animations[prevState.Name].action;
-      IdleAction.time = 0.0;
-      IdleAction.enabled = true;
-      IdleAction.setEffectiveTimeScale(1.0);
-      IdleAction.setEffectiveWeight(1.0);
-      IdleAction.crossFadeFrom(prevAction, 0.5, true);
-      IdleAction.play();
-    } else {
-      IdleAction.play();
-    }
-  }
-
-  Exit() {}
-
-  Update(_, input) {
-    if (input.keys.forward || input.keys.backward) {
-      this.parent.SetState("Walk");
-    } else if (input.keys.space) {
-      this.parent.SetState("Dance");
-    }
   }
 }

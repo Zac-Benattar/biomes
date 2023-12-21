@@ -4,7 +4,7 @@ import Biome from "./BiomeController";
 import { BiomeType, BiomeParameters } from "./BiomeController";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
 import { FBXLoader } from "three/examples/jsm/loaders/FBXLoader";
-import { Character, ControlsParams } from "./Character";
+import { Character } from "./Character";
 import * as CANNON from "cannon-es";
 import CannonDebugger from "cannon-es-debugger";
 
