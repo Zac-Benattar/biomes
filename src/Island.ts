@@ -57,7 +57,7 @@ class Layer {
   }
 }
 
-export class BiomeParameters {
+export class IslandParameters {
   scene: THREE.Scene;
   biome: BiomeType;
   seed: number = Math.random();
@@ -87,8 +87,8 @@ export class BiomeGenerationParameters {
   layers: Layer[];
 }
 
-export default class Biome {
-  private Params: BiomeParameters;
+export default class Island {
+  private Params: IslandParameters;
   private GenerationParams: BiomeGenerationParameters;
   private tiles: Array<Tile>;
   private items: Array<Item>;
@@ -106,11 +106,11 @@ export default class Biome {
   private orbitSpeed: number = 0.05; // 0.05 for production
   public lightDebug: boolean;
 
-  constructor(params: BiomeParameters) {
+  constructor(params: IslandParameters) {
     this.Init(params);
   }
 
-  private Init(params: BiomeParameters) {
+  private Init(params: IslandParameters) {
     this.Params = params;
     this.tiles = [];
     this.items = [];

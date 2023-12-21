@@ -1,7 +1,7 @@
 import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
-import Biome from "./BiomeController";
-import { BiomeType, BiomeParameters } from "./BiomeController";
+import Island from "./Island";
+import { BiomeType, IslandParameters } from "./Island";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
 import { FBXLoader } from "three/examples/jsm/loaders/FBXLoader";
 import { Character } from "./Character";
@@ -13,13 +13,13 @@ export class World {
   private camera: THREE.PerspectiveCamera;
   public scene: THREE.Scene;
   public physicsWorld: CANNON.World;
-  private island: Biome;
+  private island: Island;
   private character: Character;
   private mixers: THREE.AnimationMixer[];
   private previousRAF: number;
   private cannonDebugger: typeof CannonDebugger;
   private seed: number = 0;
-  private physicsDebug: boolean = false;
+  private physicsDebug: boolean = true;
 
   constructor() {
     this.Init();
@@ -108,13 +108,13 @@ export class World {
   }
 
   CreateIsland() {
-    const params = new BiomeParameters(
+    const params = new IslandParameters(
       this.scene,
-      BiomeType.Ocean,
+      BiomeType.Alpine,
       this.seed,
       15
     );
-    this.island = new Biome(params);
+    this.island = new Island(params);
   }
 
   LoadAnimatedModelAndPlay(path, modelFile, animFile, offset) {
