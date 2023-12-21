@@ -12,13 +12,14 @@ export class World {
   private threejs: THREE.WebGLRenderer;
   private camera: THREE.PerspectiveCamera;
   public scene: THREE.Scene;
+  public physicsWorld: CANNON.World;
   private island: Biome;
   private character: Character;
   private mixers: THREE.AnimationMixer[];
   private previousRAF: number;
-  public physicsWorld: CANNON.World;
   private cannonDebugger: typeof CannonDebugger;
   private seed: number = 0;
+  private physicsDebug: boolean = false;
 
   constructor() {
     this.Init();
@@ -60,6 +61,7 @@ export class World {
 
     this.seed = Math.random();
     this.CreateIsland();
+    this.island.lightDebug = false;
 
     this.mixers = [];
     this.previousRAF = -1;
@@ -80,7 +82,10 @@ export class World {
   CreatePhysicsWorld() {
     this.physicsWorld = new CANNON.World({
       gravity: new CANNON.Vec3(0, -9.81, 0),
+      broadphase: new CANNON.SAPBroadphase(this.physicsWorld),
+      allowSleep: true,
     });
+
     const groundBody = new CANNON.Body({
       mass: 0,
       type: CANNON.Body.STATIC,
@@ -91,6 +96,7 @@ export class World {
       new CANNON.Vec3(1, 0, 0),
       -Math.PI / 2
     );
+
     this.physicsWorld.addBody(groundBody);
 
     this.cannonDebugger = new CannonDebugger(this.scene, this.physicsWorld);
@@ -177,7 +183,7 @@ export class World {
       this.island.Update(timeElapsedS);
     }
 
-    if (this.physicsWorld) {
+    if (this.physicsDebug && this.physicsWorld) {
       this.physicsWorld.step(timeElapsedS);
       if (this.cannonDebugger) {
         this.cannonDebugger.update();

@@ -104,7 +104,7 @@ export default class Biome {
   private previousRAF: number = 0;
   private orbitRadius: number = 100;
   private orbitSpeed: number = 0.05; // 0.05 for production
-  private lightDebug: boolean = true;
+  public lightDebug: boolean;
 
   constructor(params: BiomeParameters) {
     this.Init(params);
