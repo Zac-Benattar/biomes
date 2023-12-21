@@ -104,7 +104,7 @@ export default class Island {
   private previousRAF: number = 0;
   private orbitRadius: number = 100;
   private orbitSpeed: number = 0.05; // 0.05 for production
-  public lightDebug: boolean;
+  private lightDebug: boolean;
 
   constructor(params: IslandParameters) {
     this.Init(params);
@@ -1001,12 +1001,6 @@ export default class Island {
     this.sun.shadow.camera.far = this.orbitRadius + this.Params.radius * 1.3;
     this.sun.target.position.set(0, 0, 0);
     scene.add(this.sun);
-    if (this.lightDebug) {
-      this.sunHelper = new THREE.DirectionalLightHelper(this.sun, 5);
-      scene.add(this.sunHelper);
-      this.sunShadowHelper = new THREE.CameraHelper(this.sun.shadow.camera);
-      scene.add(this.sunShadowHelper);
-    }
 
     this.moonAngle = this.sunAngle + Math.PI;
     this.moon = new THREE.DirectionalLight(0xffffff, 1);
@@ -1019,11 +1013,28 @@ export default class Island {
     this.moon.shadow.camera.far = this.orbitRadius + this.Params.radius * 1.3;
     this.moon.target.position.set(0, 0, 0);
     scene.add(this.moon);
+  }
+
+  public toggleLightDebug(): void {
+    this.lightDebug = !this.lightDebug;
     if (this.lightDebug) {
+      this.sunHelper = new THREE.DirectionalLightHelper(this.sun, 5);
+      this.Params.scene.add(this.sunHelper);
+      this.sunShadowHelper = new THREE.CameraHelper(this.sun.shadow.camera);
+      this.Params.scene.add(this.sunShadowHelper);
       this.moonHelper = new THREE.DirectionalLightHelper(this.moon, 5);
-      scene.add(this.moonHelper);
+      this.Params.scene.add(this.moonHelper);
       this.moonShadowHelper = new THREE.CameraHelper(this.moon.shadow.camera);
-      scene.add(this.moonShadowHelper);
+      this.Params.scene.add(this.moonShadowHelper);
+      this.Params.scene.add(this.sunHelper);
+      this.Params.scene.add(this.sunShadowHelper);
+      this.Params.scene.add(this.moonHelper);
+      this.Params.scene.add(this.moonShadowHelper);
+    } else {
+      this.Params.scene.remove(this.sunHelper);
+      this.Params.scene.remove(this.sunShadowHelper);
+      this.Params.scene.remove(this.moonHelper);
+      this.Params.scene.remove(this.moonShadowHelper);
     }
   }
 
@@ -1044,13 +1055,15 @@ export default class Island {
     if (this.moonAngle > Math.PI * 2) this.moonAngle -= Math.PI * 2;
     this.SetLightAngle(this.moon, this.moonAngle);
 
+    this.sun.target.updateMatrixWorld();
+    this.moon.target.updateMatrixWorld();
+
+    this.sun.shadow.camera.updateProjectionMatrix();
+    this.moon.shadow.camera.updateProjectionMatrix();
+
     if (this.lightDebug) {
       this.sunHelper.update();
       this.moonHelper.update();
-      this.sun.target.updateMatrixWorld();
-      this.moon.target.updateMatrixWorld();
-      this.sun.shadow.camera.updateProjectionMatrix();
-      this.moon.shadow.camera.updateProjectionMatrix();
       this.sunShadowHelper.update();
       this.moonShadowHelper.update();
     }

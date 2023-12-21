@@ -30,7 +30,7 @@ export class Character extends THREE.Object3D {
   public manager: THREE.LoadingManager;
   public actions: { [action: string]: KeyBinding };
   public animations: any[]; // Walk, Run, Idle
-  public model: any;
+  public model: THREE.Group;
   public height: number = 0.6;
 
   // Movement
@@ -64,8 +64,8 @@ export class Character extends THREE.Object3D {
   public world: World;
 
   public physicsEnabled: boolean = true;
-  rotationSimulator: any;
-  velocitySimulator: any;
+  public rotationSimulator: any;
+  public velocitySimulator: any;
 
   constructor(world: World) {
     super();
@@ -95,12 +95,9 @@ export class Character extends THREE.Object3D {
       down: new KeyBinding("KeyS"),
       left: new KeyBinding("KeyA"),
       right: new KeyBinding("KeyD"),
-      run: new KeyBinding("ShiftLeft"),
       jump: new KeyBinding("Space"),
       use: new KeyBinding("KeyE"),
       enter: new KeyBinding("KeyF"),
-      enter_passenger: new KeyBinding("KeyG"),
-      seat_switch: new KeyBinding("KeyX"),
       primary: new KeyBinding("Mouse0"),
       secondary: new KeyBinding("Mouse1"),
     };
@@ -203,12 +200,16 @@ export class Character extends THREE.Object3D {
     this.orientation = new THREE.Vector3(0, 0, 1);
   }
 
-  public rotateModel(): void {
+  public syncModel(): void {
     this.lookAt(
       this.position.x + this.orientation.x,
       this.position.y + this.orientation.y,
       this.position.z + this.orientation.z
     );
+    this.model.translateX(this.collider.body.position.x - this.model.position.x);
+    this.model.translateY(this.collider.body.position.y - this.model.position.y - characterHeight);
+    this.model.translateZ(this.collider.body.position.z - this.model.position.z);
+    console.log(this.model.position);
   }
 
   public jump(): void {
@@ -223,10 +224,8 @@ export class Character extends THREE.Object3D {
     for (const action in this.actions) {
       if (this.actions.hasOwnProperty(action)) {
         const binding = this.actions[action];
-
-        if (_.includes(binding.eventCodes, code)) {
+        if (binding.eventCodes.indexOf(code) !== -1)
           this.triggerAction(action, pressed);
-        }
       }
     }
   }
@@ -248,6 +247,7 @@ export class Character extends THREE.Object3D {
       else action.justReleased = true;
 
       // hande action
+      this.state.onInputChange();
 
       // Reset the 'just' attributes
       action.justPressed = false;
@@ -274,11 +274,13 @@ export class Character extends THREE.Object3D {
   }
 
   public update(timeInSeconds: number) {
-    this.state.update(timeInSeconds);
+    this.state?.update(timeInSeconds);
 
-    if (this.physicsEnabled) this.springMovement(timeInSeconds);
-    if (this.physicsEnabled) this.springRotation(timeInSeconds);
-    if (this.physicsEnabled) this.rotateModel();
+    if (this.physicsEnabled) {
+      this.springMovement(timeInSeconds);
+      this.springRotation(timeInSeconds);
+      this.syncModel();
+    }
     if (this.mixer !== undefined) this.mixer.update(timeInSeconds);
 
     // Sync physics/graphics
@@ -290,7 +292,7 @@ export class Character extends THREE.Object3D {
       );
     } else {
       let newPos = new THREE.Vector3();
-      this.getWorldPosition(newPos);
+      // this.getWorldPosition(newPos);
 
       this.collider.body.position.copy(
         new CANNON.Vec3(newPos.x, newPos.y, newPos.z)
@@ -346,6 +348,7 @@ export class Character extends THREE.Object3D {
 
   public setState(state: ICharacterState): void {
     this.state = state;
+    this.state.onInputChange();
   }
 
   public setVelocityInfluence(x: number, y: number = x, z: number = x): void {

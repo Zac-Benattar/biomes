@@ -19,7 +19,7 @@ export class World {
   private previousRAF: number;
   private cannonDebugger: typeof CannonDebugger;
   private seed: number = 0;
-  private physicsDebug: boolean = true;
+  private physicsDebug: boolean = false;
 
   constructor() {
     this.Init();
@@ -44,6 +44,20 @@ export class World {
       false
     );
 
+    window.addEventListener("keydown", (e) => {
+      if (e.key === "p") {
+        this.EnablePhsyicsDebug();
+      } else if (e.key === "l") {
+        this.island.toggleLightDebug();
+      } else {
+        this.character.handleKeyboardEvent(e, e.code, true);
+      }
+    });
+
+    window.addEventListener("keyup", (e) => {
+      this.character.handleKeyboardEvent(e, e.code, false);
+    });
+
     const fov = 60;
     const aspect = 1920 / 1080;
     const near = 1.0;
@@ -61,7 +75,6 @@ export class World {
 
     this.seed = Math.random();
     this.CreateIsland();
-    this.island.lightDebug = false;
 
     this.mixers = [];
     this.previousRAF = -1;
@@ -77,6 +90,15 @@ export class World {
     );
 
     this.RAF();
+  }
+
+  EnablePhsyicsDebug() {
+    if (!this.physicsDebug) {
+      this.physicsDebug = true;
+      if (this.physicsDebug) {
+        this.cannonDebugger = new CannonDebugger(this.scene, this.physicsWorld);
+      }
+    }
   }
 
   CreatePhysicsWorld() {
@@ -98,8 +120,6 @@ export class World {
     );
 
     this.physicsWorld.addBody(groundBody);
-
-    this.cannonDebugger = new CannonDebugger(this.scene, this.physicsWorld);
 
     // TODO: combine all tiles to a single body
     this.island.GetCannonBodies().forEach((body) => {
@@ -176,16 +196,16 @@ export class World {
     }
 
     if (this.character) {
-      this.character.update(timeElapsedS);
+      this.character.update(timeElapsedS - this.previousRAF);
     }
 
     if (this.island) {
       this.island.Update(timeElapsedS);
     }
 
-    if (this.physicsDebug && this.physicsWorld) {
+    if (this.physicsWorld) {
       this.physicsWorld.step(timeElapsedS);
-      if (this.cannonDebugger) {
+      if (this.physicsDebug) {
         this.cannonDebugger.update();
       }
     }

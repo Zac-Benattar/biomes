@@ -30,8 +30,6 @@ export class StartWalkBase extends CharacterStateBase {
       this.character.setState(new Walk(this.character));
     }
 
-    
-
     this.fallInAir();
   }
 
