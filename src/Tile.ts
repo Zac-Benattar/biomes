@@ -1,6 +1,6 @@
 import * as THREE from "three";
 import * as BufferGeometryUtils from "three/examples/jsm/utils/BufferGeometryUtils.js";
-import Item, { Animal, AnimalType } from "./Items";
+import Item, { Animal, AnimalType, ItemParams } from "./Items";
 import { ItemType } from "./Items";
 import { BiomeType } from "./Island";
 import * as CANNON from "cannon-es";
@@ -388,8 +388,8 @@ export default class Tile {
   public getTileTopPosition(): THREE.Vector3 {
     return new THREE.Vector3(
       this.position.x,
+      this.height + 0.5,
       this.position.y,
-      this.height + 0.5
     );
   }
 
@@ -425,14 +425,7 @@ export default class Tile {
   }
 
   public SetGoal(animal: AnimalType): void {
-    this.item = new Animal(this.world, animal);
-    this.item.setPosition(this.getTileTopPosition());
-    this.item
-      .getLight()
-      .position.set(
-        this.getTileTopPosition().x,
-        this.getTileTopPosition().z,
-        this.getTileTopPosition().y
-      );
+    const itemParams = new ItemParams(this.world, this.getTileTopPosition());
+    this.item = new Animal(itemParams, animal);
   }
 }
