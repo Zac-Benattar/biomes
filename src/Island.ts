@@ -4,6 +4,7 @@ import { createNoise2D } from "simplex-noise";
 import Item, { AnimalType } from "./Items";
 import Tile, { TileFeature, TileTop, TileType } from "./Tile";
 import * as CANNON from "cannon-es";
+import { World } from "./World";
 
 export enum BiomeType {
   Jungle,
@@ -58,18 +59,18 @@ class Layer {
 }
 
 export class IslandParameters {
-  scene: THREE.Scene;
+  world: World;
   biome: BiomeType;
   seed: number = Math.random();
   radius: number = 15;
 
   constructor(
-    scene: THREE.Scene,
+    world: World,
     biome: BiomeType,
     seed: number,
     radius: number
   ) {
-    this.scene = scene;
+    this.world = world;
     this.biome = biome;
     this.seed = seed;
     this.radius = radius;
@@ -562,13 +563,13 @@ export default class Island {
         }
 
         this.tiles.push(
-          new Tile(height, position, tileType, feature, item, tiletop)
+          new Tile(this.Params.world, height, position, tileType, feature, item, tiletop)
         );
       }
     }
 
-    this.EnableLights(this.Params.scene);
-    this.addToScene(this.Params.scene);
+    this.EnableLights(this.Params.world.scene);
+    this.addToScene(this.Params.world.scene);
   }
 
   public Update(t: number): void {
@@ -764,120 +765,6 @@ export default class Island {
   }
 
   public addToScene(scene): void {
-    let stoneGeo: THREE.BufferGeometry = new THREE.BoxGeometry(0, 0, 0);
-    let dirtGeo: THREE.BufferGeometry = new THREE.BoxGeometry(0, 0, 0);
-    let dirt2Geo: THREE.BufferGeometry = new THREE.BoxGeometry(0, 0, 0);
-    let sandGeo: THREE.BufferGeometry = new THREE.BoxGeometry(0, 0, 0);
-    let grassGeo: THREE.BufferGeometry = new THREE.BoxGeometry(0, 0, 0);
-    let martianSandGeo: THREE.BufferGeometry = new THREE.BoxGeometry(0, 0, 0);
-    let snowGeo: THREE.BufferGeometry = new THREE.BoxGeometry(0, 0, 0);
-    let features: THREE.Group = new THREE.Group();
-    let items: THREE.Group = new THREE.Group();
-
-    for (let i = 0; i < this.tiles.length; i++) {
-      let tileGeometries = this.tiles[i].getHexTileGeometry();
-      stoneGeo = BufferGeometryUtils.mergeGeometries([
-        stoneGeo,
-        tileGeometries[0],
-      ]);
-      dirtGeo = BufferGeometryUtils.mergeGeometries([
-        dirtGeo,
-        tileGeometries[1],
-      ]);
-      dirt2Geo = BufferGeometryUtils.mergeGeometries([
-        dirt2Geo,
-        tileGeometries[2],
-      ]);
-      sandGeo = BufferGeometryUtils.mergeGeometries([
-        sandGeo,
-        tileGeometries[3],
-      ]);
-      grassGeo = BufferGeometryUtils.mergeGeometries([
-        grassGeo,
-        tileGeometries[4],
-      ]);
-      martianSandGeo = BufferGeometryUtils.mergeGeometries([
-        martianSandGeo,
-        tileGeometries[5],
-      ]);
-      snowGeo = BufferGeometryUtils.mergeGeometries([
-        snowGeo,
-        tileGeometries[6],
-      ]);
-
-      features.add(tileGeometries[7]);
-      items.add(tileGeometries[8]);
-    }
-
-    let stoneMesh = new THREE.Mesh(
-      stoneGeo,
-      new THREE.MeshStandardMaterial({
-        color: 0x888888,
-        flatShading: true,
-      })
-    );
-    stoneMesh.castShadow = true;
-    stoneMesh.receiveShadow = true;
-
-    let dirtMesh = new THREE.Mesh(
-      dirtGeo,
-      new THREE.MeshStandardMaterial({
-        color: 0x8b4513,
-        flatShading: true,
-      })
-    );
-    dirtMesh.castShadow = true;
-    dirtMesh.receiveShadow = true;
-
-    let dirt2Mesh = new THREE.Mesh(
-      dirt2Geo,
-      new THREE.MeshStandardMaterial({
-        color: 0x8b4543,
-        flatShading: true,
-      })
-    );
-    dirt2Mesh.castShadow = true;
-    dirt2Mesh.receiveShadow = true;
-
-    let sandMesh = new THREE.Mesh(
-      sandGeo,
-      new THREE.MeshStandardMaterial({
-        color: 0xfada5e,
-        flatShading: true,
-      })
-    );
-    sandMesh.castShadow = true;
-    sandMesh.receiveShadow = true;
-
-    let grassMesh = new THREE.Mesh(
-      grassGeo,
-      new THREE.MeshStandardMaterial({
-        color: 0x85bb65,
-        flatShading: true,
-      })
-    );
-    grassMesh.castShadow = true;
-    grassMesh.receiveShadow = true;
-
-    let martianSandMesh = new THREE.Mesh(
-      martianSandGeo,
-      new THREE.MeshStandardMaterial({
-        color: 0xf4a460,
-        flatShading: true,
-      })
-    );
-    martianSandMesh.castShadow = true;
-    martianSandMesh.receiveShadow = true;
-
-    let snowMesh = new THREE.Mesh(
-      snowGeo,
-      new THREE.MeshStandardMaterial({
-        color: 0xffffff,
-        flatShading: true,
-      })
-    );
-    snowMesh.receiveShadow = true;
-
     let waterMesh = new THREE.Mesh(
       new THREE.CylinderGeometry(
         this.Params.radius + 1,
@@ -935,35 +822,20 @@ export default class Island {
     );
     islandFloorMesh.position.set(0, this.GenerationParams.max_height * 0.02, 0);
 
-    let island = new THREE.Group();
-    island.add(
-      stoneMesh,
-      dirtMesh,
-      dirt2Mesh,
-      sandMesh,
-      grassMesh,
-      martianSandMesh,
-      snowMesh,
-      islandContainerMesh,
-      islandFloorMesh,
-      features,
-      items
-    );
+    scene.add(islandContainerMesh, islandFloorMesh);
 
     if (this.GenerationParams.water) {
-      island.add(waterMesh);
+      scene.add(waterMesh);
     }
 
     if (this.GenerationParams.clouds) {
-      island.add(this.GetClouds());
+      scene.add(this.GetClouds());
     }
 
     if (this.GenerationParams.weather === Weather.Snowy) {
       this.particles = this.GetSnow();
-      island.add(this.particles);
+      scene.add(this.particles);
     }
-
-    scene.add(island);
   }
 
   public GetTileBelow(x, y): Tile | null {
@@ -1024,22 +896,22 @@ export default class Island {
     this.lightDebug = !this.lightDebug;
     if (this.lightDebug) {
       this.sunHelper = new THREE.DirectionalLightHelper(this.sun, 5);
-      this.Params.scene.add(this.sunHelper);
+      this.Params.world.scene.add(this.sunHelper);
       this.sunShadowHelper = new THREE.CameraHelper(this.sun.shadow.camera);
-      this.Params.scene.add(this.sunShadowHelper);
+      this.Params.world.scene.add(this.sunShadowHelper);
       this.moonHelper = new THREE.DirectionalLightHelper(this.moon, 5);
-      this.Params.scene.add(this.moonHelper);
+      this.Params.world.scene.add(this.moonHelper);
       this.moonShadowHelper = new THREE.CameraHelper(this.moon.shadow.camera);
-      this.Params.scene.add(this.moonShadowHelper);
-      this.Params.scene.add(this.sunHelper);
-      this.Params.scene.add(this.sunShadowHelper);
-      this.Params.scene.add(this.moonHelper);
-      this.Params.scene.add(this.moonShadowHelper);
+      this.Params.world.scene.add(this.moonShadowHelper);
+      this.Params.world.scene.add(this.sunHelper);
+      this.Params.world.scene.add(this.sunShadowHelper);
+      this.Params.world.scene.add(this.moonHelper);
+      this.Params.world.scene.add(this.moonShadowHelper);
     } else {
-      this.Params.scene.remove(this.sunHelper);
-      this.Params.scene.remove(this.sunShadowHelper);
-      this.Params.scene.remove(this.moonHelper);
-      this.Params.scene.remove(this.moonShadowHelper);
+      this.Params.world.scene.remove(this.sunHelper);
+      this.Params.world.scene.remove(this.sunShadowHelper);
+      this.Params.world.scene.remove(this.moonHelper);
+      this.Params.world.scene.remove(this.moonShadowHelper);
     }
   }
 
@@ -1080,8 +952,5 @@ export default class Island {
       goalTile = this.tiles[Math.floor(Math.random() * this.tiles.length)];
       goalTile.SetGoal(AnimalType.Penguin);
     }
-
-    this.Params.scene.add(goalTile.GetItem().getMesh());
-    this.Params.scene.add(goalTile.GetItem().getLight());
   }
 }

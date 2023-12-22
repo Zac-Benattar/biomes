@@ -4,6 +4,8 @@ import Item, { Animal, AnimalType } from "./Items";
 import { ItemType } from "./Items";
 import { BiomeType } from "./Island";
 import * as CANNON from "cannon-es";
+import { World } from "./World";
+import { Collider } from "./Colliders";
 
 export enum TileType {
   Stone,
@@ -47,6 +49,9 @@ export enum TileTop {
 }
 
 export default class Tile {
+  world: World;
+  model: THREE.Group = new THREE.Group();
+  collider: Collider;
   height: number;
   position: THREE.Vector3;
   tileType: TileType;
@@ -54,13 +59,21 @@ export default class Tile {
   item: Item;
   top: TileTop;
 
-  constructor(height, position, tile_type, feature, item, top) {
+  constructor(world, height, position, tile_type, feature, item, top) {
+    this.world = world;
     this.height = height;
     this.position = position;
     this.tileType = tile_type;
     this.feature = feature;
     this.item = item;
     this.top = top;
+
+    this.Init();
+  }
+
+  private Init(): void {
+    this.generateModel();
+    this.world.scene.add(this.model);
   }
 
   private hexGeometry(height, position): THREE.BufferGeometry {
@@ -70,47 +83,115 @@ export default class Tile {
     return geo;
   }
 
-  private snowGeometry(position): THREE.BufferGeometry {
+  private snowGeometry(position: THREE.Vector3): THREE.BufferGeometry {
     let geo = new THREE.CylinderGeometry(1, 1, 0.1, 6, 1, false);
     geo.translate(position.x, position.z, position.y);
 
     return geo;
   }
 
-  //improve this
-  public getHexTileGeometry(): any[] {
+  private generateModel(): void {
     let geo = this.hexGeometry(this.height, this.position);
-    let stoneGeo: THREE.BufferGeometry = new THREE.BoxGeometry(0, 0, 0);
-    let dirtGeo: THREE.BufferGeometry = new THREE.BoxGeometry(0, 0, 0);
-    let dirt2Geo: THREE.BufferGeometry = new THREE.BoxGeometry(0, 0, 0);
-    let sandGeo: THREE.BufferGeometry = new THREE.BoxGeometry(0, 0, 0);
-    let grassGeo: THREE.BufferGeometry = new THREE.BoxGeometry(0, 0, 0);
-    let martianSandGeo: THREE.BufferGeometry = new THREE.BoxGeometry(0, 0, 0);
-    let snowGeo: THREE.BufferGeometry = new THREE.BoxGeometry(0, 0, 0);
-    let featureMesh: THREE.Group = new THREE.Group();
-    let itemMesh: THREE.Group = new THREE.Group();
 
     if (this.tileType === TileType.Stone) {
+      let stoneGeo: THREE.BufferGeometry = new THREE.BoxGeometry(0, 0, 0);
       stoneGeo = BufferGeometryUtils.mergeGeometries([stoneGeo, geo]);
+      let stoneMesh = new THREE.Mesh(
+        stoneGeo,
+        new THREE.MeshStandardMaterial({
+          color: 0x888888,
+          flatShading: true,
+        })
+      );
+      stoneMesh.castShadow = true;
+      stoneMesh.receiveShadow = true;
+      this.model.add(stoneMesh);
     } else if (this.tileType === TileType.Dirt) {
+      let dirtGeo: THREE.BufferGeometry = new THREE.BoxGeometry(0, 0, 0);
       dirtGeo = BufferGeometryUtils.mergeGeometries([dirtGeo, geo]);
+      let dirtMesh = new THREE.Mesh(
+        dirtGeo,
+        new THREE.MeshStandardMaterial({
+          color: 0x8b4513,
+          flatShading: true,
+        })
+      );
+      dirtMesh.castShadow = true;
+      dirtMesh.receiveShadow = true;
+      this.model.add(dirtMesh);
     } else if (this.tileType === TileType.Dirt2) {
+      let dirt2Geo: THREE.BufferGeometry = new THREE.BoxGeometry(0, 0, 0);
       dirt2Geo = BufferGeometryUtils.mergeGeometries([dirt2Geo, geo]);
+      let dirt2Mesh = new THREE.Mesh(
+        dirt2Geo,
+        new THREE.MeshStandardMaterial({
+          color: 0x8b4543,
+          flatShading: true,
+        })
+      );
+      dirt2Mesh.castShadow = true;
+      dirt2Mesh.receiveShadow = true;
+      this.model.add(dirt2Mesh);
     } else if (this.tileType === TileType.Grass) {
+      let grassGeo: THREE.BufferGeometry = new THREE.BoxGeometry(0, 0, 0);
       grassGeo = BufferGeometryUtils.mergeGeometries([grassGeo, geo]);
+      let grassMesh = new THREE.Mesh(
+        grassGeo,
+        new THREE.MeshStandardMaterial({
+          color: 0x4f7942,
+          flatShading: true,
+        })
+      );
+      grassMesh.castShadow = true;
+      grassMesh.receiveShadow = true;
+      this.model.add(grassMesh);
     } else if (this.tileType === TileType.Sand) {
+      let sandGeo: THREE.BufferGeometry = new THREE.BoxGeometry(0, 0, 0);
       sandGeo = BufferGeometryUtils.mergeGeometries([sandGeo, geo]);
+      let sandMesh = new THREE.Mesh(
+        sandGeo,
+        new THREE.MeshStandardMaterial({
+          color: 0x8b4513,
+          flatShading: true,
+        })
+      );
+      sandMesh.castShadow = true;
+      sandMesh.receiveShadow = true;
+      this.model.add(sandMesh);
     } else if (this.tileType === TileType.MartianSand) {
-      sandGeo = BufferGeometryUtils.mergeGeometries([sandGeo, geo]);
+      let martianSandGeo: THREE.BufferGeometry = new THREE.BoxGeometry(0, 0, 0);
+      martianSandGeo = BufferGeometryUtils.mergeGeometries([martianSandGeo, geo]);
+      let martianSandMesh = new THREE.Mesh(
+        martianSandGeo,
+        new THREE.MeshStandardMaterial({
+          color: 0x8b4513,
+          flatShading: true,
+        })
+      );
+      martianSandMesh.castShadow = true;
+      martianSandMesh.receiveShadow = true;
+      this.model.add(martianSandMesh);
     }
 
     if (this.top === TileTop.Snow) {
+      let snowGeo: THREE.BufferGeometry = new THREE.BoxGeometry(0, 0, 0);
       let snowTopGeo = this.snowGeometry(
         new THREE.Vector3(this.position.x, this.position.y, this.height + 0.05)
       );
       snowGeo = BufferGeometryUtils.mergeGeometries([snowGeo, snowTopGeo]);
+      let snowMesh = new THREE.Mesh(
+        snowGeo,
+        new THREE.MeshStandardMaterial({
+          color: 0xffffff,
+          flatShading: true,
+        })
+      );
+      snowMesh.receiveShadow = true;
+      this.model.add(snowMesh);
     }
 
+  if (this.feature != TileFeature.None) {
+    let featureMesh: THREE.Group = new THREE.Group();
     if (this.feature === TileFeature.Rock) {
       featureMesh.add(this.rock(this.height, this.position));
     } else if (this.feature === TileFeature.AlpineTree) {
@@ -120,29 +201,14 @@ export default class Tile {
     } else if (this.feature === TileFeature.JungleTree) {
       featureMesh.add(this.jungleTree(this.height, this.position));
     }
-
+    
     featureMesh.castShadow = true;
     featureMesh.receiveShadow = true;
-
-    if (this.item != null) {
-      itemMesh.add(this.item.getMesh());
+    this.model.add(featureMesh);
     }
-
-    // return a list of geometries
-    return [
-      stoneGeo,
-      dirtGeo,
-      dirt2Geo,
-      sandGeo,
-      grassGeo,
-      martianSandGeo,
-      snowGeo,
-      featureMesh,
-      itemMesh,
-    ];
   }
 
-  private rock(height, position): THREE.Mesh {
+  private rock(height: number, position: THREE.Vector3): THREE.Mesh {
     const px = Math.random() * 0.5 - 0.25;
     const py = Math.random() * 0.5 - 0.25;
 
@@ -161,7 +227,7 @@ export default class Tile {
     return rockMesh;
   }
 
-  private alpineTree(height, position): THREE.Group {
+  private alpineTree(height: number, position: THREE.Vector3): THREE.Group {
     const treeHeight = Math.random() * 1 + 1.25;
 
     const trunkGeo = new THREE.CylinderGeometry(0.1, 0.2, treeHeight, 10);
@@ -218,7 +284,7 @@ export default class Tile {
     return tree;
   }
 
-  private basicTree(height, position): THREE.Group {
+  private basicTree(height: number, position: THREE.Vector3): THREE.Group {
     const treeHeight = Math.random() * 1 + 1.25;
 
     const trunkGeo = new THREE.CylinderGeometry(0.1, 0.2, treeHeight, 10);
@@ -269,7 +335,7 @@ export default class Tile {
     return tree;
   }
 
-  private jungleTree(height, position): THREE.Group {
+  private jungleTree(height: number, position: THREE.Vector3n): THREE.Group {
     const treeHeight = Math.random() * 3 + 3;
 
     const trunkGeo = new THREE.CylinderGeometry(0.3, 0.4, treeHeight, 10);
@@ -359,16 +425,8 @@ export default class Tile {
   }
 
   public SetGoal(animal: AnimalType): void {
-    this.item = new Animal(animal);
-    this.item
-      .getMesh()
-      .position.set(
-        this.getTileTopPosition().x,
-        this.getTileTopPosition().z,
-        this.getTileTopPosition().y
-      );
-    this.item.getMesh().castShadow = true;
-    this.item.getMesh().receiveShadow = true;
+    this.item = new Animal(this.world, animal);
+    this.item.setPosition(this.getTileTopPosition());
     this.item
       .getLight()
       .position.set(

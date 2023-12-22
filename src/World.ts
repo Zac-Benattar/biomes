@@ -122,7 +122,7 @@ export class World {
 
   CreateIsland(): void {
     const params = new IslandParameters(
-      this.scene,
+      this,
       BiomeType.Alpine,
       this.seed,
       15
