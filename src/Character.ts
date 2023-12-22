@@ -217,12 +217,11 @@ export class Character extends THREE.Object3D {
     );
 
     if (this.model === undefined) return; // Model loaded asynchronously, might not be available yet
-    
+
     this.model.position.x = this.collider.body.position.x;
     this.model.position.y = this.collider.body.position.y - characterHeight;
     this.model.position.z = this.collider.body.position.z;
-
-    console.log(this.quaternion)
+    
     this.model.quaternion.copy(this.quaternion);
   }
 
