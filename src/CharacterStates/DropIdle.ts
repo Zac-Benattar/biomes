@@ -15,7 +15,8 @@ export class DropIdle extends CharacterStateBase {
     this.character.velocitySimulator.mass = 7;
 
     this.character.setVelocityTarget(new THREE.Vector3(0, 0, 0));
-    this.playAnimation("drop_idle", 0.1);
+    // this.playAnimation("drop_idle", 0.1);
+    this.playAnimation("Idle", 0.1);
 
     if (this.anyDirection()) {
       this.character.setState(new StartWalkForward(character));

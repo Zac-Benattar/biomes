@@ -54,7 +54,7 @@ export class Character extends THREE.Object3D {
   public defaultRotationSimulatorMass: number = 10;
   public viewVector: THREE.Vector3;
   public velocityIsAdditive: boolean = false;
-  public groundImpactData: THREE.Vector3 = new THREE.Vector3();
+  public groundImpactVelocity: THREE.Vector3 = new THREE.Vector3();
 
   // Raycasting
   public rayResult: CANNON.RaycastResult = new CANNON.RaycastResult();
@@ -225,7 +225,7 @@ export class Character extends THREE.Object3D {
     this.model.quaternion.copy(this.quaternion);
   }
 
-  public jump(initialJumpSpeed): void {
+  public jump(initialJumpSpeed: number = -1): void {
     this.wantsToJump = true;
     this.initJumpSpeed = initialJumpSpeed;
   }
@@ -548,9 +548,9 @@ export class Character extends THREE.Object3D {
       body.velocity.z = newVelocity.z;
 
       // Save last in-air information
-      character.groundImpactData.x = body.velocity.x;
-      character.groundImpactData.y = body.velocity.y;
-      character.groundImpactData.z = body.velocity.z;
+      character.groundImpactVelocity.x = body.velocity.x;
+      character.groundImpactVelocity.y = body.velocity.y;
+      character.groundImpactVelocity.z = body.velocity.z;
     }
 
     // Jumping
@@ -560,7 +560,7 @@ export class Character extends THREE.Object3D {
         // Flatten velocity
         body.velocity.y = 0;
         let speed = Math.max(
-          character.velocitySimulator.position.length() * 4,
+          character.velocitySimulator.position.length() * character.movementSpeed,
           character.initJumpSpeed
         );
         body.velocity = Utils.cannonVector(
@@ -577,7 +577,8 @@ export class Character extends THREE.Object3D {
       }
 
       // Add positive vertical velocity
-      body.velocity.y += 4;
+      body.velocity.y += character.movementSpeed;
+      console.log(body.velocity.y);
       // Move above ground by 2x safe offset value
       body.position.y += character.raySafeOffset * 2;
       // Reset flag

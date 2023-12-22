@@ -9,7 +9,8 @@ export class JumpWalking extends CharacterStateBase {
     super(character);
 
     this.character.velocitySimulator.mass = 100;
-    this.playAnimation("jump_running", 0.03);
+    // this.playAnimation("jump_running", 0.03);
+    this.playAnimation("Walk", 0.03);
     this.alreadyJumped = false;
   }
 

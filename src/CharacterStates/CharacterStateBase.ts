@@ -84,10 +84,10 @@ export abstract class CharacterStateBase {
   }
 
   public setAppropriateDropState(): void {
-    if (this.character.groundImpactData.y < -6) {
+    if (this.character.groundImpactVelocity.y < -6) {
       this.character.setState(new DropRolling(this.character));
     } else if (this.anyDirection()) {
-      if (this.character.groundImpactData.y < -2) {
+      if (this.character.groundImpactVelocity.y < -2) {
         this.character.setState(new DropWalking(this.character));
       } else {
         this.character.setState(new Walk(this.character));
@@ -103,9 +103,6 @@ export abstract class CharacterStateBase {
       this.character.orientation,
       this.character.getCameraRelativeMovementVector()
     );
-    console.log(this.character.orientation);
-    console.log(this.character.getCameraRelativeMovementVector());
-    console.log(angle);
 
     if (angle > range * 0.8) {
       this.character.setState(new StartWalkBackLeft(this.character));

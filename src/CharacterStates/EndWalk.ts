@@ -7,7 +7,8 @@ export class EndWalk extends CharacterStateBase {
     super(character);
 
     this.character.setVelocityTarget(new THREE.Vector3(0, 0, 0));
-    this.animationLength = character.setAnimation("stop", 0.1);
+    // this.animationLength = character.setAnimation("stop", 0.1);
+    this.animationLength = character.setAnimation("Idle", 0.1);
   }
 
   public update(timeStep: number): void {
