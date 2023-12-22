@@ -27,6 +27,8 @@ export class StartWalkBase extends CharacterStateBase {
       this.character.setState(new Walk(this.character));
     }
 
+    this.character.setCameraRelativeOrientationTarget();
+
     this.fallInAir();
   }
 
@@ -43,6 +45,7 @@ export class StartWalkBase extends CharacterStateBase {
           this.character.orientation,
           this.character.orientationTarget
         );
+        console.log(angle);
 
         if (angle > Math.PI * 0.4) {
           this.character.setState(new IdleRotateLeft(this.character));

@@ -8,7 +8,7 @@ import CannonDebugger from "cannon-es-debugger";
 
 export class World {
   private renderer: THREE.WebGLRenderer;
-  private camera: THREE.PerspectiveCamera;
+  public camera: THREE.PerspectiveCamera;
   public scene: THREE.Scene;
   public physicsWorld: CANNON.World;
   private island: Island;

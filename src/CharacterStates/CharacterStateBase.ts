@@ -103,6 +103,9 @@ export abstract class CharacterStateBase {
       this.character.orientation,
       this.character.getCameraRelativeMovementVector()
     );
+    console.log(this.character.orientation);
+    console.log(this.character.getCameraRelativeMovementVector());
+    console.log(angle);
 
     if (angle > range * 0.8) {
       this.character.setState(new StartWalkBackLeft(this.character));

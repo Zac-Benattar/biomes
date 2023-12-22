@@ -43,7 +43,7 @@ export class Character extends THREE.Object3D {
   public acceleration: THREE.Vector3 = new THREE.Vector3(0, 0, 0);
   public decceleration: THREE.Vector3 = new THREE.Vector3(0, 0, 0);
 
-  public movementSpeed: number = 4.0;
+  public movementSpeed: number = 5.0;
   public angularVelocity: number = 0.0;
   public orientation: THREE.Vector3 = new THREE.Vector3(0, 0, 1);
   public orientationTarget: THREE.Vector3 = new THREE.Vector3(0, 0, 1);
@@ -205,21 +205,25 @@ export class Character extends THREE.Object3D {
     this.orientation = new THREE.Vector3(0, 0, 1);
   }
 
+  public setViewVector(vector: THREE.Vector3): void {
+    this.viewVector.copy(vector).normalize();
+  }
+
   public syncModel(): void {
     this.lookAt(
       this.position.x + this.orientation.x,
       this.position.y + this.orientation.y,
       this.position.z + this.orientation.z
     );
-    this.model.translateX(
-      this.collider.body.position.x - this.model.position.x
-    );
-    this.model.translateY(
-      this.collider.body.position.y - this.model.position.y - characterHeight
-    );
-    this.model.translateZ(
-      this.collider.body.position.z - this.model.position.z
-    );
+
+    if (this.model === undefined) return; // Model loaded asynchronously, might not be available yet
+    
+    this.model.position.x = this.collider.body.position.x;
+    this.model.position.y = this.collider.body.position.y - characterHeight;
+    this.model.position.z = this.collider.body.position.z;
+
+    console.log(this.quaternion)
+    this.model.quaternion.copy(this.quaternion);
   }
 
   public jump(initialJumpSpeed): void {
@@ -234,6 +238,12 @@ export class Character extends THREE.Object3D {
   ): void {
     for (const action in this.actions) {
       if (this.actions.hasOwnProperty(action)) {
+        // Update view vector so movement is relative to the camera
+        this.viewVector = new THREE.Vector3().subVectors(
+          this.position,
+          this.world.camera.position
+        );
+
         const binding = this.actions[action];
         if (binding.eventCodes.indexOf(code) !== -1)
           this.triggerAction(action, pressed);
