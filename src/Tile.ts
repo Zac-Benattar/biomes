@@ -1,7 +1,7 @@
 import * as THREE from "three";
 import * as BufferGeometryUtils from "three/examples/jsm/utils/BufferGeometryUtils.js";
-import Item, { Animal, AnimalType, ItemParams } from "./Items";
-import { ItemType } from "./Items";
+import Item, { Animal, AnimalType, ItemParams } from "./Item";
+import { ItemType } from "./Item";
 import { BiomeType } from "./Island";
 import * as CANNON from "cannon-es";
 import { World } from "./World";

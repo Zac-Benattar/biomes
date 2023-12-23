@@ -1,6 +1,6 @@
 import * as THREE from "three";
 import * as CANNON from "cannon-es";
-import { BoxCollider} from "./Colliders";
+import { BoxCollider } from "./Colliders";
 import { World } from "./World";
 
 export enum ItemType {
@@ -44,11 +44,19 @@ export default abstract class Item extends THREE.Object3D {
 
     this.collider = new BoxCollider({
       mass: 1,
-      position: new CANNON.Vec3(this.position.x, this.position.y, this.position.z),
+      position: new CANNON.Vec3(
+        this.position.x,
+        this.position.y,
+        this.position.z
+      ),
       width: 1,
       height: 1,
       depth: 1,
       friction: 0.5,
+    });
+
+    this.collider.body.addEventListener("collide", (e) => {
+      if (e.body.collisionFilterGroup === 2) this.world.onGoalReached();
     });
 
     this.setPosition(params.position);
@@ -60,8 +68,8 @@ export default abstract class Item extends THREE.Object3D {
   public setPosition(position: THREE.Vector3): void {
     this.model.position.copy(position);
     this.collider.body.position.copy(
-        new CANNON.Vec3(position.x, position.y, position.z)
-      );
+      new CANNON.Vec3(position.x, position.y, position.z)
+    );
   }
 
   public getLight(): THREE.PointLight {

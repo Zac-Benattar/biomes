@@ -13,7 +13,6 @@ export class World {
   public physicsWorld: CANNON.World;
   private island: Island;
   private character: Character;
-  private seed: number = 0;
   public physicsFrameRate: number = 60;
   public physicsFrameTime: number = 1 / this.physicsFrameRate;
   private timeScaleTarget: number = 1;
@@ -78,8 +77,13 @@ export class World {
     controls.dampingFactor = 0.05;
     controls.update();
 
-    this.seed = Math.random();
-    this.CreateIsland();
+    this.generateIsland();
+    this.render(this);
+  }
+
+  private generateIsland(): void {
+    const seed = Math.random();
+    this.CreateIsland(BiomeType.Alpine, seed);
 
     this.CreatePhysicsWorld();
 
@@ -90,15 +94,17 @@ export class World {
         this.character.getFeetPosition().z
       )
     );
+  }
 
-    this.render(this);
+  public onGoalReached(): void {
+    this.generateIsland();
   }
 
   public toggleShadows(): void {
     this.renderer.shadowMap.enabled = !this.renderer.shadowMap.enabled;
   }
 
-  EnablePhsyicsDebug(): void {
+  public EnablePhsyicsDebug(): void {
     if (!this.physicsDebug) {
       this.physicsDebug = true;
       if (this.physicsDebug) {
@@ -107,7 +113,7 @@ export class World {
     }
   }
 
-  CreatePhysicsWorld(): void {
+  private CreatePhysicsWorld(): void {
     this.physicsWorld = new CANNON.World({
       gravity: new CANNON.Vec3(0, -9.81, 0),
       broadphase: new CANNON.SAPBroadphase(this.physicsWorld),
@@ -120,23 +126,23 @@ export class World {
     });
   }
 
-  CreateIsland(): void {
+  private CreateIsland(biomeType: BiomeType, seed: number): void {
     const params = new IslandParameters(
       this,
-      BiomeType.Alpine,
-      this.seed,
+      biomeType,
+      seed,
       15
     );
     this.island = new Island(params);
   }
 
-  OnWindowResize(): void {
+  private OnWindowResize(): void {
     this.camera.aspect = window.innerWidth / window.innerHeight;
     this.camera.updateProjectionMatrix();
     this.renderer.setSize(window.innerWidth, window.innerHeight);
   }
 
-  render(world: World): void {
+  private render(world: World): void {
     this.delta = this.clock.getDelta();
 
     requestAnimationFrame(() => {
@@ -151,7 +157,7 @@ export class World {
     this.renderer.render(this.scene, this.camera);
   }
 
-  update(timeStep: number): void {
+  private update(timeStep: number): void {
     this.physicsWorld.step(this.physicsFrameTime, timeStep);
 
     this.character.update(timeStep);

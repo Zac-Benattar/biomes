@@ -1,7 +1,7 @@
 import * as THREE from "three";
 import * as BufferGeometryUtils from "three/examples/jsm/utils/BufferGeometryUtils.js";
 import { createNoise2D } from "simplex-noise";
-import Item, { AnimalType } from "./Items";
+import Item, { AnimalType } from "./Item";
 import Tile, { TileFeature, TileTop, TileType } from "./Tile";
 import * as CANNON from "cannon-es";
 import { World } from "./World";
@@ -64,12 +64,7 @@ export class IslandParameters {
   seed: number = Math.random();
   radius: number = 15;
 
-  constructor(
-    world: World,
-    biome: BiomeType,
-    seed: number,
-    radius: number
-  ) {
+  constructor(world: World, biome: BiomeType, seed: number, radius: number) {
     this.world = world;
     this.biome = biome;
     this.seed = seed;
@@ -563,7 +558,15 @@ export default class Island {
         }
 
         this.tiles.push(
-          new Tile(this.Params.world, height, position, tileType, feature, item, tiletop)
+          new Tile(
+            this.Params.world,
+            height,
+            position,
+            tileType,
+            feature,
+            item,
+            tiletop
+          )
         );
       }
     }
@@ -950,7 +953,7 @@ export default class Island {
     let goalTile: Tile | null = null;
     while (goalTile === null || goalTile === playerTile) {
       goalTile = this.tiles[Math.floor(Math.random() * this.tiles.length)];
-      goalTile.SetGoal(AnimalType.Penguin);
     }
+    goalTile.SetGoal(AnimalType.Penguin);
   }
 }
