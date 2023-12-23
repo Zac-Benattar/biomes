@@ -7,6 +7,9 @@ import * as CANNON from "cannon-es";
 import CannonDebugger from "cannon-es-debugger";
 
 export default class World {
+  private menu: HTMLElement;
+  private hud: HTMLElement;
+  private menuVisible: boolean = false;
   private renderer: THREE.WebGLRenderer;
   public camera: THREE.PerspectiveCamera;
   public scene: THREE.Scene;
@@ -19,6 +22,7 @@ export default class World {
   private timeScale: number = 1;
   private clock: THREE.Clock = new THREE.Clock();
   private delta: number = 0;
+  private animalsFound: number = 0;
 
   private cannonDebugger: typeof CannonDebugger;
   private physicsDebug: boolean = false;
@@ -28,6 +32,8 @@ export default class World {
   }
 
   private Init(): void {
+    this.createMenu();
+
     this.renderer = new THREE.WebGLRenderer({
       antialias: true,
     });
@@ -53,6 +59,8 @@ export default class World {
         this.island.toggleLightDebug();
       } else if (e.key === "h") {
         this.toggleShadows();
+      } else if (e.key === "Escape") {
+        this.toggleMenu();
       } else {
         this.character.handleKeyboardEvent(e, e.code, true);
       }
@@ -79,6 +87,79 @@ export default class World {
 
     this.generateIsland();
     this.render(this);
+    this.toggleMenu();
+    this.createHUD();
+  }
+
+  private toggleMenu(): void {
+    this.menuVisible = !this.menuVisible;
+    if (this.menuVisible) {
+      this.menu.style.display = "block";
+    } else {
+      this.menu.style.display = "none";
+    }
+  }
+
+  private createMenu(): void {
+    const menu = document.createElement("div");
+    menu.id = "menu";
+    menu.style.display = "none";
+    menu.style.position = "absolute";
+    menu.style.width = "200px";
+    menu.style.height = "200px";
+    menu.style.backgroundColor = "rgba(0, 0, 0, 0.8)";
+    menu.style.color = "#fff";
+    menu.style.padding = "10px";
+    menu.style.zIndex = "100";
+    menu.style.top = window.innerHeight / 2 - 200 / 2 + "px";
+    menu.style.left = window.innerWidth / 2 - 200 / 2 + "px";
+
+    const title = document.createElement("h1");
+    title.innerHTML = "Biomes";
+    title.style.margin = "0";
+    title.style.padding = "0";
+    menu.appendChild(title);
+
+    const description = document.createElement("p");
+    description.innerHTML =
+      "A game about exploring biomes and finding animals.";
+    description.style.marginTop = "0";
+    description.style.paddingTop = "0";
+    menu.appendChild(description);
+
+    const controls = document.createElement("p");
+    controls.innerHTML = "Controls: <br />" + "WASD - Move <br /> Space - Jump <br /> P - Enable Physics Debug <br /> L - Toggle Light Debug <br /> H - Toggle Shadows <br /> Esc - Toggle Menu";
+    controls.style.marginTop = "0";
+    controls.style.paddingTop = "0";
+    menu.appendChild(controls);
+
+    document.body.appendChild(menu);
+    this.menu = menu;
+  }
+
+  private createHUD(): void {
+    const hud = document.createElement("div");
+    hud.id = "hud";
+    hud.style.position = "absolute";
+    hud.style.backgroundColor = "rgba(0, 0, 0, 0.0)";
+    hud.style.color = "#fff";
+    hud.style.padding = "10px";
+    hud.style.zIndex = "100";
+    hud.style.top = "0";
+    hud.style.left = "0";
+
+    const title = document.createElement("h1");
+    title.innerHTML = "Animals Found: " + this.animalsFound;
+    title.style.margin = "0";
+    title.style.padding = "0";
+    hud.appendChild(title);
+
+    document.body.appendChild(hud);
+    this.hud = hud;
+  }
+
+  private updateHUD(): void {
+    this.hud.innerHTML = "Animals Found: " + this.animalsFound;
   }
 
   private generateIsland(): void {
@@ -97,7 +178,9 @@ export default class World {
   }
 
   public onGoalReached(): void {
+    this.animalsFound++;
     this.generateIsland();
+    this.updateHUD();
   }
 
   public toggleShadows(): void {
@@ -127,12 +210,7 @@ export default class World {
   }
 
   private CreateIsland(biomeType: BiomeType, seed: number): void {
-    const params = new IslandParameters(
-      this,
-      biomeType,
-      seed,
-      15
-    );
+    const params = new IslandParameters(this, biomeType, seed, 15);
     this.island = new Island(params);
   }
 
