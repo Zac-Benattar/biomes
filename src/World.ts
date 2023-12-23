@@ -6,7 +6,7 @@ import { Character } from "./Character";
 import * as CANNON from "cannon-es";
 import CannonDebugger from "cannon-es-debugger";
 
-export class World {
+export default class World {
   private renderer: THREE.WebGLRenderer;
   public camera: THREE.PerspectiveCamera;
   public scene: THREE.Scene;

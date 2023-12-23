@@ -1,6 +1,6 @@
-import Game from "./Game";
+import World from "./World";
 
-let APP: Game;
+let APP: World;
 
 window.addEventListener("DOMContentLoaded", () => {
   try {
@@ -9,7 +9,7 @@ window.addEventListener("DOMContentLoaded", () => {
       window.WebGLRenderingContext &&
       (canvas.getContext("webgl") || canvas.getContext("experimental-webgl"))
     ) {
-      APP = new Game();
+      APP = new World();
     }
   } catch (e) {
     console.log(e);
