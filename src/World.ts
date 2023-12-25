@@ -91,7 +91,16 @@ export default class World {
     this.createHUD();
   }
 
+  private togglePause(): void {
+    if (this.timeScaleTarget === 0) {
+      this.timeScaleTarget = 1;
+    } else {
+      this.timeScaleTarget = 0;
+    }
+  }
+
   private toggleMenu(): void {
+    this.togglePause();
     this.menuVisible = !this.menuVisible;
     if (this.menuVisible) {
       this.menu.style.display = "block";
