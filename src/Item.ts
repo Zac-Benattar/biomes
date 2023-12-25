@@ -1,7 +1,7 @@
 import * as THREE from "three";
 import * as CANNON from "cannon-es";
 import { BoxCollider } from "./Colliders";
-import { World } from "./World";
+import World from "./World";
 
 export enum ItemType {
   Animal,
@@ -55,7 +55,7 @@ export default abstract class Item extends THREE.Object3D {
       friction: 0.5,
     });
 
-    this.collider.body.addEventListener("collide", (e) => {
+    this.collider.body.addEventListener("collide", (e: CANNON.EventTarget) => {
       if (e.body.collisionFilterGroup === 2) this.world.onGoalReached();
     });
 

@@ -4,7 +4,7 @@ import { createNoise2D } from "simplex-noise";
 import Item, { AnimalType } from "./Item";
 import Tile, { TileFeature, TileTop, TileType } from "./Tile";
 import * as CANNON from "cannon-es";
-import { World } from "./World";
+import World from "./World";
 
 export enum BiomeType {
   Jungle,
@@ -593,7 +593,7 @@ export default class Island {
     }, this.GenerationParams.max_height);
   }
 
-  private TileToPosition(tileX, tileY): THREE.Vector2 {
+  private TileToPosition(tileX: number, tileY: number): THREE.Vector2 {
     return new THREE.Vector2((tileX + (tileY % 2) * 0.5) * 1.77, tileY * 1.535);
   }
 
@@ -767,7 +767,7 @@ export default class Island {
     }
   }
 
-  public addToScene(scene): void {
+  public addToScene(scene: THREE.Scene): void {
     let waterMesh = new THREE.Mesh(
       new THREE.CylinderGeometry(
         this.Params.radius + 1,
@@ -841,7 +841,7 @@ export default class Island {
     }
   }
 
-  public GetTileBelow(x, y): Tile | null {
+  public GetTileBelow(x: number, y: number): Tile | null {
     // Find the tile with the closest center x,y to the given position
     let closestTile: Tile | null = null;
     let closestDistance = 1000;

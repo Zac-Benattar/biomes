@@ -1,10 +1,8 @@
 import * as THREE from "three";
 import * as BufferGeometryUtils from "three/examples/jsm/utils/BufferGeometryUtils.js";
 import Item, { Animal, AnimalType, ItemParams } from "./Item";
-import { ItemType } from "./Item";
-import { BiomeType } from "./Island";
 import * as CANNON from "cannon-es";
-import { World } from "./World";
+import World from "./World";
 import { Collider } from "./Colliders";
 
 export enum TileType {
@@ -49,21 +47,21 @@ export enum TileTop {
 }
 
 export default class Tile {
-  world: World;
-  model: THREE.Group = new THREE.Group();
-  collider: Collider;
-  height: number;
-  position: THREE.Vector3;
-  tileType: TileType;
-  feature: TileFeature;
-  item: Item;
-  top: TileTop;
+  public world: World;
+  public model: THREE.Group = new THREE.Group();
+  public collider: Collider;
+  public height: number;
+  public position: THREE.Vector3;
+  public tileType: TileType;
+  public feature: TileFeature;
+  public item: Item;
+  public top: TileTop;
 
-  constructor(world, height, position, tile_type, feature, item, top) {
+  constructor(world: World, height: number, position: THREE.Vector3, tileType: TileType, feature: TileFeature, item: Item, top: TileTop) {
     this.world = world;
     this.height = height;
     this.position = position;
-    this.tileType = tile_type;
+    this.tileType = tileType;
     this.feature = feature;
     this.item = item;
     this.top = top;
@@ -76,7 +74,7 @@ export default class Tile {
     this.world.scene.add(this.model);
   }
 
-  private hexGeometry(height, position): THREE.BufferGeometry {
+  private hexGeometry(height: number, position: THREE.Vector3): THREE.BufferGeometry {
     let geo = new THREE.CylinderGeometry(1, 1, height, 6, 1, false);
     geo.translate(position.x, height / 2, position.y);
 
@@ -335,7 +333,7 @@ export default class Tile {
     return tree;
   }
 
-  private jungleTree(height: number, position: THREE.Vector3n): THREE.Group {
+  private jungleTree(height: number, position: THREE.Vector3): THREE.Group {
     const treeHeight = Math.random() * 3 + 3;
 
     const trunkGeo = new THREE.CylinderGeometry(0.3, 0.4, treeHeight, 10);
@@ -411,11 +409,6 @@ export default class Tile {
     // } else if (this.feature === TileFeature.AlpineTree) {
     //   featureBody = this.getAlpineTreeCannonBody();
     // }
-
-    let itemBody = new CANNON.Body();
-    if (this.item != null) {
-      itemBody = this.getItemCannonBody();
-    }
 
     return tileBody;
   }

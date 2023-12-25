@@ -1,5 +1,4 @@
 import * as CANNON from 'cannon';
-import * as THREE from 'three';
 import * as Utils from '../../core/FunctionLibrary';
 import { ICollider } from '../../interfaces/ICollider';
 
