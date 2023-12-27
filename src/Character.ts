@@ -2,8 +2,8 @@ import * as THREE from "three";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
 import { FBXLoader } from "three/examples/jsm/loaders/FBXLoader";
 import {
-  CapsuleCollider,
-  CapsuleColliderOptions,
+  CylinderCollider,
+  CylinderColliderOptions,
   CollisionGroups,
 } from "./Colliders";
 import { RelativeSpringSimulator } from "./physics/SpringSimulation/RelativeSpringSimulator";
@@ -15,7 +15,7 @@ import World from "./World";
 import * as Utils from "./Utils";
 import { ICharacterState } from "./CharacterStates/ICharacterState";
 
-const characterHeight = 0.6;
+const characterHeight = 1;
 
 export class KeyBinding {
   public eventCodes: string[];
@@ -47,7 +47,7 @@ export class Character extends THREE.Object3D {
   public angularVelocity: number = 0.0;
   public orientation: THREE.Vector3 = new THREE.Vector3(0, 0, 1);
   public orientationTarget: THREE.Vector3 = new THREE.Vector3(0, 0, 1);
-  public collider: CapsuleCollider;
+  public collider: CylinderCollider;
   public defaultVelocitySimulatorDamping: number = 0.8;
   public defaultVelocitySimulatorMass: number = 60;
   public defaultRotationSimulatorDamping: number = 0.5;
@@ -106,8 +106,8 @@ export class Character extends THREE.Object3D {
       secondary: new KeyBinding("Mouse1"),
     };
 
-    this.collider = new CapsuleCollider(
-      new CapsuleColliderOptions(1, new CANNON.Vec3(0, 10, 0), 0.6, 0.25, 0.3)
+    this.collider = new CylinderCollider(
+      new CylinderColliderOptions(1, new CANNON.Vec3(0, 10, 0), this.height, 0.25, 0.3)
     );
 
     // Raycast debug

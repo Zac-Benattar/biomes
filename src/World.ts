@@ -173,7 +173,7 @@ export default class World {
 
   private generateIsland(): void {
     const seed = Math.random();
-    this.CreateIsland(BiomeType.Alpine, seed);
+    this.CreateIsland(BiomeType.Ocean, seed);
 
     this.CreatePhysicsWorld();
 

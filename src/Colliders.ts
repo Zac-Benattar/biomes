@@ -16,7 +16,7 @@ export class BoxColliderOptions {
   public depth: number;
   public friction: number;
 
-  constructor(mass, position, width, height, depth, friction) {
+  constructor(mass: number, position: THREE.Vector3, width: number, height: number, depth: number, friction: number) {
     this.mass = mass;
     this.position = position;
     this.width = width;
@@ -26,14 +26,14 @@ export class BoxColliderOptions {
   }
 }
 
-export class CapsuleColliderOptions {
+export class CylinderColliderOptions {
   public mass: number;
   public position: CANNON.Vec3;
   public height: number;
   public radius: number;
   public friction: number;
 
-  constructor(mass, position, height, radius, friction) {
+  constructor(mass: number, position: number, height: number, radius: number, friction: number) {
     this.mass = mass;
     this.position = position;
     this.height = height;
@@ -50,10 +50,10 @@ export abstract class Collider {
   }
 }
 
-export class CapsuleCollider extends Collider{
-  public options: CapsuleColliderOptions;
+export class CylinderCollider extends Collider{
+  public options: CylinderColliderOptions;
 
-  constructor(options: CapsuleColliderOptions) {
+  constructor(options: CylinderColliderOptions) {
 
     const material = new CANNON.Material("capsuleMaterial");
     material.friction = options.friction;
@@ -70,11 +70,7 @@ export class CapsuleCollider extends Collider{
       CAPSULE_SEGMENTS
     );
 
-    const sphere = new CANNON.Sphere(options.radius);
-
     cannonBody.addShape(baseCyliner, new CANNON.Vec3(0, 0, 0));
-    cannonBody.addShape(sphere, new CANNON.Vec3(0, options.height / 2, 0));
-    cannonBody.addShape(sphere, new CANNON.Vec3(0, -options.height / 2, 0));
 
     cannonBody.allowSleep = false;
     cannonBody.fixedRotation = true;
