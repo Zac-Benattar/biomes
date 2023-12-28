@@ -35,6 +35,7 @@ export class Character extends THREE.Object3D {
   public actions: { [action: string]: KeyBinding };
   public model: THREE.Group;
   public height: number = 0.6;
+  public radius: number = 0.25;
 
   // Movement
   public velocity: THREE.Vector3 = new THREE.Vector3(0, 0, 0);
@@ -63,7 +64,7 @@ export class Character extends THREE.Object3D {
   public raySafeOffset: number = 0.03;
   public wantsToJump: boolean = false;
   public initJumpSpeed: number = -1;
-  public raycastBox: THREE.Mesh;
+  public raycastCylinder: THREE.Mesh;
 
   public world: World;
 
@@ -100,21 +101,18 @@ export class Character extends THREE.Object3D {
       left: new KeyBinding("KeyA"),
       right: new KeyBinding("KeyD"),
       jump: new KeyBinding("Space"),
-      use: new KeyBinding("KeyE"),
-      enter: new KeyBinding("KeyF"),
-      primary: new KeyBinding("Mouse0"),
-      secondary: new KeyBinding("Mouse1"),
     };
 
     this.collider = new CylinderCollider(
-      new CylinderColliderOptions(1, new CANNON.Vec3(0, 10, 0), this.height, 0.25, 0.3)
+      new CylinderColliderOptions(1, new CANNON.Vec3(0, 5, 0), this.height, this.radius, 0.3)
     );
 
     // Raycast debug
-    const boxGeo = new THREE.BoxGeometry(0.6, 0.6, 0.6);
-    const boxMat = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
-    this.raycastBox = new THREE.Mesh(boxGeo, boxMat);
-    this.raycastBox.visible = true;
+    const cylGeo = new THREE.CylinderGeometry(this.radius, this.radius, 0.6, 8);
+    const cylMat = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
+    this.raycastCylinder = new THREE.Mesh(cylGeo, cylMat);
+    this.raycastCylinder.visible = true;
+    this.world.scene.add(this.raycastCylinder);
 
     this.LoadModels();
 
@@ -219,7 +217,7 @@ export class Character extends THREE.Object3D {
     if (this.model === undefined) return; // Model loaded asynchronously, might not be available yet
 
     this.model.position.x = this.collider.body.position.x;
-    this.model.position.y = this.collider.body.position.y - characterHeight;
+    this.model.position.y = this.collider.body.position.y - characterHeight / 2;
     this.model.position.z = this.collider.body.position.z;
     
     this.model.quaternion.copy(this.quaternion);
@@ -391,14 +389,14 @@ export class Character extends THREE.Object3D {
     character.feetRaycast();
 
     if (character.rayHasHit) {
-      if (character.raycastBox.visible) {
-        character.raycastBox.position.x = character.rayResult.hitPointWorld.x;
-        character.raycastBox.position.y = character.rayResult.hitPointWorld.y;
-        character.raycastBox.position.z = character.rayResult.hitPointWorld.z;
+      if (character.raycastCylinder.visible) {
+        character.raycastCylinder.position.x = character.rayResult.hitPointWorld.x;
+        character.raycastCylinder.position.y = character.rayResult.hitPointWorld.y;
+        character.raycastCylinder.position.z = character.rayResult.hitPointWorld.z;
       }
     } else {
-      if (character.raycastBox.visible) {
-        character.raycastBox.position.set(
+      if (character.raycastCylinder.visible) {
+        character.raycastCylinder.position.set(
           body.position.x,
           body.position.y - character.rayCastLength - character.raySafeOffset,
           body.position.z
@@ -578,7 +576,6 @@ export class Character extends THREE.Object3D {
 
       // Add positive vertical velocity
       body.velocity.y += character.movementSpeed;
-      console.log(body.velocity.y);
       // Move above ground by 2x safe offset value
       body.position.y += character.raySafeOffset * 2;
       // Reset flag

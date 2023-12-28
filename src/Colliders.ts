@@ -1,11 +1,11 @@
 import * as CANNON from "cannon-es";
 
-const CAPSULE_SEGMENTS = 8;
+const CYLINDER_SEGMENTS = 8;
 
 export enum CollisionGroups {
-	Default = 1,
-	Characters = 2,
-	TrimeshColliders = 4
+  Default = 1,
+  Characters = 2,
+  TrimeshColliders = 4,
 }
 
 export class BoxColliderOptions {
@@ -16,7 +16,14 @@ export class BoxColliderOptions {
   public depth: number;
   public friction: number;
 
-  constructor(mass: number, position: THREE.Vector3, width: number, height: number, depth: number, friction: number) {
+  constructor(
+    mass: number,
+    position: THREE.Vector3,
+    width: number,
+    height: number,
+    depth: number,
+    friction: number
+  ) {
     this.mass = mass;
     this.position = position;
     this.width = width;
@@ -33,7 +40,13 @@ export class CylinderColliderOptions {
   public radius: number;
   public friction: number;
 
-  constructor(mass: number, position: number, height: number, radius: number, friction: number) {
+  constructor(
+    mass: number,
+    position: number,
+    height: number,
+    radius: number,
+    friction: number
+  ) {
     this.mass = mass;
     this.position = position;
     this.height = height;
@@ -50,27 +63,25 @@ export abstract class Collider {
   }
 }
 
-export class CylinderCollider extends Collider{
+export class CylinderCollider extends Collider {
   public options: CylinderColliderOptions;
 
   constructor(options: CylinderColliderOptions) {
-
-    const material = new CANNON.Material("capsuleMaterial");
+    const material = new CANNON.Material("cylinderMaterial");
     material.friction = options.friction;
-
-    let cannonBody = new CANNON.Body({
-      mass: options.mass,
-      material: material,
-    });
 
     const baseCyliner = new CANNON.Cylinder(
       options.radius,
       options.radius,
       options.height,
-      CAPSULE_SEGMENTS
+      CYLINDER_SEGMENTS
     );
 
-    cannonBody.addShape(baseCyliner, new CANNON.Vec3(0, 0, 0));
+    let cannonBody = new CANNON.Body({
+      mass: options.mass,
+      material: material,
+      shape: baseCyliner,
+    });
 
     cannonBody.allowSleep = false;
     cannonBody.fixedRotation = true;
