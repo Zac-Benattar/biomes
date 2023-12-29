@@ -15,8 +15,6 @@ import World from "./World";
 import * as Utils from "./Utils";
 import { ICharacterState } from "./CharacterStates/ICharacterState";
 
-const characterHeight = 1;
-
 export class KeyBinding {
   public eventCodes: string[];
   public isPressed: boolean = false;
@@ -34,8 +32,8 @@ export class Character extends THREE.Object3D {
   public manager: THREE.LoadingManager;
   public actions: { [action: string]: KeyBinding };
   public model: THREE.Group;
-  public height: number = 0.6;
-  public radius: number = 0.25;
+  public height: number = 1;
+  public radius: number = 0.15;
 
   // Movement
   public velocity: THREE.Vector3 = new THREE.Vector3(0, 0, 0);
@@ -112,7 +110,7 @@ export class Character extends THREE.Object3D {
     const cylMat = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
     this.raycastCylinder = new THREE.Mesh(cylGeo, cylMat);
     this.raycastCylinder.visible = true;
-    this.world.scene.add(this.raycastCylinder);
+    // this.world.scene.add(this.raycastCylinder);
 
     this.LoadModels();
 
@@ -132,7 +130,7 @@ export class Character extends THREE.Object3D {
   public LoadModels() {
     const loader = new FBXLoader();
     loader.setPath("./assets/models/zombie/");
-    loader.load("mremireh_o_desbiens.fbx", (fbx) => {
+    loader.load("mremireh_o_desbiens.fbx", (fbx: THREE.Group<THREE.Object3DEventMap>) => {
       fbx.scale.setScalar(0.005);
       fbx.position.set(0, 10, 0);
       fbx.traverse(function (object: any) {
@@ -154,13 +152,13 @@ export class Character extends THREE.Object3D {
 
       const loader = new FBXLoader(this.manager);
       loader.setPath("./assets/models/zombie/");
-      loader.load("walk.fbx", (a) => {
+      loader.load("walk.fbx", (a: any) => {
         OnLoad("Walk", a);
       });
-      loader.load("idle.fbx", (a) => {
+      loader.load("idle.fbx", (a: any) => {
         OnLoad("Idle", a);
       });
-      loader.load("dance.fbx", (a) => {
+      loader.load("dance.fbx", (a: any) => {
         OnLoad("Dance", a);
       });
     });
@@ -217,7 +215,7 @@ export class Character extends THREE.Object3D {
     if (this.model === undefined) return; // Model loaded asynchronously, might not be available yet
 
     this.model.position.x = this.collider.body.position.x;
-    this.model.position.y = this.collider.body.position.y - characterHeight / 2;
+    this.model.position.y = this.collider.body.position.y - this.height / 2;
     this.model.position.z = this.collider.body.position.z;
     
     this.model.quaternion.copy(this.quaternion);
@@ -270,7 +268,7 @@ export class Character extends THREE.Object3D {
   public getFeetPosition(): THREE.Vector3 {
     return new THREE.Vector3(
       this.collider.body.position.x,
-      this.collider.body.position.y - characterHeight,
+      this.collider.body.position.y - this.height,
       this.collider.body.position.z
     );
   }
@@ -421,12 +419,14 @@ export class Character extends THREE.Object3D {
       collisionFilterMask: CollisionGroups.Default,
       skipBackfaces: true,
     };
+    let rayResult: CANNON.RaycastResult = new CANNON.RaycastResult();
     this.rayHasHit = this.world.physicsWorld.raycastClosest(
       start,
       end,
       rayCastOptions,
-      this.rayResult
+      rayResult
     );
+    this.rayResult = rayResult;
   }
 
   public physicsPostStep(body: CANNON.Body, character: Character): void {

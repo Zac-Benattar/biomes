@@ -186,6 +186,7 @@ export default class World {
     );
   }
 
+  // fix
   public onGoalReached(): void {
     this.animalsFound++;
     this.generateIsland();

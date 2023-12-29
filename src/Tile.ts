@@ -391,6 +391,7 @@ export default class Tile {
     );
   }
 
+  //refactor
   public getCannonBodies(): CANNON.Body[] {
     let shape = new CANNON.Cylinder(1, 1, this.height, 6);
     let tileBody = new CANNON.Body({

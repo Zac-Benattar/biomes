@@ -18,7 +18,7 @@ export class BoxColliderOptions {
 
   constructor(
     mass: number,
-    position: THREE.Vector3,
+    position: CANNON.Vec3,
     width: number,
     height: number,
     depth: number,
@@ -42,7 +42,7 @@ export class CylinderColliderOptions {
 
   constructor(
     mass: number,
-    position: number,
+    position: CANNON.Vec3,
     height: number,
     radius: number,
     friction: number
