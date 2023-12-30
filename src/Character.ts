@@ -62,7 +62,6 @@ export class Character extends THREE.Object3D {
   public raySafeOffset: number = 0.03;
   public wantsToJump: boolean = false;
   public initJumpSpeed: number = -1;
-  public raycastCylinder: THREE.Mesh;
 
   public world: World;
 
@@ -112,19 +111,12 @@ export class Character extends THREE.Object3D {
       )
     );
 
-    // Raycast debug
-    const cylGeo = new THREE.CylinderGeometry(this.radius, this.radius, 0.6, 8);
-    const cylMat = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
-    this.raycastCylinder = new THREE.Mesh(cylGeo, cylMat);
-    this.raycastCylinder.visible = true;
-    // this.world.scene.add(this.raycastCylinder);
-
     this.LoadModels();
 
     this.setPhysicsEnabled(true);
 
     this.world.physicsWorld.addEventListener("preStep", () => {
-      this.physicsPreStep(this.collider.body, this);
+      this.physicsPreStep(this);
     });
 
     this.world.physicsWorld.addEventListener("postStep", () => {
@@ -393,34 +385,16 @@ export class Character extends THREE.Object3D {
     return -1;
   }
 
-  public physicsPreStep(body: CANNON.Body, character: Character): void {
+  public physicsPreStep(character: Character): void {
     character.feetRaycast();
-
-    if (character.rayHitTarget) {
-      if (character.raycastCylinder.visible) {
-        character.raycastCylinder.position.x =
-          character.rayResult.hitPointWorld.x;
-        character.raycastCylinder.position.y =
-          character.rayResult.hitPointWorld.y;
-        character.raycastCylinder.position.z =
-          character.rayResult.hitPointWorld.z;
-      }
-    } else {
-      if (character.raycastCylinder.visible) {
-        character.raycastCylinder.position.set(
-          body.position.x,
-          body.position.y - character.rayCastLength - character.raySafeOffset,
-          body.position.z
-        );
-      }
-    }
   }
 
   public feetRaycast(): void {
     let body = this.collider.body;
+
+    // Create raycast start points at each corner of the cylinder collider, end points a set distance below
     let startPoints: CANNON.Vec3[] = [];
     let endPoints: CANNON.Vec3[] = [];
-    // create raycast start and end points at each corner of the cylinder collider
     for (let i = 0; i < this.collider.options.segments; i++) {
       let angle = (i / this.collider.options.segments) * Math.PI * 2;
       let startPoint = new CANNON.Vec3(
@@ -429,9 +403,9 @@ export class Character extends THREE.Object3D {
         body.position.z + Math.cos(angle) * this.radius
       );
       let endPoint = new CANNON.Vec3(
-        body.position.x + Math.sin(angle) * this.radius,
-        body.position.y - this.rayCastLength - this.raySafeOffset,
-        body.position.z + Math.cos(angle) * this.radius
+        startPoint.x,
+        startPoint.y - this.rayCastLength - this.raySafeOffset,
+        startPoint.z
       );
       startPoints.push(startPoint);
       endPoints.push(endPoint);
@@ -442,43 +416,36 @@ export class Character extends THREE.Object3D {
       skipBackfaces: true,
     };
 
+    // Cast each ray
     let rayResults: CANNON.RaycastResult[] = [];
-    let rayTargetHits: boolean[] = [];
     let index = 0;
     for (index = 0; index < startPoints.length; index++) {
       let rayResult: CANNON.RaycastResult = new CANNON.RaycastResult();
-      let rayTargetHit = this.world.physicsWorld.raycastClosest(
+      this.world.physicsWorld.raycastClosest(
         startPoints[index],
         endPoints[index],
         rayCastOptions,
         rayResult
       );
-      rayTargetHits.push(rayTargetHit);
       rayResults.push(rayResult);
     }
 
-    // Find closest raycast hit
+    // Find closest raycast hit - we must be stood on that body
     let rayResult = rayResults.reduce((prev, curr) => {
       if (prev === undefined || prev.distance == -1) return curr;
       if (curr === undefined || curr.distance == -1) return prev;
       if (prev.distance < curr.distance) return prev;
       else return curr;
     });
-    console.log(rayResult.distance);
 
-    // if (rayResult.body) {
-    //   let tile: Tile = this.world.island.tiles.find(x => x.cannonBody == rayResult.body)
-    //   if (!tile.marked) {
-    //     tile.toggleMark();
-    //   }
-    // }
-
+    // Check whether we actually hit anything
     if (rayResult.distance > -1) {
       this.rayHitTarget = true;
     } else {
       this.rayHitTarget = false;
     }
 
+    // Set the rayresult for use in other methods
     this.rayResult = rayResult;
   }
 
@@ -550,14 +517,12 @@ export class Character extends THREE.Object3D {
       );
     }
 
-    // If we're hitting the ground, stick to ground
+    // Check if we have ground contact
     if (character.rayHitTarget) {
-      // Flatten velocity
+      // Stop falling
       newVelocity.y = 0;
 
-      console.log("ray hit");
-
-      // Move on top of moving objects
+      // Add velocity from moving objects
       if (character.rayResult.body.mass > 0) {
         let pointVelocity = new CANNON.Vec3();
         character.rayResult.body.getVelocityAtWorldPoint(
@@ -569,7 +534,7 @@ export class Character extends THREE.Object3D {
         );
       }
 
-      // Measure the normal vector offset from direct "up" vector and transform it into a matrix
+      // Measure normal offset from up vector and transform it into a matrix
       let up = new THREE.Vector3(0, 1, 0);
       let normal = new THREE.Vector3(
         character.rayResult.hitNormalWorld.x,
@@ -582,13 +547,11 @@ export class Character extends THREE.Object3D {
       // Rotate the velocity vector
       newVelocity.applyMatrix4(m);
 
-      // Compensate for gravity
-      // newVelocity.y -= body.world.physicsWorld.gravity.y / body.character.world.physicsFrameRate;
-
       // Apply velocity
       body.velocity.x = newVelocity.x;
       body.velocity.y = newVelocity.y;
       body.velocity.z = newVelocity.z;
+
       // Ground character
       body.position.y =
         character.rayResult.hitPointWorld.y +
@@ -606,7 +569,7 @@ export class Character extends THREE.Object3D {
       character.groundImpactVelocity.z = body.velocity.z;
     }
 
-    // Jumping
+    // Handle jumping
     if (character.wantsToJump) {
       // If initJumpSpeed is set
       if (character.initJumpSpeed > -1) {
