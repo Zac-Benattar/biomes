@@ -473,8 +473,10 @@ export class Character extends THREE.Object3D {
     //   }
     // }
 
-    if (rayResult.distance > -1){
+    if (rayResult.distance > -1) {
       this.rayHitTarget = true;
+    } else {
+      this.rayHitTarget = false;
     }
 
     this.rayResult = rayResult;
