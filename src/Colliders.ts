@@ -1,7 +1,5 @@
 import * as CANNON from "cannon-es";
 
-const CYLINDER_SEGMENTS = 8;
-
 export enum CollisionGroups {
   Default = 1,
   Characters = 2,
@@ -39,19 +37,22 @@ export class CylinderColliderOptions {
   public height: number;
   public radius: number;
   public friction: number;
+  public segments: number;
 
   constructor(
     mass: number,
     position: CANNON.Vec3,
     height: number,
     radius: number,
-    friction: number
+    friction: number,
+    segments: number
   ) {
     this.mass = mass;
     this.position = position;
     this.height = height;
     this.radius = radius;
     this.friction = friction;
+    this.segments = segments;
   }
 }
 
@@ -74,7 +75,7 @@ export class CylinderCollider extends Collider {
       options.radius,
       options.radius,
       options.height,
-      CYLINDER_SEGMENTS
+      options.segments
     );
 
     let cannonBody = new CANNON.Body({
@@ -91,6 +92,7 @@ export class CylinderCollider extends Collider {
     cannonBody.collisionFilterGroup = 2;
 
     super(cannonBody);
+    this.options = options;
   }
 }
 

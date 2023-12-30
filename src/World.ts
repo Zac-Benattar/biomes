@@ -14,7 +14,7 @@ export default class World {
   public camera: THREE.PerspectiveCamera;
   public scene: THREE.Scene;
   public physicsWorld: CANNON.World;
-  private island: Island;
+  public island: Island;
   private character: Character;
   public physicsFrameRate: number = 60;
   public physicsFrameTime: number = 1 / this.physicsFrameRate;

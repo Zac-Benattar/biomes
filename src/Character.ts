@@ -57,7 +57,7 @@ export class Character extends THREE.Object3D {
 
   // Raycasting
   public rayResult: CANNON.RaycastResult = new CANNON.RaycastResult();
-  public rayHasHit: boolean = false;
+  public rayHitTarget: boolean = false;
   public rayCastLength: number = 0.5;
   public raySafeOffset: number = 0.03;
   public wantsToJump: boolean = false;
@@ -102,7 +102,14 @@ export class Character extends THREE.Object3D {
     };
 
     this.collider = new CylinderCollider(
-      new CylinderColliderOptions(1, new CANNON.Vec3(0, 5, 0), this.height, this.radius, 0.3)
+      new CylinderColliderOptions(
+        1,
+        new CANNON.Vec3(0, 5, 0),
+        this.height,
+        this.radius,
+        0.3,
+        8
+      )
     );
 
     // Raycast debug
@@ -130,38 +137,41 @@ export class Character extends THREE.Object3D {
   public LoadModels() {
     const loader = new FBXLoader();
     loader.setPath("./assets/models/zombie/");
-    loader.load("mremireh_o_desbiens.fbx", (fbx: THREE.Group<THREE.Object3DEventMap>) => {
-      fbx.scale.setScalar(0.005);
-      fbx.position.set(0, 10, 0);
-      fbx.traverse(function (object: any) {
-        if (object.isMesh) object.castShadow = true;
-      });
+    loader.load(
+      "mremireh_o_desbiens.fbx",
+      (fbx: THREE.Group<THREE.Object3DEventMap>) => {
+        fbx.scale.setScalar(0.005);
+        fbx.position.set(0, 10, 0);
+        fbx.traverse(function (object: any) {
+          if (object.isMesh) object.castShadow = true;
+        });
 
-      this.model = fbx;
-      this.world.scene.add(this.model);
+        this.model = fbx;
+        this.world.scene.add(this.model);
 
-      this.mixer = new THREE.AnimationMixer(this.model);
+        this.mixer = new THREE.AnimationMixer(this.model);
 
-      this.manager = new THREE.LoadingManager();
+        this.manager = new THREE.LoadingManager();
 
-      const OnLoad = (animName: string, anim: any) => {
-        anim.animations[0].name = animName;
-        const clip = anim.animations[0];
-        this.animations.push(clip);
-      };
+        const OnLoad = (animName: string, anim: any) => {
+          anim.animations[0].name = animName;
+          const clip = anim.animations[0];
+          this.animations.push(clip);
+        };
 
-      const loader = new FBXLoader(this.manager);
-      loader.setPath("./assets/models/zombie/");
-      loader.load("walk.fbx", (a: any) => {
-        OnLoad("Walk", a);
-      });
-      loader.load("idle.fbx", (a: any) => {
-        OnLoad("Idle", a);
-      });
-      loader.load("dance.fbx", (a: any) => {
-        OnLoad("Dance", a);
-      });
-    });
+        const loader = new FBXLoader(this.manager);
+        loader.setPath("./assets/models/zombie/");
+        loader.load("walk.fbx", (a: any) => {
+          OnLoad("Walk", a);
+        });
+        loader.load("idle.fbx", (a: any) => {
+          OnLoad("Idle", a);
+        });
+        loader.load("dance.fbx", (a: any) => {
+          OnLoad("Dance", a);
+        });
+      }
+    );
   }
 
   public setPhysicsEnabled(enabled: boolean): void {
@@ -217,7 +227,7 @@ export class Character extends THREE.Object3D {
     this.model.position.x = this.collider.body.position.x;
     this.model.position.y = this.collider.body.position.y - this.height / 2;
     this.model.position.z = this.collider.body.position.z;
-    
+
     this.model.quaternion.copy(this.quaternion);
   }
 
@@ -386,11 +396,14 @@ export class Character extends THREE.Object3D {
   public physicsPreStep(body: CANNON.Body, character: Character): void {
     character.feetRaycast();
 
-    if (character.rayHasHit) {
+    if (character.rayHitTarget) {
       if (character.raycastCylinder.visible) {
-        character.raycastCylinder.position.x = character.rayResult.hitPointWorld.x;
-        character.raycastCylinder.position.y = character.rayResult.hitPointWorld.y;
-        character.raycastCylinder.position.z = character.rayResult.hitPointWorld.z;
+        character.raycastCylinder.position.x =
+          character.rayResult.hitPointWorld.x;
+        character.raycastCylinder.position.y =
+          character.rayResult.hitPointWorld.y;
+        character.raycastCylinder.position.z =
+          character.rayResult.hitPointWorld.z;
       }
     } else {
       if (character.raycastCylinder.visible) {
@@ -405,27 +418,65 @@ export class Character extends THREE.Object3D {
 
   public feetRaycast(): void {
     let body = this.collider.body;
-    const start = new CANNON.Vec3(
-      body.position.x,
-      body.position.y,
-      body.position.z
-    );
-    const end = new CANNON.Vec3(
-      body.position.x,
-      body.position.y - this.rayCastLength - this.raySafeOffset,
-      body.position.z
-    );
+    let startPoints: CANNON.Vec3[] = [];
+    let endPoints: CANNON.Vec3[] = [];
+    // create raycast start and end points at each corner of the cylinder collider
+    for (let i = 0; i < this.collider.options.segments; i++) {
+      let angle = (i / this.collider.options.segments) * Math.PI * 2;
+      let startPoint = new CANNON.Vec3(
+        body.position.x + Math.sin(angle) * this.radius,
+        body.position.y,
+        body.position.z + Math.cos(angle) * this.radius
+      );
+      let endPoint = new CANNON.Vec3(
+        body.position.x + Math.sin(angle) * this.radius,
+        body.position.y - this.rayCastLength - this.raySafeOffset,
+        body.position.z + Math.cos(angle) * this.radius
+      );
+      startPoints.push(startPoint);
+      endPoints.push(endPoint);
+    }
+
     const rayCastOptions = {
       collisionFilterMask: CollisionGroups.Default,
       skipBackfaces: true,
     };
-    let rayResult: CANNON.RaycastResult = new CANNON.RaycastResult();
-    this.rayHasHit = this.world.physicsWorld.raycastClosest(
-      start,
-      end,
-      rayCastOptions,
-      rayResult
-    );
+
+    let rayResults: CANNON.RaycastResult[] = [];
+    let rayTargetHits: boolean[] = [];
+    let index = 0;
+    for (index = 0; index < startPoints.length; index++) {
+      let rayResult: CANNON.RaycastResult = new CANNON.RaycastResult();
+      let rayTargetHit = this.world.physicsWorld.raycastClosest(
+        startPoints[index],
+        endPoints[index],
+        rayCastOptions,
+        rayResult
+      );
+      rayTargetHits.push(rayTargetHit);
+      rayResults.push(rayResult);
+    }
+
+    // Find closest raycast hit
+    let rayResult = rayResults.reduce((prev, curr) => {
+      if (prev === undefined || prev.distance == -1) return curr;
+      if (curr === undefined || curr.distance == -1) return prev;
+      if (prev.distance < curr.distance) return prev;
+      else return curr;
+    });
+    console.log(rayResult.distance);
+
+    // if (rayResult.body) {
+    //   let tile: Tile = this.world.island.tiles.find(x => x.cannonBody == rayResult.body)
+    //   if (!tile.marked) {
+    //     tile.toggleMark();
+    //   }
+    // }
+
+    if (rayResult.distance > -1){
+      this.rayHitTarget = true;
+    }
+
     this.rayResult = rayResult;
   }
 
@@ -498,9 +549,11 @@ export class Character extends THREE.Object3D {
     }
 
     // If we're hitting the ground, stick to ground
-    if (character.rayHasHit) {
+    if (character.rayHitTarget) {
       // Flatten velocity
       newVelocity.y = 0;
+
+      console.log("ray hit");
 
       // Move on top of moving objects
       if (character.rayResult.body.mass > 0) {
@@ -558,7 +611,8 @@ export class Character extends THREE.Object3D {
         // Flatten velocity
         body.velocity.y = 0;
         let speed = Math.max(
-          character.velocitySimulator.position.length() * character.movementSpeed,
+          character.velocitySimulator.position.length() *
+            character.movementSpeed,
           character.initJumpSpeed
         );
         body.velocity = Utils.cannonVector(

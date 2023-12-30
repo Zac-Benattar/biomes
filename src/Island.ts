@@ -86,7 +86,7 @@ export class BiomeGenerationParameters {
 export default class Island {
   private Params: IslandParameters;
   private GenerationParams: BiomeGenerationParameters;
-  private tiles: Array<Tile>;
+  public tiles: Array<Tile>;
   private items: Array<Item>;
   private particles: THREE.Points<THREE.BufferGeometry> | null;
   private sun: THREE.DirectionalLight;

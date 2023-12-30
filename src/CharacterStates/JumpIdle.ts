@@ -42,7 +42,7 @@ export class JumpIdle extends CharacterStateBase {
       } else {
         this.character.setVelocityInfluence(0.3, 0, 0.3);
       }
-    } else if (this.timer > 0.3 && this.character.rayHasHit) {
+    } else if (this.timer > 0.3 && this.character.rayHitTarget) {
       this.setAppropriateDropState();
     } else if (this.animationEnded(timeStep)) {
       this.character.setState(new Falling(this.character));

@@ -26,7 +26,7 @@ export class Falling extends CharacterStateBase {
         : new THREE.Vector3(0, 0, 0)
     );
 
-    if (this.character.rayHasHit) {
+    if (this.character.rayHitTarget) {
       this.setAppropriateDropState();
     }
   }

@@ -62,7 +62,7 @@ export abstract class CharacterStateBase {
   }
 
   public fallInAir(): void {
-    if (!this.character.rayHasHit) {
+    if (!this.character.rayHitTarget) {
       this.character.setState(new Falling(this.character));
     }
   }
