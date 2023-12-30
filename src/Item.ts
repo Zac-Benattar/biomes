@@ -56,7 +56,7 @@ export default abstract class Item extends THREE.Object3D {
     });
 
     this.collider.body.addEventListener("collide", (e: CANNON.EventTarget) => {
-      if (e.body.collisionFilterGroup === 2) this.world.onGoalReached();
+      if (!this.world.goalReached && e.body.collisionFilterGroup === 2) this.world.onGoalReached();
     });
 
     this.setPosition(params.position);

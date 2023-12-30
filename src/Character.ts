@@ -187,7 +187,6 @@ export class Character extends THREE.Object3D {
 
   public resetVelocity(): void {
     this.velocity = new THREE.Vector3(0, 0, 0);
-
     this.collider.body.velocity = new CANNON.Vec3(0, 0, 0);
   }
 
@@ -450,6 +449,18 @@ export class Character extends THREE.Object3D {
   }
 
   public physicsPostStep(body: CANNON.Body, character: Character): void {
+    let outsideIsland =
+      Math.pow(this.position.x, 2) + Math.pow(this.position.z, 2) >
+      Math.pow(this.world.island.Params.radius, 2);
+
+    // Reset character if outside of island or fell below y=0
+    if (outsideIsland || this.position.y < 0) {
+      this.setPosition(
+        new THREE.Vector3(0, this.world.island.getMaxHeight(), 0)
+      );
+      this.resetVelocity();
+    }
+
     let simulatedVelocity = new THREE.Vector3(
       body.velocity.x,
       body.velocity.y,
@@ -552,13 +563,13 @@ export class Character extends THREE.Object3D {
       body.velocity.y = newVelocity.y;
       body.velocity.z = newVelocity.z;
 
-      // Ground character
+      // Set character y position to the exact floor y value
       body.position.y =
         character.rayResult.hitPointWorld.y +
         character.rayCastLength +
         newVelocity.y / character.world.physicsFrameRate;
     } else {
-      // If we're in air
+      // We are in the air
       body.velocity.x = newVelocity.x;
       body.velocity.y = newVelocity.y;
       body.velocity.z = newVelocity.z;
@@ -573,7 +584,7 @@ export class Character extends THREE.Object3D {
     if (character.wantsToJump) {
       // If initJumpSpeed is set
       if (character.initJumpSpeed > -1) {
-        // Flatten velocity
+        // Cancel previous y velocity to standarise jump speed
         body.velocity.y = 0;
         let speed = Math.max(
           character.velocitySimulator.position.length() *
@@ -584,7 +595,7 @@ export class Character extends THREE.Object3D {
           character.orientation.clone().multiplyScalar(speed)
         );
       } else {
-        // Moving objects compensation
+        // Compensate for potential velocity of a moving floor
         let add = new CANNON.Vec3();
         character.rayResult.body.getVelocityAtWorldPoint(
           character.rayResult.hitPointWorld,

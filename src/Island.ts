@@ -84,10 +84,9 @@ export class BiomeGenerationParameters {
 }
 
 export default class Island {
-  private Params: IslandParameters;
+  public Params: IslandParameters;
   private GenerationParams: BiomeGenerationParameters;
   public tiles: Array<Tile>;
-  private items: Array<Item>;
   private particles: THREE.Points<THREE.BufferGeometry> | null;
   private sun: THREE.DirectionalLight;
   private moon: THREE.DirectionalLight;
@@ -109,7 +108,6 @@ export default class Island {
   private Init(params: IslandParameters) {
     this.Params = params;
     this.tiles = [];
-    this.items = [];
 
     switch (this.Params.biome) {
       case BiomeType.Alpine:
@@ -506,18 +504,18 @@ export default class Island {
         break;
     }
 
-    const noise2D = createNoise2D(this.RandomFunction(this.Params.seed)); // Create a seeded 2D noise function - gives values between -1 and 1
+    const noise2D = createNoise2D(this.randomFunction(this.Params.seed)); // Create a seeded 2D noise function - gives values between -1 and 1
 
     for (let y = -this.Params.radius; y < this.Params.radius; y++) {
       for (let x = -this.Params.radius; x < this.Params.radius; x++) {
-        let position = this.TileToPosition(x, y);
+        let position = this.tileToPosition(x, y);
         if (position.length() > this.Params.radius - 1) continue; // Skip tiles outside of the island radius
 
         let noise = (noise2D(x * 0.1, y * 0.1) + 1) / 2; // Normalize noise to 0-1
         noise = Math.pow(noise, this.GenerationParams.height_variance); // Smooth out the noise
         let height = Math.min(
-          noise * (this.GenerationParams.max_height - this.GetMinHeight()) +
-            this.GetMinHeight(),
+          noise * (this.GenerationParams.max_height - this.getMinHeight()) +
+            this.getMinHeight(),
           this.GenerationParams.max_height
         );
         let feature: TileFeature = TileFeature.None;
@@ -571,33 +569,33 @@ export default class Island {
       }
     }
 
-    this.EnableLights(this.Params.world.scene);
+    this.enableLights(this.Params.world.scene);
     this.addToScene(this.Params.world.scene);
   }
 
-  public Update(t: number): void {
-    this.UpdateParticles(t);
-    this.UpdateLightOrbits(t);
+  public update(t: number): void {
+    this.updateParticles(t);
+    this.updateLightOrbits(t);
     this.previousRAF += t;
   }
 
-  private GetMaxHeight(): number {
+  public getMaxHeight(): number {
     return this.GenerationParams.layers.reduce((max, layer) => {
       return Math.max(max, layer.min_height);
     }, 0);
   }
 
-  private GetMinHeight(): number {
+  private getMinHeight(): number {
     return this.GenerationParams.layers.reduce((min, layer) => {
       return Math.min(min, layer.min_height);
     }, this.GenerationParams.max_height);
   }
 
-  private TileToPosition(tileX: number, tileY: number): THREE.Vector2 {
+  private tileToPosition(tileX: number, tileY: number): THREE.Vector2 {
     return new THREE.Vector2((tileX + (tileY % 2) * 0.5) * 1.77, tileY * 1.535);
   }
 
-  private RandomFunction(seed: number): Function {
+  private randomFunction(seed: number): Function {
     // Constants (A and M) for the LCG algorithm
     const A = 1664525;
     const M = 2 ** 32;
@@ -621,7 +619,7 @@ export default class Island {
     this.moon.shadow.mapSize.height = height;
   }
 
-  private GetClouds(): THREE.Mesh<
+  private getClouds(): THREE.Mesh<
     THREE.BufferGeometry<THREE.NormalBufferAttributes>,
     THREE.MeshStandardMaterial,
     THREE.Object3DEventMap
@@ -675,7 +673,7 @@ export default class Island {
     return mesh;
   }
 
-  private GetSnow(): THREE.Points<THREE.BufferGeometry> {
+  private getSnow(): THREE.Points<THREE.BufferGeometry> {
     let particles;
     let positions: number[] = [];
     let velocities: number[] = [];
@@ -719,8 +717,8 @@ export default class Island {
     return particles;
   }
 
-  private UpdateParticles(t: number): void {
-    const min_height = this.GetMinHeight();
+  private updateParticles(t: number): void {
+    const min_height = this.getMinHeight();
     if (this.particles) {
       for (
         let i = 0;
@@ -832,16 +830,16 @@ export default class Island {
     }
 
     if (this.GenerationParams.clouds) {
-      scene.add(this.GetClouds());
+      scene.add(this.getClouds());
     }
 
     if (this.GenerationParams.weather === Weather.Snowy) {
-      this.particles = this.GetSnow();
+      this.particles = this.getSnow();
       scene.add(this.particles);
     }
   }
 
-  public GetTileBelow(x: number, y: number): Tile | null {
+  public getTileBelow(x: number, y: number): Tile | null {
     // Find the tile with the closest center x,y to the given position
     let closestTile: Tile | null = null;
     let closestDistance = 1000;
@@ -858,7 +856,7 @@ export default class Island {
     return closestTile;
   }
 
-  public GetCannonBodies(): CANNON.Body[] {
+  public getCannonBodies(): CANNON.Body[] {
     // return each tile as a cannon body
     let bodies: CANNON.Body[] = [];
     for (let i = 0; i < this.tiles.length; i++) {
@@ -867,14 +865,14 @@ export default class Island {
     return bodies;
   }
 
-  private EnableLights(scene: THREE.Scene): void {
+  private enableLights(scene: THREE.Scene): void {
     const ambientLight = new THREE.AmbientLight(0xffcb8e, 0.05);
     ambientLight.castShadow = false;
     scene.add(ambientLight);
 
     this.sunAngle = Math.random() * Math.PI * 2;
     this.sun = new THREE.DirectionalLight(0xffcb8e, 4);
-    this.SetLightAngle(this.sun, this.sunAngle);
+    this.setLightAngle(this.sun, this.sunAngle);
     this.sun.castShadow = true;
     this.sun.shadow.camera.zoom = 0.3;
     this.sun.shadow.camera.near = this.orbitRadius - this.Params.radius * 1.3;
@@ -884,7 +882,7 @@ export default class Island {
 
     this.moonAngle = this.sunAngle + Math.PI;
     this.moon = new THREE.DirectionalLight(0xffffff, 1);
-    this.SetLightAngle(this.moon, this.moonAngle);
+    this.setLightAngle(this.moon, this.moonAngle);
     this.moon.castShadow = true;
     this.moon.shadow.camera.zoom = 0.3;
     this.moon.shadow.camera.near = this.orbitRadius - this.Params.radius * 1.3;
@@ -918,7 +916,7 @@ export default class Island {
     }
   }
 
-  private SetLightAngle(light: THREE.DirectionalLight, angle: number): void {
+  private setLightAngle(light: THREE.DirectionalLight, angle: number): void {
     light.position.set(
       this.orbitRadius * Math.sin(angle),
       this.orbitRadius * Math.cos(angle),
@@ -926,14 +924,14 @@ export default class Island {
     );
   }
 
-  private UpdateLightOrbits(t: number) {
+  private updateLightOrbits(t: number) {
     this.sunAngle += t * this.orbitSpeed;
     if (this.sunAngle > Math.PI * 2) this.sunAngle -= Math.PI * 2;
-    this.SetLightAngle(this.sun, this.sunAngle);
+    this.setLightAngle(this.sun, this.sunAngle);
 
     this.moonAngle += t * this.orbitSpeed;
     if (this.moonAngle > Math.PI * 2) this.moonAngle -= Math.PI * 2;
-    this.SetLightAngle(this.moon, this.moonAngle);
+    this.setLightAngle(this.moon, this.moonAngle);
 
     this.sun.target.updateMatrixWorld();
     this.moon.target.updateMatrixWorld();
@@ -949,7 +947,7 @@ export default class Island {
     }
   }
 
-  public CreateGoal(playerTile: Tile): void {
+  public createGoal(playerTile: Tile): void {
     let goalTile: Tile | null = null;
     while (goalTile === null || goalTile === playerTile) {
       goalTile = this.tiles[Math.floor(Math.random() * this.tiles.length)];

@@ -23,6 +23,7 @@ export default class World {
   private clock: THREE.Clock = new THREE.Clock();
   private delta: number = 0;
   private animalsFound: number = 0;
+  public goalReached: boolean = false;
 
   private cannonDebugger: typeof CannonDebugger;
   private physicsDebug: boolean = false;
@@ -47,14 +48,14 @@ export default class World {
     window.addEventListener(
       "resize",
       () => {
-        this.OnWindowResize();
+        this.onWindowResize();
       },
       false
     );
 
     window.addEventListener("keydown", (e) => {
       if (e.key === "p") {
-        this.EnablePhsyicsDebug();
+        this.enablePhsyicsDebug();
       } else if (e.key === "l") {
         this.island.toggleLightDebug();
       } else if (e.key === "h") {
@@ -137,7 +138,9 @@ export default class World {
     menu.appendChild(description);
 
     const controls = document.createElement("p");
-    controls.innerHTML = "Controls: <br />" + "WASD - Move <br /> Space - Jump <br /> P - Enable Physics Debug <br /> L - Toggle Light Debug <br /> H - Toggle Shadows <br /> Esc - Toggle Menu";
+    controls.innerHTML =
+      "Controls: <br />" +
+      "WASD - Move <br /> Space - Jump <br /> P - Enable Physics Debug <br /> L - Toggle Light Debug <br /> H - Toggle Shadows <br /> Esc - Toggle Menu";
     controls.style.marginTop = "0";
     controls.style.paddingTop = "0";
     menu.appendChild(controls);
@@ -173,31 +176,44 @@ export default class World {
 
   private generateIsland(): void {
     const seed = Math.random();
-    this.CreateIsland(BiomeType.Ocean, seed);
+    this.createIsland(BiomeType.Ocean, seed);
 
-    this.CreatePhysicsWorld();
+    this.createPhysicsWorld();
 
     this.character = new Character(this);
-    this.island.CreateGoal(
-      this.island.GetTileBelow(
+    this.island.createGoal(
+      this.island.getTileBelow(
         this.character.getFeetPosition().x,
         this.character.getFeetPosition().z
       )
     );
   }
 
-  // fix
+  // fix - running multiple times when it should only be called once per goal found
   public onGoalReached(): void {
-    this.animalsFound++;
-    this.generateIsland();
-    this.updateHUD();
+    if (!this.goalReached) {
+      this.goalReached = true;
+      this.animalsFound++;
+
+      // Delete previous island
+      this.scene.clear();
+
+      while (this.physicsWorld.bodies.length > 0) {
+        this.physicsWorld.removeBody(this.physicsWorld.bodies[0]);
+      }
+
+      this.generateIsland();
+      this.physicsDebug = false;
+      this.updateHUD();
+      this.goalReached = false;
+    }
   }
 
   public toggleShadows(): void {
     this.renderer.shadowMap.enabled = !this.renderer.shadowMap.enabled;
   }
 
-  public EnablePhsyicsDebug(): void {
+  public enablePhsyicsDebug(): void {
     if (!this.physicsDebug) {
       this.physicsDebug = true;
       if (this.physicsDebug) {
@@ -206,7 +222,7 @@ export default class World {
     }
   }
 
-  private CreatePhysicsWorld(): void {
+  private createPhysicsWorld(): void {
     this.physicsWorld = new CANNON.World({
       gravity: new CANNON.Vec3(0, -9.81, 0),
       broadphase: new CANNON.SAPBroadphase(this.physicsWorld),
@@ -214,17 +230,17 @@ export default class World {
     });
 
     // TODO: combine all tiles to a single body
-    this.island.GetCannonBodies().forEach((body) => {
+    this.island.getCannonBodies().forEach((body) => {
       this.physicsWorld.addBody(body);
     });
   }
 
-  private CreateIsland(biomeType: BiomeType, seed: number): void {
+  private createIsland(biomeType: BiomeType, seed: number): void {
     const params = new IslandParameters(this, biomeType, seed, 15);
     this.island = new Island(params);
   }
 
-  private OnWindowResize(): void {
+  private onWindowResize(): void {
     this.camera.aspect = window.innerWidth / window.innerHeight;
     this.camera.updateProjectionMatrix();
     this.renderer.setSize(window.innerWidth, window.innerHeight);
@@ -250,7 +266,7 @@ export default class World {
 
     this.character.update(timeStep);
 
-    this.island.Update(timeStep);
+    this.island.update(timeStep);
 
     if (this.physicsDebug) {
       this.cannonDebugger.update();
