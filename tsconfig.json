@@ -5,6 +5,7 @@
 		"target": "ES6",
 		"allowJs": true,
 		"experimentalDecorators":true,
-		"moduleResolution": "NodeNext"
+		"moduleResolution": "NodeNext",
+		"resolveJsonModule": true,
 	}
 }

@@ -452,7 +452,7 @@ export class Character extends THREE.Object3D {
   public physicsPostStep(body: CANNON.Body, character: Character): void {
     let outsideIsland =
       Math.pow(this.position.x, 2) + Math.pow(this.position.z, 2) >
-      Math.pow(this.world.island.Params.radius, 2);
+      Math.pow(this.world.island.params.radius, 2);
 
     // Reset character if outside of island or fell below y=0
     if (outsideIsland || this.position.y < 0) {

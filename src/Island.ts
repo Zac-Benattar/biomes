@@ -5,77 +5,23 @@ import Item, { AnimalType } from "./Item";
 import Tile, { TileFeature, TileTop, TileType } from "./Tile";
 import * as CANNON from "cannon-es";
 import World from "./World";
-
-export enum BiomeType {
-  Jungle,
-  Forest,
-  Desert,
-  Alpine,
-  Savanna,
-  Ocean,
-  Mesa,
-  Tundra,
-  Swamp,
-  Plains,
-  Taiga, // Less snowy than Alpine
-  Beach,
-  Meadow,
-  MartianDesert,
-}
-
-class CloudParams {
-  count: number;
-  minHeight: number;
-  size: number;
-  opacity: number;
-}
-
-enum PrecipitationType {
-  Rain,
-  Snow,
-  None,
-}
-
-class WeatherParams {
-  precipitationType: PrecipitationType;
-  clouds: CloudParams;
-}
-
-class WaterParams {
-  height: number;
-  colour: THREE.Color;
-}
-
-class TileFeatureProbability {
-  feature: TileFeature;
-  probability: number;
-}
-
-class Layer {
-  min_height: number;
-  tileTypes: TileType[];
-  features: TileFeatureProbability[];
-}
+import { BiomeGenerationParams, BiomeType } from "./Biomes";
 
 export class IslandParams {
   world: World;
   biome: BiomeType;
+  biomeParams: BiomeGenerationParams;
   seed: number = Math.random();
   radius: number = 15;
-}
 
-export class BiomeGenerationParams {
-  max_height: number;
-  height_variance: number;
-  weather: WeatherParams;
-  water: WaterParams;
-  layers: Layer[];
+  constructor(world: World, biome: BiomeType, seed?: number, radius?: number) {
+    this.world = world;
+    this.biome = biome;
+  }
 }
 
 export default class Island {
-  public Params: IslandParams;
-  private GenerationParams: BiomeGenerationParams;
-  public weather: WeatherParams;
+  public params: IslandParams;
   public tiles: Array<Tile>;
   public goalTile: Tile | null = null;
   private particles: THREE.Points<THREE.BufferGeometry> | null;
@@ -97,31 +43,29 @@ export default class Island {
   }
 
   private Init(params: IslandParams) {
-    this.Params = params;
+    this.params = params;
     this.tiles = [];
 
-    // Add JSON reader here for biome generation params
+    const noise2D = createNoise2D(this.randomFunction(this.params.seed)); // Create a seeded 2D noise function - gives values between -1 and 1
 
-    const noise2D = createNoise2D(this.randomFunction(this.Params.seed)); // Create a seeded 2D noise function - gives values between -1 and 1
-
-    for (let z = -this.Params.radius; z < this.Params.radius; z++) {
-      for (let x = -this.Params.radius; x < this.Params.radius; x++) {
+    for (let z = -this.params.radius; z < this.params.radius; z++) {
+      for (let x = -this.params.radius; x < this.params.radius; x++) {
         let position = this.tileXZToPosition(x, z);
-        if (position.length() > this.Params.radius - 1) continue; // Skip tiles outside of the island radius
+        if (position.length() > this.params.radius - 1) continue; // Skip tiles outside of the island radius
 
         let noise = (noise2D(x * 0.1, z * 0.1) + 1) / 2; // Normalize noise to 0-1
-        noise = Math.pow(noise, this.GenerationParams.height_variance); // Smooth out the noise
+        noise = Math.pow(noise, this.params.biomeParams.heightVariance); // Smooth out the noise
         let height = Math.min(
-          noise * (this.GenerationParams.max_height - this.getMinHeight()) +
+          noise * (this.params.biomeParams.maxHeight - this.getMinHeight()) +
             this.getMinHeight(),
-          this.GenerationParams.max_height
+          this.params.biomeParams.maxHeight
         );
         let feature: TileFeature = TileFeature.None;
         let item: Item = null;
 
-        let tileLayer: Layer | undefined = this.GenerationParams.layers.find(
+        let tileLayer: Layer | undefined = this.params.biomeParams.layers.find(
           (layer) => {
-            return height >= layer.min_height;
+            return height >= layer.minHeight;
           }
         );
 
@@ -149,13 +93,13 @@ export default class Island {
           ];
 
         let tiletop: TileTop = TileTop.None;
-        if (this.Params.biome === BiomeType.Alpine) {
+        if (this.params.biome === BiomeType.Alpine) {
           tiletop = TileTop.Snow;
         }
 
         this.tiles.push(
           new Tile(
-            this.Params.world,
+            this.params.world,
             height,
             position,
             tileType,
@@ -167,8 +111,8 @@ export default class Island {
       }
     }
 
-    this.enableLights(this.Params.world.scene);
-    this.createIslandBase(this.Params.world.scene);
+    this.enableLights(this.params.world.scene);
+    this.createIslandBase(this.params.world.scene);
   }
 
   public update(t: number): void {
@@ -178,15 +122,15 @@ export default class Island {
   }
 
   public getMaxHeight(): number {
-    return this.GenerationParams.layers.reduce((max, layer) => {
-      return Math.max(max, layer.min_height);
+    return this.params.biomeParams.layers.reduce((max, layer) => {
+      return Math.max(max, layer.minHeight);
     }, 0);
   }
 
   private getMinHeight(): number {
-    return this.GenerationParams.layers.reduce((min, layer) => {
-      return Math.min(min, layer.min_height);
-    }, this.GenerationParams.max_height);
+    return this.params.biomeParams.layers.reduce((min, layer) => {
+      return Math.min(min, layer.minHeight);
+    }, this.params.biomeParams.maxHeight);
   }
 
   private tileXZToPosition(tileX: number, tileZ: number): THREE.Vector3 {
@@ -227,14 +171,7 @@ export default class Island {
     THREE.Object3DEventMap
   > {
     let geo: THREE.BufferGeometry = new THREE.SphereGeometry(0, 0, 0);
-    let min_clouds = 0;
-    if (this.GenerationParams.weather.clouds) {
-      min_clouds = 3;
-    }
-    let count = Math.max(
-      Math.floor(Math.pow(Math.random() * 5, 0.8)),
-      min_clouds
-    );
+    let count = this.params.biomeParams.weather.clouds.count;
 
     for (let i = 0; i < count; i++) {
       const puff1 = new THREE.SphereGeometry(1.2, 7, 7);
@@ -251,25 +188,17 @@ export default class Island {
         puff3,
       ]);
       cloudGeo.translate(
-        Math.random() * this.Params.radius - 5,
-        Math.random() * 5 + this.GenerationParams.weather.clouds.minHeight,
-        Math.random() * this.Params.radius - 5
+        Math.random() * this.params.radius - 5,
+        Math.random() * 5 + this.params.biomeParams.weather.clouds.minHeight,
+        Math.random() * this.params.radius - 5
       );
       cloudGeo.rotateY(Math.random() * Math.PI * 2);
 
       geo = BufferGeometryUtils.mergeGeometries([geo, cloudGeo]);
     }
 
-    // Set the cloud colour and opacity based on the weather
-    let colour = new THREE.Color(0xffffff);
-    let opacity = 0.9;
-    if (this.weather.precipitationType === PrecipitationType.Snow) {
-      colour = new THREE.Color(0xaaaaaa);
-      opacity = 0.7;
-    } else if (this.weather.precipitationType === PrecipitationType.Rain) {
-      colour = new THREE.Color(0x888888);
-      opacity = 0.95;
-    }
+    const colour = new THREE.Color("0x" + this.params.biomeParams.weather.clouds.colour);
+    const opacity = 0.9;
 
     const mesh = new THREE.Mesh(
       geo,
@@ -296,9 +225,9 @@ export default class Island {
 
     for (let i = 0; i < particleCount; i++) {
       positions.push(
-        Math.floor((Math.random() - 0.5) * (this.Params.radius * 1.7)),
+        Math.floor((Math.random() - 0.5) * (this.params.radius * 1.7)),
         Math.floor(Math.random() * this.getMaxHeight()),
-        Math.floor((Math.random() - 0.5) * (this.Params.radius * 1.7))
+        Math.floor((Math.random() - 0.5) * (this.params.radius * 1.7))
       );
       velocities.push(
         (Math.random() - 0.5) * 0.5,
@@ -340,9 +269,9 @@ export default class Island {
 
     for (let i = 0; i < particleCount; i++) {
       positions.push(
-        Math.floor((Math.random() - 0.5) * (this.Params.radius * 1.7)),
+        Math.floor((Math.random() - 0.5) * (this.params.radius * 1.7)),
         Math.floor(Math.random() * this.getMaxHeight()),
-        Math.floor((Math.random() - 0.5) * (this.Params.radius * 1.7))
+        Math.floor((Math.random() - 0.5) * (this.params.radius * 1.7))
       );
       velocities.push(
         (Math.random() - 0.5) * 0.5,
@@ -388,18 +317,18 @@ export default class Island {
 
         if (
           y < min_height ||
-          Math.abs(x) > this.Params.radius - 1 ||
-          Math.abs(z) > this.Params.radius - 1
+          Math.abs(x) > this.params.radius - 1 ||
+          Math.abs(z) > this.params.radius - 1
         ) {
           this.particles.geometry.attributes.position.array[i * 3] = Math.floor(
-            (Math.random() - 0.5) * (this.Params.radius * 1.7)
+            (Math.random() - 0.5) * (this.params.radius * 1.7)
           );
           this.particles.geometry.attributes.position.array[i * 3 + 1] =
             Math.floor(
-              Math.random() * 5 + this.GenerationParams.weather.clouds.minHeight
+              Math.random() * 5 + this.params.biomeParams.weather.clouds.minHeight
             );
           this.particles.geometry.attributes.position.array[i * 3 + 2] =
-            Math.floor((Math.random() - 0.5) * (this.Params.radius * 1.7));
+            Math.floor((Math.random() - 0.5) * (this.params.radius * 1.7));
           this.particles.geometry.attributes.velocity.array[i * 3] =
             (Math.random() - 0.5) * 0.5;
           this.particles.geometry.attributes.velocity.array[i * 3 + 1] =
@@ -425,9 +354,9 @@ export default class Island {
   public createIslandBase(scene: THREE.Scene): void {
     let waterMesh = new THREE.Mesh(
       new THREE.CylinderGeometry(
-        this.Params.radius + 1,
-        this.Params.radius + 1,
-        this.GenerationParams.water.height,
+        this.params.radius + 1,
+        this.params.radius + 1,
+        this.params.biomeParams.water.height,
         6
       ),
       new THREE.MeshPhysicalMaterial({
@@ -442,13 +371,13 @@ export default class Island {
         thickness: 1.5,
       })
     );
-    waterMesh.position.set(0, this.GenerationParams.water.height / 2, 0);
+    waterMesh.position.set(0, this.params.biomeParams.water.height / 2, 0);
 
     let islandContainerMesh = new THREE.Mesh(
       new THREE.CylinderGeometry(
-        this.Params.radius + 2,
-        this.Params.radius + 2,
-        this.GenerationParams.max_height * 0.25,
+        this.params.radius + 2,
+        this.params.radius + 2,
+        this.params.biomeParams.maxHeight * 0.25,
         1,
         6,
         true
@@ -461,15 +390,15 @@ export default class Island {
     );
     islandContainerMesh.position.set(
       0,
-      this.GenerationParams.max_height * 0.125,
+      this.params.biomeParams.maxHeight * 0.125,
       0
     );
 
     let islandFloorMesh = new THREE.Mesh(
       new THREE.CylinderGeometry(
-        this.Params.radius + 2,
-        this.Params.radius + 2,
-        this.GenerationParams.max_height * 0.1,
+        this.params.radius + 2,
+        this.params.radius + 2,
+        this.params.biomeParams.maxHeight * 0.1,
         6
       ),
       new THREE.MeshStandardMaterial({
@@ -478,25 +407,26 @@ export default class Island {
         side: THREE.DoubleSide,
       })
     );
-    islandFloorMesh.position.set(0, this.GenerationParams.max_height * 0.02, 0);
+    islandFloorMesh.position.set(0, this.params.biomeParams.maxHeight * 0.02, 0);
 
     scene.add(islandContainerMesh, islandFloorMesh);
 
-    if (this.GenerationParams.water) {
+    if (this.params.biomeParams.water) {
       scene.add(waterMesh);
     }
 
-    if (this.GenerationParams.weather.clouds) {
+    if (this.params.biomeParams.weather.clouds) {
       scene.add(this.getClouds());
     }
 
+    // Implement precipitation
     if (
-      this.GenerationParams.weather.precipitationType === PrecipitationType.Snow
+      this.params.biomeParams.weather.precipitation === PrecipitationType.Snow
     ) {
       this.particles = this.getSnow();
       scene.add(this.particles);
     } else if (
-      this.GenerationParams.weather.precipitationType === PrecipitationType.Rain
+      this.params.biomeParams.weather.precipitation === PrecipitationType.Rain
     ) {
       this.particles = this.getRain();
       scene.add(this.particles);
@@ -539,8 +469,8 @@ export default class Island {
     this.setLightAngle(this.sun, this.sunAngle);
     this.sun.castShadow = true;
     this.sun.shadow.camera.zoom = 0.3;
-    this.sun.shadow.camera.near = this.orbitRadius - this.Params.radius * 1.3;
-    this.sun.shadow.camera.far = this.orbitRadius + this.Params.radius * 1.3;
+    this.sun.shadow.camera.near = this.orbitRadius - this.params.radius * 1.3;
+    this.sun.shadow.camera.far = this.orbitRadius + this.params.radius * 1.3;
     this.sun.target.position.set(0, 0, 0);
     scene.add(this.sun);
 
@@ -549,8 +479,8 @@ export default class Island {
     this.setLightAngle(this.moon, this.moonAngle);
     this.moon.castShadow = true;
     this.moon.shadow.camera.zoom = 0.3;
-    this.moon.shadow.camera.near = this.orbitRadius - this.Params.radius * 1.3;
-    this.moon.shadow.camera.far = this.orbitRadius + this.Params.radius * 1.3;
+    this.moon.shadow.camera.near = this.orbitRadius - this.params.radius * 1.3;
+    this.moon.shadow.camera.far = this.orbitRadius + this.params.radius * 1.3;
     this.moon.target.position.set(0, 0, 0);
     scene.add(this.moon);
 
@@ -561,22 +491,22 @@ export default class Island {
     this.lightDebug = !this.lightDebug;
     if (this.lightDebug) {
       this.sunHelper = new THREE.DirectionalLightHelper(this.sun, 5);
-      this.Params.world.scene.add(this.sunHelper);
+      this.params.world.scene.add(this.sunHelper);
       this.sunShadowHelper = new THREE.CameraHelper(this.sun.shadow.camera);
-      this.Params.world.scene.add(this.sunShadowHelper);
+      this.params.world.scene.add(this.sunShadowHelper);
       this.moonHelper = new THREE.DirectionalLightHelper(this.moon, 5);
-      this.Params.world.scene.add(this.moonHelper);
+      this.params.world.scene.add(this.moonHelper);
       this.moonShadowHelper = new THREE.CameraHelper(this.moon.shadow.camera);
-      this.Params.world.scene.add(this.moonShadowHelper);
-      this.Params.world.scene.add(this.sunHelper);
-      this.Params.world.scene.add(this.sunShadowHelper);
-      this.Params.world.scene.add(this.moonHelper);
-      this.Params.world.scene.add(this.moonShadowHelper);
+      this.params.world.scene.add(this.moonShadowHelper);
+      this.params.world.scene.add(this.sunHelper);
+      this.params.world.scene.add(this.sunShadowHelper);
+      this.params.world.scene.add(this.moonHelper);
+      this.params.world.scene.add(this.moonShadowHelper);
     } else {
-      this.Params.world.scene.remove(this.sunHelper);
-      this.Params.world.scene.remove(this.sunShadowHelper);
-      this.Params.world.scene.remove(this.moonHelper);
-      this.Params.world.scene.remove(this.moonShadowHelper);
+      this.params.world.scene.remove(this.sunHelper);
+      this.params.world.scene.remove(this.sunShadowHelper);
+      this.params.world.scene.remove(this.moonHelper);
+      this.params.world.scene.remove(this.moonShadowHelper);
       this.sunHelper = null;
       this.sunShadowHelper = null;
       this.moonHelper = null;

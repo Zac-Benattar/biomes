@@ -1,7 +1,8 @@
 import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 import Island from "./Island";
-import { BiomeType, IslandParams } from "./Island";
+import { IslandParams } from "./Island";
+import { BiomeType } from "./Biomes";
 import { Character } from "./Character";
 import * as CANNON from "cannon-es";
 import CannonDebugger from "cannon-es-debugger";
@@ -177,7 +178,7 @@ export default class World {
 
     const biomeName = document.createElement("h1");
     biomeName.className = "biomeName";
-    biomeName.innerHTML = "Biome: " + BiomeType[this.island.Params.biome];
+    biomeName.innerHTML = "Biome: " + BiomeType[this.island.params.biome];
     biomeName.style.margin = "1";
     biomeName.style.padding = "1";
     hud.appendChild(biomeName);
@@ -190,14 +191,14 @@ export default class World {
     this.hud.getElementsByClassName("animalsFound")[0].innerHTML =
       "Animals Found: " + this.animalsFound;
     this.hud.getElementsByClassName("biomeName")[0].innerHTML =
-      "Biome: " + BiomeType[this.island.Params.biome];
+      "Biome: " + BiomeType[this.island.params.biome];
   }
 
   private generateIsland(): void {
     const seed = Math.random();
     const biomeOptions = Object.keys(BiomeType).length / 2;
     const biomeType = (seed * Number.MAX_VALUE) % biomeOptions;
-    if (this.island && this.island.Params.biome === biomeType) {
+    if (this.island && this.island.params.biome === biomeType) {
       this.generateIsland();
       return;
     }

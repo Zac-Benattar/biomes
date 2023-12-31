@@ -9,25 +9,24 @@
           "precipitation": {
             "snowBias": 1,
             "rainBias": 0,
-            "precipitationChance": 100,
-            "precipitationVariance": 0.8
+            "chance": 100,
+            "variance": 0.8
           },
           "clouds": {
-            "clouds": true,
-            "cloudsMinHeight": 13,
-            "cloudsMaxHeight": 14,
-            "cloudsColour": "#ffffff"
+            "count": 4,
+            "minHeight": 13,
+            "maxHeight": 14,
+            "colour": "#888888"
           }
         },
         "water": {
-          "water": true,
-          "waterHeight": 0.5,
-          "waterColour": "#ffffff"
+          "height": 0.5,
+          "colour": "#ffffff"
         },
         "layers": [
           {
             "minHeight": 8,
-            "tileType": "Stone",
+            "tileTypes": ["Stone"],
             "features": [
               {
                 "featureType": "Rock",
@@ -41,7 +40,7 @@
           },
           {
             "minHeight": 7,
-            "tileType": "Dirt",
+            "tileTypes": ["Dirt"],
             "features": [
               {
                 "featureType": "AlpineTree",
@@ -55,17 +54,17 @@
           },
           {
             "minHeight": 6,
-            "tileType": "Dirt",
+            "tileTypes": ["Dirt"],
             "features": []
           },
           {
             "minHeight": 4,
-            "tileType": "Grass",
+            "tileTypes": ["Grass"],
             "features": []
           },
           {
             "minHeight": 1,
-            "tileType": "Grass",
+            "tileTypes": ["Grass"],
             "features": []
           }
         ]
@@ -78,22 +77,13 @@
         "heightVariance": 0.5,
         "weather": {
           "precipitation": null,
-          "clouds": {
-            "clouds": false,
-            "cloudsMinHeight": 11,
-            "cloudsMaxHeight": 12,
-            "cloudsColour": "#ffffff"
-          }
+          "clouds": null
         },
-        "water": {
-          "water": false,
-          "waterHeight": 0.5,
-          "waterColour": "#ffffff"
-        },
+        "water": null,
         "layers": [
           {
             "minHeight": 1,
-            "tileType": "Sand",
+            "tileTypes": ["Sand"],
             "features": [
               {
                 "featureType": "Rock",
@@ -119,22 +109,13 @@
         "heightVariance": 0.5,
         "weather": {
           "precipitation": null,
-          "clouds": {
-            "clouds": false,
-            "cloudsMinHeight": 11,
-            "cloudsMaxHeight": 12,
-            "cloudsColour": "#ffffff"
-          }
+          "clouds": null
         },
-        "water": {
-          "water": false,
-          "waterHeight": 0.5,
-          "waterColour": "#ffffff"
-        },
+        "water": null,
         "layers": [
           {
             "minHeight": 1,
-            "tileType": "MartianSand",
+            "tileTypes": ["MartianSand"],
             "features": [
               {
                 "featureType": "Rock",
@@ -161,21 +142,20 @@
         "weather": {
           "precipitation": null,
           "clouds": {
-            "clouds": true,
-            "cloudsMinHeight": 11,
-            "cloudsMaxHeight": 12,
-            "cloudsColour": "#ffffff"
+            "count": 3,
+            "minHeight": 11,
+            "maxHeight": 12,
+            "colour": "#ffffff"
           }
         },
         "water": {
-          "water": true,
-          "waterHeight": 2,
-          "waterColour": "#ffffff"
+          "height": 2,
+          "colour": "#ffffff"
         },
         "layers": [
           {
             "minHeight": 7,
-            "tileType": "Stone",
+            "tileTypes": ["Stone"],
             "features": [
               {
                 "featureType": "Rock",
@@ -185,7 +165,7 @@
           },
           {
             "minHeight": 6,
-            "tileType": "Dirt",
+            "tileTypes": ["Dirt"],
             "features": [
               {
                 "featureType": "BasicTree",
@@ -199,7 +179,7 @@
           },
           {
             "minHeight": 4,
-            "tileType": "Dirt",
+            "tileTypes": ["Dirt"],
             "features": [
               {
                 "featureType": "BasicTree",
@@ -209,7 +189,7 @@
           },
           {
             "minHeight": 1,
-            "tileType": "Grass",
+            "tileTypes": ["Grass"],
             "features": [
               {
                 "featureType": "BasicTree",
@@ -228,21 +208,20 @@
         "weather": {
           "precipitation": null,
           "clouds": {
-            "clouds": true,
-            "cloudsMinHeight": 13,
-            "cloudsMaxHeight": 14,
-            "cloudsColour": "#ffffff"
+            "count": 3,
+            "minHeight": 13,
+            "maxHeight": 14,
+            "colour": "#ffffff"
           }
         },
         "water": {
-          "water": true,
-          "waterHeight": 2,
-          "waterColour": "#ffffff"
+          "height": 2,
+          "colour": "#ffffff"
         },
         "layers": [
           {
             "minHeight": 5,
-            "tileType": "Dirt",
+            "tileTypes": ["Dirt"],
             "features": [
               {
                 "featureType": "JungleTree",
@@ -256,7 +235,7 @@
           },
           {
             "minHeight": 3,
-            "tileType": "Dirt",
+            "tileTypes": ["Dirt"],
             "features": [
               {
                 "featureType": "JungleTree",
@@ -266,7 +245,7 @@
           },
           {
             "minHeight": 1,
-            "tileType": "Grass",
+            "tileTypes": ["Grass"],
             "features": [
               {
                 "featureType": "JungleTree",
@@ -285,21 +264,17 @@
         "weather": {
           "precipitation": null,
           "clouds": {
-            "clouds": true,
-            "cloudsMinHeight": 11,
-            "cloudsMaxHeight": 12,
-            "cloudsColour": "#ffffff"
+            "count": 3,
+            "minHeight": 11,
+            "maxHeight": 12,
+            "colour": "#ffffff"
           }
         },
-        "water": {
-          "water": false,
-          "waterHeight": 1,
-          "waterColour": "#ffffff"
-        },
+        "water": null,
         "layers": [
           {
             "minHeight": 1,
-            "tileType": "Dirt",
+            "tileTypes": ["Dirt"],
             "features": [
               {
                 "featureType": "BasicTree",
@@ -322,21 +297,20 @@
         "weather": {
           "precipitation": null,
           "clouds": {
-            "clouds": true,
-            "cloudsMinHeight": 11,
-            "cloudsMaxHeight": 12,
-            "cloudsColour": "#ffffff"
+            "count": 3,
+            "minHeight": 11,
+            "maxHeight": 12,
+            "colour": "#ffffff"
           }
         },
         "water": {
-          "water": true,
-          "waterHeight": 5,
-          "waterColour": "#ffffff"
+          "height": 5,
+          "colour": "#ffffff"
         },
         "layers": [
           {
             "minHeight": 5.5,
-            "tileType": "Dirt",
+            "tileTypes": ["Dirt"],
             "features": [
               {
                 "featureType": "BasicTree",
@@ -350,7 +324,7 @@
           },
           {
             "minHeight": 1,
-            "tileType": "Sand",
+            "tileTypes": ["Sand"],
             "features": [
               {
                 "featureType": "Seaweed",
@@ -364,7 +338,7 @@
           },
           {
             "minHeight": 0,
-            "tileType": "Stone",
+            "tileTypes": ["Stone"],
             "features": [
               {
                 "featureType": "Seaweed",
@@ -387,21 +361,17 @@
         "weather": {
           "precipitation": null,
           "clouds": {
-            "clouds": true,
-            "cloudsMinHeight": 11,
-            "cloudsMaxHeight": 12,
-            "cloudsColour": "#ffffff"
+            "count": 3,
+            "minHeight": 11,
+            "maxHeight": 12,
+            "colour": "#ffffff"
           }
         },
-        "water": {
-          "water": false,
-          "waterHeight": 0.5,
-          "waterColour": "#ffffff"
-        },
+        "water": null,
         "layers": [
           {
             "minHeight": 4,
-            "tileType": "Dirt",
+            "tileTypes": ["Dirt"],
             "features": [
               {
                 "featureType": "Rock",
@@ -415,7 +385,7 @@
           },
           {
             "minHeight": 1,
-            "tileType": "Sand",
+            "tileTypes": ["Sand"],
             "features": [
               {
                 "featureType": "Rock",
@@ -438,21 +408,17 @@
         "weather": {
           "precipitation": null,
           "clouds": {
-            "clouds": true,
-            "cloudsMinHeight": 11,
-            "cloudsMaxHeight": 12,
-            "cloudsColour": "#ffffff"
+            "count": 3,
+            "minHeight": 11,
+            "maxHeight": 12,
+            "colour": "#ffffff"
           }
         },
-        "water": {
-          "water": false,
-          "waterHeight": 0.5,
-          "waterColour": "#ffffff"
-        },
+        "water": null,
         "layers": [
           {
             "minHeight": 3,
-            "tileType": "Dirt",
+            "tileTypes": ["Dirt"],
             "features": [
               {
                 "featureType": "Grass",
@@ -466,7 +432,7 @@
           },
           {
             "minHeight": 1,
-            "tileType": "Grass",
+            "tileTypes": ["Grass"],
             "features": [
               {
                 "featureType": "Grass",
@@ -489,21 +455,17 @@
         "weather": {
           "precipitation": null,
           "clouds": {
-            "clouds": true,
-            "cloudsMinHeight": 11,
-            "cloudsMaxHeight": 12,
-            "cloudsColour": "#ffffff"
+            "count": 3,
+            "minHeight": 11,
+            "maxHeight": 12,
+            "colour": "#ffffff"
           }
         },
-        "water": {
-          "water": false,
-          "waterHeight": 0.5,
-          "waterColour": "#ffffff"
-        },
+        "water": null,
         "layers": [
           {
             "minHeight": 3,
-            "tileType": "Dirt",
+            "tileTypes": ["Dirt"],
             "features": [
               {
                 "featureType": "Grass",
@@ -517,7 +479,7 @@
           },
           {
             "minHeight": 1,
-            "tileType": "Grass",
+            "tileTypes": ["Grass"],
             "features": [
               {
                 "featureType": "Grass",
@@ -540,21 +502,20 @@
         "weather": {
           "precipitation": null,
           "clouds": {
-            "clouds": true,
-            "cloudsMinHeight": 11,
-            "cloudsMaxHeight": 12,
-            "cloudsColour": "#ffffff"
+            "count": 3,
+            "minHeight": 11,
+            "maxHeight": 12,
+            "colour": "#ffffff"
           }
         },
         "water": {
-          "water": true,
-          "waterHeight": 2,
-          "waterColour": "#ffffff"
+          "height": 2,
+          "colour": "#ffffff"
         },
         "layers": [
           {
             "minHeight": 7,
-            "tileType": "Stone",
+            "tileTypes": ["Stone"],
             "features": [
               {
                 "featureType": "Rock",
@@ -564,7 +525,7 @@
           },
           {
             "minHeight": 6,
-            "tileType": "Dirt",
+            "tileTypes": ["Dirt"],
             "features": [
               {
                 "featureType": "BasicTree",
@@ -578,7 +539,7 @@
           },
           {
             "minHeight": 4,
-            "tileType": "Dirt",
+            "tileTypes": ["Dirt"],
             "features": [
               {
                 "featureType": "BasicTree",
@@ -588,7 +549,7 @@
           },
           {
             "minHeight": 1,
-            "tileType": "Grass",
+            "tileTypes": ["Grass"],
             "features": [
               {
                 "featureType": "BasicTree",
@@ -608,25 +569,24 @@
           "precipitation": {
             "snowBias": 1,
             "rainBias": 0,
-            "precipitationChance": 100,
-            "precipitationVariance": 0.8
+            "chance": 100,
+            "variance": 0.8
           },
           "clouds": {
-            "clouds": true,
-            "cloudsMinHeight": 11,
-            "cloudsMaxHeight": 12,
-            "cloudsColour": "#ffffff"
+            "count": 3,
+            "minHeight": 11,
+            "maxHeight": 12,
+            "colour": "#ffffff"
           }
         },
         "water": {
-          "water": true,
-          "waterHeight": 2,
-          "waterColour": "#ffffff"
+          "height": 2,
+          "colour": "#ffffff"
         },
         "layers": [
           {
             "minHeight": 7,
-            "tileType": "Stone",
+            "tileTypes": ["Stone"],
             "features": [
               {
                 "featureType": "Rock",
@@ -636,7 +596,7 @@
           },
           {
             "minHeight": 6,
-            "tileType": "Dirt",
+            "tileTypes": ["Dirt"],
             "features": [
               {
                 "featureType": "BasicTree",
@@ -650,7 +610,7 @@
           },
           {
             "minHeight": 4,
-            "tileType": "Dirt",
+            "tileTypes": ["Dirt"],
             "features": [
               {
                 "featureType": "BasicTree",
@@ -660,7 +620,7 @@
           },
           {
             "minHeight": 1,
-            "tileType": "Grass",
+            "tileTypes": ["Grass"],
             "features": [
               {
                 "featureType": "BasicTree",
@@ -680,25 +640,24 @@
           "precipitation": {
             "snowBias": 0,
             "rainBias": 1,
-            "precipitationChance": 100,
-            "precipitationVariance": 0.8
+            "chance": 100,
+            "variance": 0.8
           },
           "clouds": {
-            "clouds": true,
-            "cloudsMinHeight": 11,
-            "cloudsMaxHeight": 12,
-            "cloudsColour": "#ffffff"
+            "count": 3,
+            "minHeight": 11,
+            "maxHeight": 12,
+            "colour": "#ffffff"
           }
         },
         "water": {
-          "water": true,
-          "waterHeight": 2,
-          "waterColour": "#ffffff"
+          "height": 2,
+          "colour": "#ffffff"
         },
         "layers": [
           {
             "minHeight": 3,
-            "tileType": "Dirt",
+            "tileTypes": ["Dirt"],
             "features": [
               {
                 "featureType": "Grass",
@@ -712,7 +671,7 @@
           },
           {
             "minHeight": 1,
-            "tileType": "Grass",
+            "tileTypes": ["Grass"],
             "features": [
               {
                 "featureType": "Grass",
