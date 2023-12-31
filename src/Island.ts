@@ -87,6 +87,7 @@ export default class Island {
   public Params: IslandParameters;
   private GenerationParams: BiomeGenerationParameters;
   public tiles: Array<Tile>;
+  public goalTile: Tile | null = null;
   private particles: THREE.Points<THREE.BufferGeometry> | null;
   private sun: THREE.DirectionalLight;
   private moon: THREE.DirectionalLight;
@@ -506,12 +507,12 @@ export default class Island {
 
     const noise2D = createNoise2D(this.randomFunction(this.Params.seed)); // Create a seeded 2D noise function - gives values between -1 and 1
 
-    for (let y = -this.Params.radius; y < this.Params.radius; y++) {
+    for (let z = -this.Params.radius; z < this.Params.radius; z++) {
       for (let x = -this.Params.radius; x < this.Params.radius; x++) {
-        let position = this.tileToPosition(x, y);
+        let position = this.tileXZToPosition(x, z);
         if (position.length() > this.Params.radius - 1) continue; // Skip tiles outside of the island radius
 
-        let noise = (noise2D(x * 0.1, y * 0.1) + 1) / 2; // Normalize noise to 0-1
+        let noise = (noise2D(x * 0.1, z * 0.1) + 1) / 2; // Normalize noise to 0-1
         noise = Math.pow(noise, this.GenerationParams.height_variance); // Smooth out the noise
         let height = Math.min(
           noise * (this.GenerationParams.max_height - this.getMinHeight()) +
@@ -591,8 +592,12 @@ export default class Island {
     }, this.GenerationParams.max_height);
   }
 
-  private tileToPosition(tileX: number, tileY: number): THREE.Vector2 {
-    return new THREE.Vector2((tileX + (tileY % 2) * 0.5) * 1.77, tileY * 1.535);
+  private tileXZToPosition(tileX: number, tileZ: number): THREE.Vector3 {
+    return new THREE.Vector3(
+      (tileX + (tileZ % 2) * 0.5) * 1.77,
+      0,
+      tileZ * 1.535
+    );
   }
 
   private randomFunction(seed: number): Function {
@@ -684,7 +689,7 @@ export default class Island {
     for (let i = 0; i < particleCount; i++) {
       positions.push(
         Math.floor((Math.random() - 0.5) * (this.Params.radius * 1.7)),
-        Math.floor(Math.random() * this.GetMaxHeight()),
+        Math.floor(Math.random() * this.getMaxHeight()),
         Math.floor((Math.random() - 0.5) * (this.Params.radius * 1.7))
       );
       velocities.push(
@@ -839,14 +844,14 @@ export default class Island {
     }
   }
 
-  public getTileBelow(x: number, y: number): Tile | null {
-    // Find the tile with the closest center x,y to the given position
+  public getTileFromXZ(x: number, z: number): Tile | null {
+    // Find the tile with the closest center x,z to the given position
     let closestTile: Tile | null = null;
     let closestDistance = 1000;
     for (let i = 0; i < this.tiles.length; i++) {
       let distance = Math.sqrt(
         Math.pow(this.tiles[i].position.x - x, 2) +
-          Math.pow(this.tiles[i].position.y - y, 2)
+          Math.pow(this.tiles[i].position.z - z, 2)
       );
       if (distance < closestDistance) {
         closestDistance = distance;
@@ -948,10 +953,13 @@ export default class Island {
   }
 
   public createGoal(playerTile: Tile): void {
-    let goalTile: Tile | null = null;
-    while (goalTile === null || goalTile === playerTile) {
-      goalTile = this.tiles[Math.floor(Math.random() * this.tiles.length)];
+    if (this.goalTile == null) {
+      let goalTile: Tile | null = null;
+      while (goalTile === null || goalTile === playerTile) {
+        goalTile = this.tiles[Math.floor(Math.random() * this.tiles.length)];
+      }
+      goalTile.SetGoal(AnimalType.Penguin);
+      this.goalTile = goalTile;
     }
-    goalTile.SetGoal(AnimalType.Penguin);
   }
 }

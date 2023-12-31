@@ -85,138 +85,19 @@ export default class Tile {
     this.world.scene.add(this.model);
   }
 
-  // public toggleMark(): void {
-  //   this.marked = !this.marked;
-  //   let colourTarget = this.model.getObjectByName("baseHexagon");
-  //   console.log(this.model.children);
-  //   this.model.remove(colourTarget);
-  //   if (this.marked) {
-  //     let geo = this.hexGeometry(this.height, this.position);
-
-  //     let markedGeo: THREE.BufferGeometry = new THREE.BoxGeometry(0, 0, 0);
-  //     markedGeo = BufferGeometryUtils.mergeGeometries([markedGeo, geo]);
-  //     let markedMesh = new THREE.Mesh(
-  //       markedGeo,
-  //       new THREE.MeshStandardMaterial({
-  //         color: 0xff0000,
-  //         flatShading: true,
-  //       })
-  //     );
-  //     markedMesh.castShadow = true;
-  //     markedMesh.receiveShadow = true;
-  //     markedMesh.name = "baseHexagon";
-  //     colourTarget.add(markedMesh);
-  //   } else {
-  //     let geo = this.hexGeometry(this.height, this.position);
-
-  //     if (this.tileType === TileType.Stone) {
-  //       let stoneGeo: THREE.BufferGeometry = new THREE.BoxGeometry(0, 0, 0);
-  //       stoneGeo = BufferGeometryUtils.mergeGeometries([stoneGeo, geo]);
-  //       let stoneMesh = new THREE.Mesh(
-  //         stoneGeo,
-  //         new THREE.MeshStandardMaterial({
-  //           color: 0x888888,
-  //           flatShading: true,
-  //         })
-  //       );
-  //       stoneMesh.castShadow = true;
-  //       stoneMesh.receiveShadow = true;
-  //       stoneMesh.name = "baseHexagon";
-  //       colourTarget.add(stoneMesh);
-  //     } else if (this.tileType === TileType.Dirt) {
-  //       let dirtGeo: THREE.BufferGeometry = new THREE.BoxGeometry(0, 0, 0);
-  //       dirtGeo = BufferGeometryUtils.mergeGeometries([dirtGeo, geo]);
-  //       let dirtMesh = new THREE.Mesh(
-  //         dirtGeo,
-  //         new THREE.MeshStandardMaterial({
-  //           color: 0x8b4513,
-  //           flatShading: true,
-  //         })
-  //       );
-  //       dirtMesh.castShadow = true;
-  //       dirtMesh.receiveShadow = true;
-  //       dirtMesh.name = "baseHexagon";
-  //       colourTarget.add(dirtMesh);
-  //     } else if (this.tileType === TileType.Dirt2) {
-  //       let dirt2Geo: THREE.BufferGeometry = new THREE.BoxGeometry(0, 0, 0);
-  //       dirt2Geo = BufferGeometryUtils.mergeGeometries([dirt2Geo, geo]);
-  //       let dirt2Mesh = new THREE.Mesh(
-  //         dirt2Geo,
-  //         new THREE.MeshStandardMaterial({
-  //           color: 0x8b4543,
-  //           flatShading: true,
-  //         })
-  //       );
-  //       dirt2Mesh.castShadow = true;
-  //       dirt2Mesh.receiveShadow = true;
-  //       dirt2Mesh.name = "baseHexagon";
-  //       colourTarget.add(dirt2Mesh);
-  //     } else if (this.tileType === TileType.Grass) {
-  //       let grassGeo: THREE.BufferGeometry = new THREE.BoxGeometry(0, 0, 0);
-  //       grassGeo = BufferGeometryUtils.mergeGeometries([grassGeo, geo]);
-  //       let grassMesh = new THREE.Mesh(
-  //         grassGeo,
-  //         new THREE.MeshStandardMaterial({
-  //           color: 0x4f7942,
-  //           flatShading: true,
-  //         })
-  //       );
-  //       grassMesh.castShadow = true;
-  //       grassMesh.receiveShadow = true;
-  //       grassMesh.name = "baseHexagon";
-  //       colourTarget.add(grassMesh);
-  //     } else if (this.tileType === TileType.Sand) {
-  //       let sandGeo: THREE.BufferGeometry = new THREE.BoxGeometry(0, 0, 0);
-  //       sandGeo = BufferGeometryUtils.mergeGeometries([sandGeo, geo]);
-  //       let sandMesh = new THREE.Mesh(
-  //         sandGeo,
-  //         new THREE.MeshStandardMaterial({
-  //           color: 0x8b4513,
-  //           flatShading: true,
-  //         })
-  //       );
-  //       sandMesh.castShadow = true;
-  //       sandMesh.receiveShadow = true;
-  //       sandMesh.name = "baseHexagon";
-  //       colourTarget.add(sandMesh);
-  //     } else if (this.tileType === TileType.MartianSand) {
-  //       let martianSandGeo: THREE.BufferGeometry = new THREE.BoxGeometry(
-  //         0,
-  //         0,
-  //         0
-  //       );
-  //       martianSandGeo = BufferGeometryUtils.mergeGeometries([
-  //         martianSandGeo,
-  //         geo,
-  //       ]);
-  //       let martianSandMesh = new THREE.Mesh(
-  //         martianSandGeo,
-  //         new THREE.MeshStandardMaterial({
-  //           color: 0x8b4513,
-  //           flatShading: true,
-  //         })
-  //       );
-  //       martianSandMesh.castShadow = true;
-  //       martianSandMesh.receiveShadow = true;
-  //       martianSandMesh.name = "baseHexagon";
-  //       colourTarget.add(martianSandMesh);
-  //     }
-  //   }
-  // }
-
   private hexGeometry(
     height: number,
     position: THREE.Vector3
   ): THREE.BufferGeometry {
     let geo = new THREE.CylinderGeometry(1, 1, height, 6, 1, false);
-    geo.translate(position.x, height / 2, position.y);
+    geo.translate(position.x, height / 2, position.z);
 
     return geo;
   }
 
   private snowGeometry(position: THREE.Vector3): THREE.BufferGeometry {
     let geo = new THREE.CylinderGeometry(1, 1, 0.1, 6, 1, false);
-    geo.translate(position.x, position.z, position.y);
+    geo.translate(position.x, position.y, position.z);
 
     return geo;
   }
@@ -351,10 +232,10 @@ export default class Tile {
 
   private rock(height: number, position: THREE.Vector3): THREE.Mesh {
     const px = Math.random() * 0.5 - 0.25;
-    const py = Math.random() * 0.5 - 0.25;
+    const pz = Math.random() * 0.5 - 0.25;
 
     const geo = new THREE.SphereGeometry(Math.random() * 0.3 + 0.1, 7, 7);
-    geo.translate(position.x + px, height, position.y + py);
+    geo.translate(position.x + px, height, position.z + pz);
 
     let rockMaterial = new THREE.MeshStandardMaterial({
       color: 0x888888,
@@ -372,27 +253,27 @@ export default class Tile {
     const treeHeight = Math.random() * 1 + 1.25;
 
     const trunkGeo = new THREE.CylinderGeometry(0.1, 0.2, treeHeight, 10);
-    trunkGeo.translate(position.x, height + treeHeight * 0.4, position.y);
+    trunkGeo.translate(position.x, height + treeHeight * 0.4, position.z);
 
     const lowerLeavesGeo = new THREE.CylinderGeometry(0, 1.3, treeHeight, 3);
     lowerLeavesGeo.translate(
       position.x,
       height + treeHeight * 0.3 + 1,
-      position.y
+      position.z
     );
 
     const midLeavesGeo = new THREE.CylinderGeometry(0, 1, treeHeight, 3);
     midLeavesGeo.translate(
       position.x,
       height + treeHeight * 0.7 + 1,
-      position.y
+      position.z
     );
 
     const upperLeavesGeo = new THREE.CylinderGeometry(0, 0.6, treeHeight, 3);
     upperLeavesGeo.translate(
       position.x,
       height + treeHeight * 1.25 + 1,
-      position.y
+      position.z
     );
 
     const leaves = BufferGeometryUtils.mergeGeometries([
@@ -429,7 +310,7 @@ export default class Tile {
     const treeHeight = Math.random() * 1 + 1.25;
 
     const trunkGeo = new THREE.CylinderGeometry(0.1, 0.2, treeHeight, 10);
-    trunkGeo.translate(position.x, height + treeHeight * 0.4, position.y);
+    trunkGeo.translate(position.x, height + treeHeight * 0.4, position.z);
 
     const puff1Radius = Math.random() * 0.5 + 0.2;
     const puff2Radius = Math.random() * 0.5 + 0.5;
@@ -450,7 +331,7 @@ export default class Tile {
       puff2,
       puff3,
     ]);
-    leavesGeo.translate(position.x, height + treeHeight * 0.9, position.y);
+    leavesGeo.translate(position.x, height + treeHeight * 0.9, position.z);
 
     let leavesMaterial = new THREE.MeshStandardMaterial({
       color: 0x4f7942,
@@ -480,7 +361,7 @@ export default class Tile {
     const treeHeight = Math.random() * 3 + 3;
 
     const trunkGeo = new THREE.CylinderGeometry(0.3, 0.4, treeHeight, 10);
-    trunkGeo.translate(position.x, height + treeHeight * 0.4, position.y);
+    trunkGeo.translate(position.x, height + treeHeight * 0.4, position.z);
 
     const puff1Radius = Math.random() * 0.8 + 0.5;
     const puff2Radius = Math.random() * 0.8 + 0.8;
@@ -500,7 +381,7 @@ export default class Tile {
       puff2,
       puff3,
     ]);
-    leavesGeo.translate(position.x, height + treeHeight * 0.9, position.y);
+    leavesGeo.translate(position.x, height + treeHeight * 0.9, position.z);
 
     let leavesMaterial = new THREE.MeshStandardMaterial({
       color: 0x4f7942,
@@ -530,7 +411,7 @@ export default class Tile {
     return new THREE.Vector3(
       this.position.x,
       this.height + 0.5,
-      this.position.y
+      this.position.z
     );
   }
 
@@ -542,7 +423,7 @@ export default class Tile {
       position: new CANNON.Vec3(
         this.position.x,
         this.height / 2,
-        this.position.y
+        this.position.z
       ),
       shape: shape,
     });

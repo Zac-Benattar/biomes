@@ -277,9 +277,10 @@ export class Character extends THREE.Object3D {
   public distanceFromFeetToTopOfTileBelow(currentTile: Tile) {
     const topOfTile = new THREE.Vector3(
       currentTile.position.x,
-      currentTile.position.y,
-      currentTile.height + 0.5
+      currentTile.height + 0.5,
+      currentTile.position.z,
     );
+
     const distance = this.getFeetPosition().distanceTo(topOfTile);
     return distance;
   }
@@ -455,10 +456,7 @@ export class Character extends THREE.Object3D {
 
     // Reset character if outside of island or fell below y=0
     if (outsideIsland || this.position.y < 0) {
-      this.setPosition(
-        new THREE.Vector3(0, this.world.island.getMaxHeight(), 0)
-      );
-      this.resetVelocity();
+      this.reset();
     }
 
     let simulatedVelocity = new THREE.Vector3(
@@ -644,5 +642,11 @@ export class Character extends THREE.Object3D {
     if (instantly) {
       this.orientation.copy(lookVector);
     }
+  }
+
+  public reset(): void {
+    this.setPosition(new THREE.Vector3(0, 10, 0));
+    this.resetVelocity();
+    this.resetOrientation();
   }
 }

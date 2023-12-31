@@ -12,6 +12,7 @@ export default class World {
   private menuVisible: boolean = false;
   private renderer: THREE.WebGLRenderer;
   public camera: THREE.PerspectiveCamera;
+  public controls: OrbitControls;
   public scene: THREE.Scene;
   public physicsWorld: CANNON.World;
   public island: Island;
@@ -80,16 +81,23 @@ export default class World {
 
     this.scene = new THREE.Scene();
 
-    const controls = new OrbitControls(this.camera, this.renderer.domElement);
-    controls.target.set(0, 10, 0);
-    controls.enableDamping = true;
-    controls.dampingFactor = 0.05;
-    controls.update();
+    this.controls = new OrbitControls(this.camera, this.renderer.domElement);
+    this.controls.target.set(0, 10, 0);
+    this.controls.enableDamping = true;
+    this.controls.dampingFactor = 0.05;
+    this.controls.update();
 
     this.generateIsland();
     this.render(this);
     this.toggleMenu();
     this.createHUD();
+  }
+
+  private resetCamera(): void {
+    this.camera.position.set(20, 20, 20);
+    this.camera.lookAt(0, 10, 0);
+    this.camera.updateMatrixWorld();
+    this.controls.target.set(0, 10, 0);
   }
 
   private togglePause(): void {
@@ -182,7 +190,7 @@ export default class World {
 
     this.character = new Character(this);
     this.island.createGoal(
-      this.island.getTileBelow(
+      this.island.getTileFromXZ(
         this.character.getFeetPosition().x,
         this.character.getFeetPosition().z
       )
@@ -194,19 +202,37 @@ export default class World {
     if (!this.goalReached) {
       this.goalReached = true;
       this.animalsFound++;
-
-      // Delete previous island
-      this.scene.clear();
-
-      while (this.physicsWorld.bodies.length > 0) {
-        this.physicsWorld.removeBody(this.physicsWorld.bodies[0]);
-      }
-
-      this.generateIsland();
-      this.physicsDebug = false;
       this.updateHUD();
-      this.goalReached = false;
+
+      setTimeout(() => {
+        this.reset();
+      }, 5000);
+
+      let targetPosition = this.island.goalTile.getTileTopPosition();
+      this.camera.position.set(targetPosition.x, 20, targetPosition.z);
+      this.camera.lookAt(targetPosition);
+      this.camera.updateMatrixWorld();
     }
+  }
+
+  private reset(): void {
+    // Reset character position, velocity, rotation
+    this.character.reset();
+
+    // Delete previous island
+    this.scene.clear();
+
+    // Delete previous physics world
+    while (this.physicsWorld.bodies.length > 0) {
+      this.physicsWorld.removeBody(this.physicsWorld.bodies[0]);
+    }
+
+    // Generate new island
+    this.generateIsland();
+
+    this.resetCamera();
+    this.physicsDebug = false;
+    this.goalReached = false;
   }
 
   public toggleShadows(): void {
