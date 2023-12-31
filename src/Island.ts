@@ -14,7 +14,6 @@ export enum BiomeType {
   Savanna,
   Ocean,
   Mesa,
-  Volcano,
   Tundra,
   Swamp,
   Plains,

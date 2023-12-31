@@ -168,24 +168,41 @@ export default class World {
     hud.style.top = "0";
     hud.style.left = "0";
 
-    const title = document.createElement("h1");
-    title.className = "animalsFound";
-    title.innerHTML = "Animals Found: " + this.animalsFound;
-    title.style.margin = "0";
-    title.style.padding = "0";
-    hud.appendChild(title);
+    const animalsFound = document.createElement("h1");
+    animalsFound.className = "animalsFound";
+    animalsFound.innerHTML = "Animals Found: " + this.animalsFound;
+    animalsFound.style.margin = "1";
+    animalsFound.style.padding = "1";
+    hud.appendChild(animalsFound);
+
+    const biomeName = document.createElement("h1");
+    biomeName.className = "biomeName";
+    biomeName.innerHTML = "Biome: " + BiomeType[this.island.Params.biome];
+    biomeName.style.margin = "1";
+    biomeName.style.padding = "1";
+    hud.appendChild(biomeName);
 
     document.body.appendChild(hud);
     this.hud = hud;
   }
 
   private updateHUD(): void {
-    this.hud.getElementsByClassName("animalsFound")[0].innerHTML = "Animals Found: " + this.animalsFound;
+    this.hud.getElementsByClassName("animalsFound")[0].innerHTML =
+      "Animals Found: " + this.animalsFound;
+    this.hud.getElementsByClassName("biomeName")[0].innerHTML =
+      "Biome: " + BiomeType[this.island.Params.biome];
   }
 
   private generateIsland(): void {
     const seed = Math.random();
-    this.createIsland(BiomeType.Ocean, seed);
+    const biomeOptions = Object.keys(BiomeType).length / 2;
+    const biomeType = (seed * Number.MAX_VALUE) % biomeOptions;
+    if (this.island && this.island.Params.biome === biomeType) {
+      this.generateIsland();
+      return;
+    }
+
+    this.createIsland(biomeType, seed);
 
     this.createPhysicsWorld();
 
@@ -232,6 +249,7 @@ export default class World {
     this.generateIsland();
 
     this.resetCamera();
+    this.updateHUD();
     this.physicsDebug = false;
     this.goalReached = false;
   }
