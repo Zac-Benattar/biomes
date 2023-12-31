@@ -23,68 +23,59 @@ export enum BiomeType {
   MartianDesert,
 }
 
-export enum Weather {
-  Sunny,
-  Rainy,
-  Snowy,
-  Stormy,
-  Clear,
+class CloudParams {
+  count: number;
+  minHeight: number;
+  size: number;
+  opacity: number;
+}
+
+enum PrecipitationType {
+  Rain,
+  Snow,
+  None,
+}
+
+class WeatherParams {
+  precipitationType: PrecipitationType;
+  clouds: CloudParams;
+}
+
+class WaterParams {
+  height: number;
+  colour: THREE.Color;
 }
 
 class TileFeatureProbability {
   feature: TileFeature;
   probability: number;
-
-  constructor(feature: TileFeature, probability: number) {
-    this.feature = feature;
-    this.probability = probability;
-  }
 }
 
 class Layer {
   min_height: number;
   tileTypes: TileType[];
   features: TileFeatureProbability[];
-
-  constructor(
-    min_height: number,
-    tileTypes: TileType[],
-    features: TileFeatureProbability[]
-  ) {
-    this.min_height = min_height;
-    this.tileTypes = tileTypes;
-    this.features = features;
-  }
 }
 
-export class IslandParameters {
+export class IslandParams {
   world: World;
   biome: BiomeType;
   seed: number = Math.random();
   radius: number = 15;
-
-  constructor(world: World, biome: BiomeType, seed: number, radius: number) {
-    this.world = world;
-    this.biome = biome;
-    this.seed = seed;
-    this.radius = radius;
-  }
 }
 
-export class BiomeGenerationParameters {
+export class BiomeGenerationParams {
   max_height: number;
   height_variance: number;
-  weather: Weather;
-  clouds: boolean;
-  clouds_min_height: number;
-  water: boolean;
-  water_height: number = 0.5;
+  weather: WeatherParams;
+  water: WaterParams;
   layers: Layer[];
 }
 
 export default class Island {
-  public Params: IslandParameters;
-  private GenerationParams: BiomeGenerationParameters;
+  public Params: IslandParams;
+  private GenerationParams: BiomeGenerationParams;
+  public weather: WeatherParams;
   public tiles: Array<Tile>;
   public goalTile: Tile | null = null;
   private particles: THREE.Points<THREE.BufferGeometry> | null;
@@ -98,411 +89,18 @@ export default class Island {
   private moonAngle: number;
   private previousRAF: number = 0;
   private orbitRadius: number = 100;
-  private orbitSpeed: number = 0.05; // 0.05 for production
+  private orbitSpeed: number = 0.05;
   private lightDebug: boolean;
 
-  constructor(params: IslandParameters) {
+  constructor(params: IslandParams) {
     this.Init(params);
   }
 
-  private Init(params: IslandParameters) {
+  private Init(params: IslandParams) {
     this.Params = params;
     this.tiles = [];
 
-    switch (this.Params.biome) {
-      case BiomeType.Alpine:
-        this.GenerationParams = {
-          max_height: 14,
-          height_variance: 1.5,
-          weather: Weather.Snowy,
-          clouds: true,
-          clouds_min_height: 13,
-          water: false,
-          water_height: 0.5,
-          layers: [
-            new Layer(
-              8,
-              [TileType.Stone],
-              [
-                new TileFeatureProbability(TileFeature.Rock, 0.1),
-                new TileFeatureProbability(TileFeature.AlpineTree, 0.3),
-              ]
-            ),
-            new Layer(
-              7,
-              [TileType.Dirt],
-              [
-                new TileFeatureProbability(TileFeature.AlpineTree, 0.2),
-                new TileFeatureProbability(TileFeature.Snow, 0.8),
-              ]
-            ),
-            new Layer(6, [TileType.Dirt], []),
-            new Layer(4, [TileType.Grass], []),
-            new Layer(1, [TileType.Grass], []),
-          ],
-        };
-        break;
-      case BiomeType.Desert:
-        this.GenerationParams = {
-          max_height: 3,
-          height_variance: 0.5,
-          weather: Weather.Sunny,
-          clouds: false,
-          clouds_min_height: 11,
-          water: false,
-          water_height: 0.5,
-          layers: [
-            new Layer(
-              1,
-              [TileType.Sand],
-              [
-                new TileFeatureProbability(TileFeature.Rock, 0.2),
-                new TileFeatureProbability(TileFeature.Tumbleweed, 0.2),
-                new TileFeatureProbability(TileFeature.Cactus, 0.2),
-              ]
-            ),
-          ],
-        };
-        break;
-      case BiomeType.MartianDesert:
-        this.GenerationParams = {
-          max_height: 3,
-          height_variance: 0.5,
-          weather: Weather.Sunny,
-          clouds: false,
-          clouds_min_height: 11,
-          water: false,
-          water_height: 0.5,
-          layers: [
-            new Layer(
-              1,
-              [TileType.MartianSand],
-              [
-                new TileFeatureProbability(TileFeature.Rock, 0.2),
-                new TileFeatureProbability(TileFeature.Tumbleweed, 0.2),
-                new TileFeatureProbability(TileFeature.Cactus, 0.2),
-              ]
-            ),
-          ],
-        };
-        break;
-      case BiomeType.Forest:
-        this.GenerationParams = {
-          max_height: 8,
-          height_variance: 1,
-          weather: Weather.Sunny,
-          clouds: true,
-          clouds_min_height: 11,
-          water: true,
-          water_height: 2,
-          layers: [
-            new Layer(
-              7,
-              [TileType.Stone],
-              [new TileFeatureProbability(TileFeature.Rock, 0.1)]
-            ),
-            new Layer(
-              6,
-              [TileType.Dirt],
-              [
-                new TileFeatureProbability(TileFeature.BasicTree, 0.3),
-                new TileFeatureProbability(TileFeature.Grass, 0.7),
-              ]
-            ),
-            new Layer(
-              4,
-              [TileType.Dirt],
-              [new TileFeatureProbability(TileFeature.BasicTree, 0.4)]
-            ),
-            new Layer(
-              1,
-              [TileType.Grass],
-              [new TileFeatureProbability(TileFeature.BasicTree, 0.2)]
-            ),
-          ],
-        };
-        break;
-      case BiomeType.Jungle:
-        this.GenerationParams = {
-          max_height: 8,
-          height_variance: 1,
-          weather: Weather.Sunny,
-          clouds: true,
-          clouds_min_height: 13,
-          water: true,
-          water_height: 2,
-          layers: [
-            new Layer(
-              5,
-              [TileType.Dirt],
-              [
-                new TileFeatureProbability(TileFeature.JungleTree, 0.3),
-                new TileFeatureProbability(TileFeature.Grass, 0.7),
-              ]
-            ),
-            new Layer(
-              3,
-              [TileType.Dirt],
-              [new TileFeatureProbability(TileFeature.JungleTree, 0.2)]
-            ),
-            new Layer(
-              1,
-              [TileType.Grass],
-              [new TileFeatureProbability(TileFeature.JungleTree, 0.2)]
-            ),
-          ],
-        };
-        break;
-      case BiomeType.Savanna:
-        this.GenerationParams = {
-          max_height: 4,
-          height_variance: 1,
-          weather: Weather.Sunny,
-          clouds: true,
-          clouds_min_height: 11,
-          water: false,
-          water_height: 1,
-          layers: [
-            new Layer(
-              1,
-              [TileType.Dirt],
-              [
-                new TileFeatureProbability(TileFeature.BasicTree, 0.1),
-                new TileFeatureProbability(TileFeature.Grass, 0.7),
-              ]
-            ),
-          ],
-        };
-        break;
-      case BiomeType.Ocean:
-        this.GenerationParams = {
-          max_height: 6,
-          height_variance: 0.7,
-          weather: Weather.Sunny,
-          clouds: true,
-          clouds_min_height: 11,
-          water: true,
-          water_height: 5,
-          layers: [
-            new Layer(
-              5.5,
-              [TileType.Dirt],
-              [
-                new TileFeatureProbability(TileFeature.BasicTree, 0.05),
-                new TileFeatureProbability(TileFeature.Grass, 0.2),
-              ]
-            ),
-            new Layer(
-              1,
-              [TileType.Sand],
-              [
-                new TileFeatureProbability(TileFeature.Seaweed, 0.1),
-                new TileFeatureProbability(TileFeature.Rock, 0.1),
-              ]
-            ),
-            new Layer(
-              0,
-              [TileType.Stone],
-              [
-                new TileFeatureProbability(TileFeature.Seaweed, 0.05),
-                new TileFeatureProbability(TileFeature.Rock, 0.1),
-              ]
-            ),
-          ],
-        };
-        break;
-      case BiomeType.Mesa:
-        this.GenerationParams = {
-          max_height: 5,
-          height_variance: 0.7,
-          weather: Weather.Sunny,
-          clouds: true,
-          clouds_min_height: 11,
-          water: false,
-          water_height: 0.5,
-          layers: [
-            new Layer(
-              4,
-              [TileType.Dirt],
-              [
-                new TileFeatureProbability(TileFeature.Rock, 0.1),
-                new TileFeatureProbability(TileFeature.Cactus, 0.1),
-              ]
-            ),
-            new Layer(
-              1,
-              [TileType.Sand],
-              [
-                new TileFeatureProbability(TileFeature.Rock, 0.1),
-                new TileFeatureProbability(TileFeature.Cactus, 0.1),
-              ]
-            ),
-          ],
-        };
-        break;
-      case BiomeType.Meadow:
-        this.GenerationParams = {
-          max_height: 4,
-          height_variance: 0.7,
-          weather: Weather.Sunny,
-          clouds: true,
-          clouds_min_height: 11,
-          water: false,
-          water_height: 0.5,
-          layers: [
-            new Layer(
-              3,
-              [TileType.Dirt],
-              [
-                new TileFeatureProbability(TileFeature.Grass, 0.1),
-                new TileFeatureProbability(TileFeature.BasicTree, 0.1),
-              ]
-            ),
-            new Layer(
-              1,
-              [TileType.Grass],
-              [
-                new TileFeatureProbability(TileFeature.Grass, 0.1),
-                new TileFeatureProbability(TileFeature.BasicTree, 0.1),
-              ]
-            ),
-          ],
-        };
-        break;
-      case BiomeType.Plains:
-        this.GenerationParams = {
-          max_height: 4,
-          height_variance: 0.7,
-          weather: Weather.Sunny,
-          clouds: true,
-          clouds_min_height: 11,
-          water: false,
-          water_height: 0.5,
-          layers: [
-            new Layer(
-              3,
-              [TileType.Dirt],
-              [
-                new TileFeatureProbability(TileFeature.Grass, 0.1),
-                new TileFeatureProbability(TileFeature.BasicTree, 0.1),
-              ]
-            ),
-            new Layer(
-              1,
-              [TileType.Grass],
-              [
-                new TileFeatureProbability(TileFeature.Grass, 0.1),
-                new TileFeatureProbability(TileFeature.BasicTree, 0.1),
-              ]
-            ),
-          ],
-        };
-        break;
-      case BiomeType.Taiga:
-        this.GenerationParams = {
-          max_height: 8,
-          height_variance: 1,
-          weather: Weather.Sunny,
-          clouds: true,
-          clouds_min_height: 11,
-          water: true,
-          water_height: 2,
-          layers: [
-            new Layer(
-              7,
-              [TileType.Stone],
-              [new TileFeatureProbability(TileFeature.Rock, 0.1)]
-            ),
-            new Layer(
-              6,
-              [TileType.Dirt],
-              [
-                new TileFeatureProbability(TileFeature.BasicTree, 0.3),
-                new TileFeatureProbability(TileFeature.Grass, 0.7),
-              ]
-            ),
-            new Layer(
-              4,
-              [TileType.Dirt],
-              [new TileFeatureProbability(TileFeature.BasicTree, 0.4)]
-            ),
-            new Layer(
-              1,
-              [TileType.Grass],
-              [new TileFeatureProbability(TileFeature.BasicTree, 0.2)]
-            ),
-          ],
-        };
-        break;
-      case BiomeType.Tundra:
-        this.GenerationParams = {
-          max_height: 8,
-          height_variance: 1,
-          weather: Weather.Snowy,
-          clouds: true,
-          clouds_min_height: 11,
-          water: true,
-          water_height: 2,
-          layers: [
-            new Layer(
-              7,
-              [TileType.Stone],
-              [new TileFeatureProbability(TileFeature.Rock, 0.1)]
-            ),
-            new Layer(
-              6,
-              [TileType.Dirt],
-              [
-                new TileFeatureProbability(TileFeature.BasicTree, 0.3),
-                new TileFeatureProbability(TileFeature.Grass, 0.7),
-              ]
-            ),
-            new Layer(
-              4,
-              [TileType.Dirt],
-              [new TileFeatureProbability(TileFeature.BasicTree, 0.4)]
-            ),
-            new Layer(
-              1,
-              [TileType.Grass],
-              [new TileFeatureProbability(TileFeature.BasicTree, 0.2)]
-            ),
-          ],
-        };
-        break;
-      case BiomeType.Swamp:
-        this.GenerationParams = {
-          max_height: 4,
-          height_variance: 0.7,
-          weather: Weather.Rainy,
-          clouds: true,
-          clouds_min_height: 11,
-          water: true,
-          water_height: 2,
-          layers: [
-            new Layer(
-              3,
-              [TileType.Dirt],
-              [
-                new TileFeatureProbability(TileFeature.Grass, 0.1),
-                new TileFeatureProbability(TileFeature.BasicTree, 0.1),
-              ]
-            ),
-            new Layer(
-              1,
-              [TileType.Grass],
-              [
-                new TileFeatureProbability(TileFeature.Grass, 0.1),
-                new TileFeatureProbability(TileFeature.BasicTree, 0.1),
-              ]
-            ),
-          ],
-        };
-        break;
-      default:
-        this.GenerationParams = new BiomeGenerationParameters();
-        break;
-    }
+    // Add JSON reader here for biome generation params
 
     const noise2D = createNoise2D(this.randomFunction(this.Params.seed)); // Create a seeded 2D noise function - gives values between -1 and 1
 
@@ -570,7 +168,7 @@ export default class Island {
     }
 
     this.enableLights(this.Params.world.scene);
-    this.addToScene(this.Params.world.scene);
+    this.createIslandBase(this.Params.world.scene);
   }
 
   public update(t: number): void {
@@ -630,7 +228,7 @@ export default class Island {
   > {
     let geo: THREE.BufferGeometry = new THREE.SphereGeometry(0, 0, 0);
     let min_clouds = 0;
-    if (this.GenerationParams.weather !== Weather.Clear) {
+    if (this.GenerationParams.weather.clouds) {
       min_clouds = 3;
     }
     let count = Math.max(
@@ -654,7 +252,7 @@ export default class Island {
       ]);
       cloudGeo.translate(
         Math.random() * this.Params.radius - 5,
-        Math.random() * 5 + this.GenerationParams.clouds_min_height,
+        Math.random() * 5 + this.GenerationParams.weather.clouds.minHeight,
         Math.random() * this.Params.radius - 5
       );
       cloudGeo.rotateY(Math.random() * Math.PI * 2);
@@ -662,13 +260,24 @@ export default class Island {
       geo = BufferGeometryUtils.mergeGeometries([geo, cloudGeo]);
     }
 
+    // Set the cloud colour and opacity based on the weather
+    let colour = new THREE.Color(0xffffff);
+    let opacity = 0.9;
+    if (this.weather.precipitationType === PrecipitationType.Snow) {
+      colour = new THREE.Color(0xaaaaaa);
+      opacity = 0.7;
+    } else if (this.weather.precipitationType === PrecipitationType.Rain) {
+      colour = new THREE.Color(0x888888);
+      opacity = 0.95;
+    }
+
     const mesh = new THREE.Mesh(
       geo,
       new THREE.MeshStandardMaterial({
-        color: 0xffffff,
+        color: colour,
         flatShading: true,
         transparent: true,
-        opacity: 0.9,
+        opacity: opacity,
       })
     );
     mesh.receiveShadow = true;
@@ -721,6 +330,50 @@ export default class Island {
     return particles;
   }
 
+  private getRain(): THREE.Points<THREE.BufferGeometry> {
+    let particles;
+    let positions: number[] = [];
+    let velocities: number[] = [];
+    const particleCount = 250;
+    const geo = new THREE.BufferGeometry();
+    const textureLoader = new THREE.TextureLoader();
+
+    for (let i = 0; i < particleCount; i++) {
+      positions.push(
+        Math.floor((Math.random() - 0.5) * (this.Params.radius * 1.7)),
+        Math.floor(Math.random() * this.getMaxHeight()),
+        Math.floor((Math.random() - 0.5) * (this.Params.radius * 1.7))
+      );
+      velocities.push(
+        (Math.random() - 0.5) * 0.5,
+        (Math.random() - 0.05) * -5 - 1,
+        (Math.random() - 0.5) * 0.5
+      );
+    }
+
+    geo.setAttribute(
+      "position",
+      new THREE.Float32BufferAttribute(positions, 3)
+    );
+    geo.setAttribute(
+      "velocity",
+      new THREE.Float32BufferAttribute(velocities, 3)
+    );
+
+    // Create a basic white square particle
+    const material = new THREE.PointsMaterial({
+      size: 0.5,
+      map: textureLoader.load("assets/raindrop.png"),
+      blending: THREE.AdditiveBlending,
+      depthTest: false,
+      transparent: true,
+      opacity: 0.8,
+    });
+
+    particles = new THREE.Points(geo, material);
+    return particles;
+  }
+
   private updateParticles(t: number): void {
     const min_height = this.getMinHeight();
     if (this.particles) {
@@ -743,7 +396,7 @@ export default class Island {
           );
           this.particles.geometry.attributes.position.array[i * 3 + 1] =
             Math.floor(
-              Math.random() * 5 + this.GenerationParams.clouds_min_height
+              Math.random() * 5 + this.GenerationParams.weather.clouds.minHeight
             );
           this.particles.geometry.attributes.position.array[i * 3 + 2] =
             Math.floor((Math.random() - 0.5) * (this.Params.radius * 1.7));
@@ -769,12 +422,12 @@ export default class Island {
     }
   }
 
-  public addToScene(scene: THREE.Scene): void {
+  public createIslandBase(scene: THREE.Scene): void {
     let waterMesh = new THREE.Mesh(
       new THREE.CylinderGeometry(
         this.Params.radius + 1,
         this.Params.radius + 1,
-        this.GenerationParams.water_height,
+        this.GenerationParams.water.height,
         6
       ),
       new THREE.MeshPhysicalMaterial({
@@ -789,7 +442,7 @@ export default class Island {
         thickness: 1.5,
       })
     );
-    waterMesh.position.set(0, this.GenerationParams.water_height / 2, 0);
+    waterMesh.position.set(0, this.GenerationParams.water.height / 2, 0);
 
     let islandContainerMesh = new THREE.Mesh(
       new THREE.CylinderGeometry(
@@ -833,12 +486,19 @@ export default class Island {
       scene.add(waterMesh);
     }
 
-    if (this.GenerationParams.clouds) {
+    if (this.GenerationParams.weather.clouds) {
       scene.add(this.getClouds());
     }
 
-    if (this.GenerationParams.weather === Weather.Snowy) {
+    if (
+      this.GenerationParams.weather.precipitationType === PrecipitationType.Snow
+    ) {
       this.particles = this.getSnow();
+      scene.add(this.particles);
+    } else if (
+      this.GenerationParams.weather.precipitationType === PrecipitationType.Rain
+    ) {
+      this.particles = this.getRain();
       scene.add(this.particles);
     }
   }
@@ -917,6 +577,10 @@ export default class Island {
       this.Params.world.scene.remove(this.sunShadowHelper);
       this.Params.world.scene.remove(this.moonHelper);
       this.Params.world.scene.remove(this.moonShadowHelper);
+      this.sunHelper = null;
+      this.sunShadowHelper = null;
+      this.moonHelper = null;
+      this.moonShadowHelper = null;
     }
   }
 
@@ -954,7 +618,11 @@ export default class Island {
   public createGoal(playerTile: Tile): void {
     if (this.goalTile == null) {
       let goalTile: Tile | null = null;
-      while (goalTile === null || goalTile === playerTile) {
+      while (
+        goalTile === null ||
+        goalTile === playerTile ||
+        goalTile.feature !== TileFeature.None
+      ) {
         goalTile = this.tiles[Math.floor(Math.random() * this.tiles.length)];
       }
       goalTile.SetGoal(AnimalType.Penguin);

@@ -1,7 +1,7 @@
 import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 import Island from "./Island";
-import { BiomeType, IslandParameters } from "./Island";
+import { BiomeType, IslandParams } from "./Island";
 import { Character } from "./Character";
 import * as CANNON from "cannon-es";
 import CannonDebugger from "cannon-es-debugger";
@@ -281,7 +281,7 @@ export default class World {
   }
 
   private createIsland(biomeType: BiomeType, seed: number): void {
-    const params = new IslandParameters(this, biomeType, seed, 15);
+    const params = new IslandParams(this, biomeType, seed, 15);
     this.island = new Island(params);
   }
 

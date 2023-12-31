@@ -1,0 +1,731 @@
+{
+  "biomes": [
+    {
+      "biomeName": "Alpine",
+      "generationParams": {
+        "maxHeight": 14,
+        "heightVariance": 1.5,
+        "weather": {
+          "precipitation": {
+            "snowBias": 1,
+            "rainBias": 0,
+            "precipitationChance": 100,
+            "precipitationVariance": 0.8
+          },
+          "clouds": {
+            "clouds": true,
+            "cloudsMinHeight": 13,
+            "cloudsMaxHeight": 14,
+            "cloudsColour": "#ffffff"
+          }
+        },
+        "water": {
+          "water": true,
+          "waterHeight": 0.5,
+          "waterColour": "#ffffff"
+        },
+        "layers": [
+          {
+            "minHeight": 8,
+            "tileType": "Stone",
+            "features": [
+              {
+                "featureType": "Rock",
+                "probability": 0.1
+              },
+              {
+                "featureType": "AlpineTree",
+                "probability": 0.3
+              }
+            ]
+          },
+          {
+            "minHeight": 7,
+            "tileType": "Dirt",
+            "features": [
+              {
+                "featureType": "AlpineTree",
+                "probability": 0.2
+              },
+              {
+                "featureType": "Snow",
+                "probability": 0.8
+              }
+            ]
+          },
+          {
+            "minHeight": 6,
+            "tileType": "Dirt",
+            "features": []
+          },
+          {
+            "minHeight": 4,
+            "tileType": "Grass",
+            "features": []
+          },
+          {
+            "minHeight": 1,
+            "tileType": "Grass",
+            "features": []
+          }
+        ]
+      }
+    },
+    {
+      "biomeName": "Desert",
+      "generationParams": {
+        "maxHeight": 3,
+        "heightVariance": 0.5,
+        "weather": {
+          "precipitation": null,
+          "clouds": {
+            "clouds": false,
+            "cloudsMinHeight": 11,
+            "cloudsMaxHeight": 12,
+            "cloudsColour": "#ffffff"
+          }
+        },
+        "water": {
+          "water": false,
+          "waterHeight": 0.5,
+          "waterColour": "#ffffff"
+        },
+        "layers": [
+          {
+            "minHeight": 1,
+            "tileType": "Sand",
+            "features": [
+              {
+                "featureType": "Rock",
+                "probability": 0.2
+              },
+              {
+                "featureType": "Tumbleweed",
+                "probability": 0.2
+              },
+              {
+                "featureType": "Cactus",
+                "probability": 0.2
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "biomeName": "MartianDesert",
+      "generationParams": {
+        "maxHeight": 3,
+        "heightVariance": 0.5,
+        "weather": {
+          "precipitation": null,
+          "clouds": {
+            "clouds": false,
+            "cloudsMinHeight": 11,
+            "cloudsMaxHeight": 12,
+            "cloudsColour": "#ffffff"
+          }
+        },
+        "water": {
+          "water": false,
+          "waterHeight": 0.5,
+          "waterColour": "#ffffff"
+        },
+        "layers": [
+          {
+            "minHeight": 1,
+            "tileType": "MartianSand",
+            "features": [
+              {
+                "featureType": "Rock",
+                "probability": 0.2
+              },
+              {
+                "featureType": "Tumbleweed",
+                "probability": 0.2
+              },
+              {
+                "featureType": "Cactus",
+                "probability": 0.2
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "biomeName": "Forest",
+      "generationParams": {
+        "maxHeight": 8,
+        "heightVariance": 1,
+        "weather": {
+          "precipitation": null,
+          "clouds": {
+            "clouds": true,
+            "cloudsMinHeight": 11,
+            "cloudsMaxHeight": 12,
+            "cloudsColour": "#ffffff"
+          }
+        },
+        "water": {
+          "water": true,
+          "waterHeight": 2,
+          "waterColour": "#ffffff"
+        },
+        "layers": [
+          {
+            "minHeight": 7,
+            "tileType": "Stone",
+            "features": [
+              {
+                "featureType": "Rock",
+                "probability": 0.1
+              }
+            ]
+          },
+          {
+            "minHeight": 6,
+            "tileType": "Dirt",
+            "features": [
+              {
+                "featureType": "BasicTree",
+                "probability": 0.3
+              },
+              {
+                "featureType": "Grass",
+                "probability": 0.7
+              }
+            ]
+          },
+          {
+            "minHeight": 4,
+            "tileType": "Dirt",
+            "features": [
+              {
+                "featureType": "BasicTree",
+                "probability": 0.4
+              }
+            ]
+          },
+          {
+            "minHeight": 1,
+            "tileType": "Grass",
+            "features": [
+              {
+                "featureType": "BasicTree",
+                "probability": 0.2
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "biomeName": "Jungle",
+      "generationParams": {
+        "maxHeight": 8,
+        "heightVariance": 1,
+        "weather": {
+          "precipitation": null,
+          "clouds": {
+            "clouds": true,
+            "cloudsMinHeight": 13,
+            "cloudsMaxHeight": 14,
+            "cloudsColour": "#ffffff"
+          }
+        },
+        "water": {
+          "water": true,
+          "waterHeight": 2,
+          "waterColour": "#ffffff"
+        },
+        "layers": [
+          {
+            "minHeight": 5,
+            "tileType": "Dirt",
+            "features": [
+              {
+                "featureType": "JungleTree",
+                "probability": 0.3
+              },
+              {
+                "featureType": "Grass",
+                "probability": 0.7
+              }
+            ]
+          },
+          {
+            "minHeight": 3,
+            "tileType": "Dirt",
+            "features": [
+              {
+                "featureType": "JungleTree",
+                "probability": 0.2
+              }
+            ]
+          },
+          {
+            "minHeight": 1,
+            "tileType": "Grass",
+            "features": [
+              {
+                "featureType": "JungleTree",
+                "probability": 0.2
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "biomeName": "Savanna",
+      "generationParams": {
+        "maxHeight": 4,
+        "heightVariance": 1,
+        "weather": {
+          "precipitation": null,
+          "clouds": {
+            "clouds": true,
+            "cloudsMinHeight": 11,
+            "cloudsMaxHeight": 12,
+            "cloudsColour": "#ffffff"
+          }
+        },
+        "water": {
+          "water": false,
+          "waterHeight": 1,
+          "waterColour": "#ffffff"
+        },
+        "layers": [
+          {
+            "minHeight": 1,
+            "tileType": "Dirt",
+            "features": [
+              {
+                "featureType": "BasicTree",
+                "probability": 0.1
+              },
+              {
+                "featureType": "Grass",
+                "probability": 0.7
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "biomeName": "Ocean",
+      "generationParams": {
+        "maxHeight": 6,
+        "heightVariance": 0.7,
+        "weather": {
+          "precipitation": null,
+          "clouds": {
+            "clouds": true,
+            "cloudsMinHeight": 11,
+            "cloudsMaxHeight": 12,
+            "cloudsColour": "#ffffff"
+          }
+        },
+        "water": {
+          "water": true,
+          "waterHeight": 5,
+          "waterColour": "#ffffff"
+        },
+        "layers": [
+          {
+            "minHeight": 5.5,
+            "tileType": "Dirt",
+            "features": [
+              {
+                "featureType": "BasicTree",
+                "probability": 0.05
+              },
+              {
+                "featureType": "Grass",
+                "probability": 0.2
+              }
+            ]
+          },
+          {
+            "minHeight": 1,
+            "tileType": "Sand",
+            "features": [
+              {
+                "featureType": "Seaweed",
+                "probability": 0.1
+              },
+              {
+                "featureType": "Rock",
+                "probability": 0.1
+              }
+            ]
+          },
+          {
+            "minHeight": 0,
+            "tileType": "Stone",
+            "features": [
+              {
+                "featureType": "Seaweed",
+                "probability": 0.05
+              },
+              {
+                "featureType": "Rock",
+                "probability": 0.1
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "biomeName": "Mesa",
+      "generationParams": {
+        "maxHeight": 5,
+        "heightVariance": 0.7,
+        "weather": {
+          "precipitation": null,
+          "clouds": {
+            "clouds": true,
+            "cloudsMinHeight": 11,
+            "cloudsMaxHeight": 12,
+            "cloudsColour": "#ffffff"
+          }
+        },
+        "water": {
+          "water": false,
+          "waterHeight": 0.5,
+          "waterColour": "#ffffff"
+        },
+        "layers": [
+          {
+            "minHeight": 4,
+            "tileType": "Dirt",
+            "features": [
+              {
+                "featureType": "Rock",
+                "probability": 0.1
+              },
+              {
+                "featureType": "Cactus",
+                "probability": 0.1
+              }
+            ]
+          },
+          {
+            "minHeight": 1,
+            "tileType": "Sand",
+            "features": [
+              {
+                "featureType": "Rock",
+                "probability": 0.1
+              },
+              {
+                "featureType": "Cactus",
+                "probability": 0.1
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "biomeName": "Meadow",
+      "generationParams": {
+        "maxHeight": 4,
+        "heightVariance": 0.7,
+        "weather": {
+          "precipitation": null,
+          "clouds": {
+            "clouds": true,
+            "cloudsMinHeight": 11,
+            "cloudsMaxHeight": 12,
+            "cloudsColour": "#ffffff"
+          }
+        },
+        "water": {
+          "water": false,
+          "waterHeight": 0.5,
+          "waterColour": "#ffffff"
+        },
+        "layers": [
+          {
+            "minHeight": 3,
+            "tileType": "Dirt",
+            "features": [
+              {
+                "featureType": "Grass",
+                "probability": 0.1
+              },
+              {
+                "featureType": "BasicTree",
+                "probability": 0.1
+              }
+            ]
+          },
+          {
+            "minHeight": 1,
+            "tileType": "Grass",
+            "features": [
+              {
+                "featureType": "Grass",
+                "probability": 0.1
+              },
+              {
+                "featureType": "BasicTree",
+                "probability": 0.1
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "biomeName": "Plains",
+      "generationParams": {
+        "maxHeight": 4,
+        "heightVariance": 0.7,
+        "weather": {
+          "precipitation": null,
+          "clouds": {
+            "clouds": true,
+            "cloudsMinHeight": 11,
+            "cloudsMaxHeight": 12,
+            "cloudsColour": "#ffffff"
+          }
+        },
+        "water": {
+          "water": false,
+          "waterHeight": 0.5,
+          "waterColour": "#ffffff"
+        },
+        "layers": [
+          {
+            "minHeight": 3,
+            "tileType": "Dirt",
+            "features": [
+              {
+                "featureType": "Grass",
+                "probability": 0.1
+              },
+              {
+                "featureType": "BasicTree",
+                "probability": 0.1
+              }
+            ]
+          },
+          {
+            "minHeight": 1,
+            "tileType": "Grass",
+            "features": [
+              {
+                "featureType": "Grass",
+                "probability": 0.1
+              },
+              {
+                "featureType": "BasicTree",
+                "probability": 0.1
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "biomeName": "Taiga",
+      "generationParams": {
+        "maxHeight": 8,
+        "heightVariance": 1,
+        "weather": {
+          "precipitation": null,
+          "clouds": {
+            "clouds": true,
+            "cloudsMinHeight": 11,
+            "cloudsMaxHeight": 12,
+            "cloudsColour": "#ffffff"
+          }
+        },
+        "water": {
+          "water": true,
+          "waterHeight": 2,
+          "waterColour": "#ffffff"
+        },
+        "layers": [
+          {
+            "minHeight": 7,
+            "tileType": "Stone",
+            "features": [
+              {
+                "featureType": "Rock",
+                "probability": 0.1
+              }
+            ]
+          },
+          {
+            "minHeight": 6,
+            "tileType": "Dirt",
+            "features": [
+              {
+                "featureType": "BasicTree",
+                "probability": 0.3
+              },
+              {
+                "featureType": "Grass",
+                "probability": 0.7
+              }
+            ]
+          },
+          {
+            "minHeight": 4,
+            "tileType": "Dirt",
+            "features": [
+              {
+                "featureType": "BasicTree",
+                "probability": 0.4
+              }
+            ]
+          },
+          {
+            "minHeight": 1,
+            "tileType": "Grass",
+            "features": [
+              {
+                "featureType": "BasicTree",
+                "probability": 0.2
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "biomeName": "Tundra",
+      "generationParams": {
+        "maxHeight": 8,
+        "heightVariance": 1,
+        "weather": {
+          "precipitation": {
+            "snowBias": 1,
+            "rainBias": 0,
+            "precipitationChance": 100,
+            "precipitationVariance": 0.8
+          },
+          "clouds": {
+            "clouds": true,
+            "cloudsMinHeight": 11,
+            "cloudsMaxHeight": 12,
+            "cloudsColour": "#ffffff"
+          }
+        },
+        "water": {
+          "water": true,
+          "waterHeight": 2,
+          "waterColour": "#ffffff"
+        },
+        "layers": [
+          {
+            "minHeight": 7,
+            "tileType": "Stone",
+            "features": [
+              {
+                "featureType": "Rock",
+                "probability": 0.1
+              }
+            ]
+          },
+          {
+            "minHeight": 6,
+            "tileType": "Dirt",
+            "features": [
+              {
+                "featureType": "BasicTree",
+                "probability": 0.3
+              },
+              {
+                "featureType": "Grass",
+                "probability": 0.7
+              }
+            ]
+          },
+          {
+            "minHeight": 4,
+            "tileType": "Dirt",
+            "features": [
+              {
+                "featureType": "BasicTree",
+                "probability": 0.4
+              }
+            ]
+          },
+          {
+            "minHeight": 1,
+            "tileType": "Grass",
+            "features": [
+              {
+                "featureType": "BasicTree",
+                "probability": 0.2
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "biomeName": "Swamp",
+      "generationParams": {
+        "maxHeight": 4,
+        "heightVariance": 0.7,
+        "weather": {
+          "precipitation": {
+            "snowBias": 0,
+            "rainBias": 1,
+            "precipitationChance": 100,
+            "precipitationVariance": 0.8
+          },
+          "clouds": {
+            "clouds": true,
+            "cloudsMinHeight": 11,
+            "cloudsMaxHeight": 12,
+            "cloudsColour": "#ffffff"
+          }
+        },
+        "water": {
+          "water": true,
+          "waterHeight": 2,
+          "waterColour": "#ffffff"
+        },
+        "layers": [
+          {
+            "minHeight": 3,
+            "tileType": "Dirt",
+            "features": [
+              {
+                "featureType": "Grass",
+                "probability": 0.1
+              },
+              {
+                "featureType": "BasicTree",
+                "probability": 0.1
+              }
+            ]
+          },
+          {
+            "minHeight": 1,
+            "tileType": "Grass",
+            "features": [
+              {
+                "featureType": "Grass",
+                "probability": 0.1
+              },
+              {
+                "featureType": "BasicTree",
+                "probability": 0.1
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ]
+}
