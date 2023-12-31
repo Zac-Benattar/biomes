@@ -169,6 +169,7 @@ export default class World {
     hud.style.left = "0";
 
     const title = document.createElement("h1");
+    title.className = "animalsFound";
     title.innerHTML = "Animals Found: " + this.animalsFound;
     title.style.margin = "0";
     title.style.padding = "0";
@@ -179,7 +180,7 @@ export default class World {
   }
 
   private updateHUD(): void {
-    this.hud.innerHTML = "Animals Found: " + this.animalsFound;
+    this.hud.getElementsByClassName("animalsFound")[0].innerHTML = "Animals Found: " + this.animalsFound;
   }
 
   private generateIsland(): void {

@@ -35,7 +35,7 @@ export default abstract class Item extends THREE.Object3D {
     // Placeholder box model
     const geometry = new THREE.BoxGeometry(0.5, 0.5, 0.5);
     const material = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
-    this.light = new THREE.PointLight(0x404040, 2);
+    this.light = new THREE.PointLight(0x404040, 3);
     this.model.add(new THREE.Mesh(geometry, material));
 
     this.model.add(this.light);
