@@ -134,20 +134,20 @@ export default class Tile {
       dirtMesh.receiveShadow = true;
       dirtMesh.name = "baseHexagon";
       this.model.add(dirtMesh);
-    } else if (this.tileType === TileType.Dirt2) {
-      let dirt2Geo: THREE.BufferGeometry = new THREE.BoxGeometry(0, 0, 0);
-      dirt2Geo = BufferGeometryUtils.mergeGeometries([dirt2Geo, geo]);
-      let dirt2Mesh = new THREE.Mesh(
-        dirt2Geo,
+    } else if (this.tileType === TileType.Mud) {
+      let mudGeo: THREE.BufferGeometry = new THREE.BoxGeometry(0, 0, 0);
+      mudGeo = BufferGeometryUtils.mergeGeometries([mudGeo, geo]);
+      let mudMesh = new THREE.Mesh(
+        mudGeo,
         new THREE.MeshStandardMaterial({
           color: 0x8b4543,
           flatShading: true,
         })
       );
-      dirt2Mesh.castShadow = true;
-      dirt2Mesh.receiveShadow = true;
-      dirt2Mesh.name = "baseHexagon";
-      this.model.add(dirt2Mesh);
+      mudMesh.castShadow = true;
+      mudMesh.receiveShadow = true;
+      mudMesh.name = "baseHexagon";
+      this.model.add(mudMesh);
     } else if (this.tileType === TileType.Grass) {
       let grassGeo: THREE.BufferGeometry = new THREE.BoxGeometry(0, 0, 0);
       grassGeo = BufferGeometryUtils.mergeGeometries([grassGeo, geo]);

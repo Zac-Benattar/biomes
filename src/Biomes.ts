@@ -1,4 +1,4 @@
-import { TileType } from "./Tile";
+import { TileFeature, TileType } from "./Tile";
 import { biomes } from "./biomes.json";
 
 export enum BiomeType {
@@ -18,7 +18,7 @@ export enum BiomeType {
   //   MartianDesert = "MartianDesert",
 }
 
-export class BiomeGenerationParams {
+export class BiomeData {
   public maxHeight: number;
   public heightVariance: number;
   public weather: WeatherParams;
@@ -26,42 +26,42 @@ export class BiomeGenerationParams {
   public layers: Layer[];
 }
 
-class CloudParams {
+export class CloudParams {
   count: number;
   minHeight: number;
   maxHeight: number;
   colour: string;
 }
 
-class PrecipitationParams {
+export class PrecipitationParams {
   snowBias: number;
   rainBias: number;
   chance: number;
   variance: number;
 }
 
-class WeatherParams {
+export class WeatherParams {
   precipitation: PrecipitationParams;
   clouds: CloudParams;
 }
 
-class WaterParams {
+export class WaterParams {
   height: number;
   colour: string;
 }
 
-class TileFeatureProbability {
-  feature: TileFeature;
+export class TileFeatureProbability {
+  featureType: TileFeature;
   probability: number;
 }
 
-class Layer {
+export class Layer {
   minHeight: number;
   tileTypes: TileType[];
   features: TileFeatureProbability[];
 }
 
-class BiomeHelper {
+export class BiomeHelper {
   public static parseBiomeData(biomeType: BiomeType): BiomeData {
     const biomeData = biomes.find(
       (x) => (x.biomeName = biomeType)
@@ -72,9 +72,40 @@ class BiomeHelper {
     }
 
     // Do the parsing
-    this.params.biomeParams = new BiomeGenerationParams();
-    this.params.biomeParams.layers = biomeData.layers; // Fix this urgently
-    this.params.biomeParams.maxHeight = biomeData.maxHeight;
-    this.params.biomeParams.water = biomeData.water;
+    let biomeParams = new BiomeData();
+
+    // Parse the layers
+    let layers = new Array<Layer>();
+    for (let layer of biomeData.layers) {
+      let newLayer = new Layer();
+
+      newLayer.minHeight = layer.minHeight;
+
+      let tileTypes = new Array<TileType>();
+      for (let tileType of layer.tileTypes) {
+        tileTypes.push(TileType[tileType as keyof typeof TileType]);
+      }
+      newLayer.tileTypes = tileTypes;
+
+      let features = new Array<TileFeatureProbability>();
+      for (let feature of layer.features) {
+        let newFeature = new TileFeatureProbability();
+        newFeature.featureType =
+          TileFeature[feature.featureType as keyof typeof TileFeature];
+        newFeature.probability = feature.probability;
+        features.push(newFeature);
+      }
+      newLayer.features = features;
+      layers.push(newLayer);
+    }
+
+    // Set the biome params
+    biomeParams.maxHeight = biomeData.maxHeight;
+    biomeParams.heightVariance = biomeData.heightVariance;
+    biomeParams.weather = biomeData.weather;
+    biomeParams.water = biomeData.water;
+    biomeParams.layers = layers;
+
+    return biomeParams;
   }
 }

@@ -5,12 +5,12 @@ import Item, { AnimalType } from "./Item";
 import Tile, { TileFeature, TileTop, TileType } from "./Tile";
 import * as CANNON from "cannon-es";
 import World from "./World";
-import { BiomeGenerationParams, BiomeType } from "./Biomes";
+import { BiomeData, BiomeHelper, BiomeType, Layer } from "./Biomes";
 
 export class IslandParams {
   world: World;
   biome: BiomeType;
-  biomeParams: BiomeGenerationParams;
+  biomeParams: BiomeData;
   seed: number = Math.random();
   radius: number = 15;
 
@@ -45,6 +45,8 @@ export default class Island {
   private Init(params: IslandParams) {
     this.params = params;
     this.tiles = [];
+
+    this.params.biomeParams = BiomeHelper.parseBiomeData(this.params.biome);
 
     const noise2D = createNoise2D(this.randomFunction(this.params.seed)); // Create a seeded 2D noise function - gives values between -1 and 1
 
@@ -81,7 +83,7 @@ export default class Island {
           for (let i = 0; i < tileLayer.features.length; i++) {
             cumulativeProbability += tileLayer.features[i].probability;
             if (featureProbability <= cumulativeProbability) {
-              feature = tileLayer.features[i].feature;
+              feature = tileLayer.features[i].featureType;
               break;
             }
           }
@@ -197,7 +199,9 @@ export default class Island {
       geo = BufferGeometryUtils.mergeGeometries([geo, cloudGeo]);
     }
 
-    const colour = new THREE.Color("0x" + this.params.biomeParams.weather.clouds.colour);
+    const colour = new THREE.Color(
+      this.params.biomeParams.weather.clouds.colour
+    );
     const opacity = 0.9;
 
     const mesh = new THREE.Mesh(
@@ -325,7 +329,8 @@ export default class Island {
           );
           this.particles.geometry.attributes.position.array[i * 3 + 1] =
             Math.floor(
-              Math.random() * 5 + this.params.biomeParams.weather.clouds.minHeight
+              Math.random() * 5 +
+                this.params.biomeParams.weather.clouds.minHeight
             );
           this.particles.geometry.attributes.position.array[i * 3 + 2] =
             Math.floor((Math.random() - 0.5) * (this.params.radius * 1.7));
@@ -407,7 +412,11 @@ export default class Island {
         side: THREE.DoubleSide,
       })
     );
-    islandFloorMesh.position.set(0, this.params.biomeParams.maxHeight * 0.02, 0);
+    islandFloorMesh.position.set(
+      0,
+      this.params.biomeParams.maxHeight * 0.02,
+      0
+    );
 
     scene.add(islandContainerMesh, islandFloorMesh);
 
@@ -420,16 +429,23 @@ export default class Island {
     }
 
     // Implement precipitation
-    if (
-      this.params.biomeParams.weather.precipitation === PrecipitationType.Snow
-    ) {
-      this.particles = this.getSnow();
-      scene.add(this.particles);
-    } else if (
-      this.params.biomeParams.weather.precipitation === PrecipitationType.Rain
-    ) {
-      this.particles = this.getRain();
-      scene.add(this.particles);
+    if (this.params.biomeParams.weather.precipitation) {
+      if (
+        this.params.biomeParams.weather.precipitation.chance < Math.random()
+      ) {
+        return;
+      }
+
+      // Determine whether it should snow or rain
+      if (
+        this.params.biomeParams.weather.precipitation.snowBias < Math.random()
+      ) {
+        this.particles = this.getSnow();
+        scene.add(this.particles);
+      } else {
+        this.particles = this.getRain();
+        scene.add(this.particles);
+      }
     }
   }
 

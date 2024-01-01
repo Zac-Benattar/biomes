@@ -198,12 +198,12 @@ export default class World {
     const seed = Math.random();
     const biomeOptions = Object.keys(BiomeType).length / 2;
     const biomeType = (seed * Number.MAX_VALUE) % biomeOptions;
-    if (this.island && this.island.params.biome === biomeType) {
+    if (this.island && this.island.params.biome === BiomeType[biomeType]) {
       this.generateIsland();
       return;
     }
 
-    this.createIsland(biomeType, seed);
+    this.createIsland(BiomeType[biomeType], seed);
 
     this.createPhysicsWorld();
 
