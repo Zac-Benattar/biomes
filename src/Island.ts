@@ -20,10 +20,17 @@ export class IslandParams {
   }
 }
 
+enum Weather {
+  None,
+  Rain,
+  Snow,
+}
+
 export default class Island {
   public params: IslandParams;
   public tiles: Array<Tile>;
   public goalTile: Tile | null = null;
+  private weather: Weather = Weather.None;
   private particles: THREE.Points<THREE.BufferGeometry> | null;
   private sun: THREE.DirectionalLight;
   private moon: THREE.DirectionalLight;
@@ -94,10 +101,10 @@ export default class Island {
             Math.floor(Math.random() * tileLayer.tileTypes.length)
           ];
 
-        let tiletop: TileTop = TileTop.None;
-        if (this.params.biome === BiomeType.Alpine) {
-          tiletop = TileTop.Snow;
-        }
+        const tiletop: TileTop =
+          tileLayer.topTypes[
+            Math.floor(Math.random() * tileLayer.topTypes.length)
+          ];
 
         this.tiles.push(
           new Tile(
@@ -278,9 +285,9 @@ export default class Island {
         Math.floor((Math.random() - 0.5) * (this.params.radius * 1.7))
       );
       velocities.push(
-        (Math.random() - 0.5) * 0.5,
-        (Math.random() - 0.05) * -5 - 1,
-        (Math.random() - 0.5) * 0.5
+        (Math.random() - 0.5) * 0.2,
+        (Math.random() - 0.05) * -5 - 3,
+        (Math.random() - 0.5) * 0.2
       );
     }
 
@@ -324,6 +331,13 @@ export default class Island {
           Math.abs(x) > this.params.radius - 1 ||
           Math.abs(z) > this.params.radius - 1
         ) {
+          let driftMultiplier = 0.2;
+          let speedOffset = 3;
+          if (this.weather === Weather.Snow) {
+            driftMultiplier = 0.5;
+            speedOffset = 0.5;
+          }
+
           this.particles.geometry.attributes.position.array[i * 3] = Math.floor(
             (Math.random() - 0.5) * (this.params.radius * 1.7)
           );
@@ -334,12 +348,13 @@ export default class Island {
             );
           this.particles.geometry.attributes.position.array[i * 3 + 2] =
             Math.floor((Math.random() - 0.5) * (this.params.radius * 1.7));
+
           this.particles.geometry.attributes.velocity.array[i * 3] =
-            (Math.random() - 0.5) * 0.5;
+            (Math.random() - 0.5) * driftMultiplier;
           this.particles.geometry.attributes.velocity.array[i * 3 + 1] =
-            (Math.random() - 0.05) * -5 - 0.5;
+            (Math.random() - 0.05) * -5 - speedOffset;
           this.particles.geometry.attributes.velocity.array[i * 3 + 2] =
-            (Math.random() - 0.5) * 0.5;
+            (Math.random() - 0.5) * driftMultiplier;
           this.particles.geometry.attributes.position.needsUpdate = true;
           continue;
         }
@@ -357,26 +372,30 @@ export default class Island {
   }
 
   public createIslandBase(scene: THREE.Scene): void {
-    let waterMesh = new THREE.Mesh(
-      new THREE.CylinderGeometry(
-        this.params.radius + 1,
-        this.params.radius + 1,
-        this.params.biomeParams.water.height,
-        6
-      ),
-      new THREE.MeshPhysicalMaterial({
-        color: 0x55aaff,
-        transparent: true,
-        transmission: 0.9,
-        opacity: 0.5,
-        ior: 1.4,
-        reflectivity: 0.5,
-        metalness: 0.02,
-        roughness: 1,
-        thickness: 1.5,
-      })
-    );
-    waterMesh.position.set(0, this.params.biomeParams.water.height / 2, 0);
+    if (this.params.biomeParams.water) {
+      let waterMesh = new THREE.Mesh(
+        new THREE.CylinderGeometry(
+          this.params.radius + 1,
+          this.params.radius + 1,
+          this.params.biomeParams.water.height,
+          6
+        ),
+        new THREE.MeshPhysicalMaterial({
+          color: 0x55aaff,
+          transparent: true,
+          transmission: 0.9,
+          opacity: 0.5,
+          ior: 1.4,
+          reflectivity: 0.5,
+          metalness: 0.02,
+          roughness: 1,
+          thickness: 1.5,
+        })
+      );
+      waterMesh.position.set(0, this.params.biomeParams.water.height / 2, 0);
+
+      scene.add(waterMesh);
+    }
 
     let islandContainerMesh = new THREE.Mesh(
       new THREE.CylinderGeometry(
@@ -420,31 +439,23 @@ export default class Island {
 
     scene.add(islandContainerMesh, islandFloorMesh);
 
-    if (this.params.biomeParams.water) {
-      scene.add(waterMesh);
-    }
-
-    if (this.params.biomeParams.weather.clouds) {
-      scene.add(this.getClouds());
-    }
-
-    // Implement precipitation
-    if (this.params.biomeParams.weather.precipitation) {
-      if (
-        this.params.biomeParams.weather.precipitation.chance < Math.random()
-      ) {
-        return;
+    if (this.params.biomeParams.weather) {
+      if (this.params.biomeParams.weather.clouds) {
+        scene.add(this.getClouds());
       }
 
-      // Determine whether it should snow or rain
-      if (
-        this.params.biomeParams.weather.precipitation.snowBias < Math.random()
-      ) {
-        this.particles = this.getSnow();
-        scene.add(this.particles);
-      } else {
-        this.particles = this.getRain();
-        scene.add(this.particles);
+      // Implement precipitation
+      if (this.params.biomeParams.weather.precipitation) {
+        // Determine whether it should snow or rain
+        if (
+          Math.random() < this.params.biomeParams.weather.precipitation.snowBias
+        ) {
+          this.particles = this.getSnow();
+          scene.add(this.particles);
+        } else {
+          this.particles = this.getRain();
+          scene.add(this.particles);
+        }
       }
     }
   }

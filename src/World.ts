@@ -197,13 +197,15 @@ export default class World {
   private generateIsland(): void {
     const seed = Math.random();
     const biomeOptions = Object.keys(BiomeType).length / 2;
-    const biomeType = (seed * Number.MAX_VALUE) % biomeOptions;
-    if (this.island && this.island.params.biome === BiomeType[biomeType]) {
+    const biomeType: BiomeType = Math.floor(seed * biomeOptions);
+
+    // If we're generating the same biome, just regenerate the island
+    if (this.island && this.island.params.biome === biomeType) {
       this.generateIsland();
       return;
     }
 
-    this.createIsland(BiomeType[biomeType], seed);
+    this.createIsland(biomeType, seed);
 
     this.createPhysicsWorld();
 

@@ -198,7 +198,7 @@ export default class Tile {
     if (this.top === TileTop.Snow) {
       let snowGeo: THREE.BufferGeometry = new THREE.BoxGeometry(0, 0, 0);
       let snowTopGeo = this.snowGeometry(
-        new THREE.Vector3(this.position.x, this.position.y, this.height + 0.05)
+        new THREE.Vector3(this.position.x, this.height + 0.05, this.position.z)
       );
       snowGeo = BufferGeometryUtils.mergeGeometries([snowGeo, snowTopGeo]);
       let snowMesh = new THREE.Mesh(
@@ -210,6 +210,21 @@ export default class Tile {
       );
       snowMesh.receiveShadow = true;
       this.model.add(snowMesh);
+    } else if (this.top === TileTop.Grass) {
+      let grassGeo: THREE.BufferGeometry = new THREE.BoxGeometry(0, 0, 0);
+      let grassTopGeo = this.snowGeometry(
+        new THREE.Vector3(this.position.x, this.height + 0.05, this.position.z)
+      );
+      grassGeo = BufferGeometryUtils.mergeGeometries([grassGeo, grassTopGeo]);
+      let grassMesh = new THREE.Mesh(
+        grassGeo,
+        new THREE.MeshStandardMaterial({
+          color: 0x4f7942,
+          flatShading: true,
+        })
+      );
+      grassMesh.receiveShadow = true;
+      this.model.add(grassMesh);
     }
 
     if (this.feature != TileFeature.None) {
