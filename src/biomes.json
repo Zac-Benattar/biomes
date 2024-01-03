@@ -405,7 +405,7 @@
           {
             "minHeight": 3,
             "tileTypes": ["Dirt"],
-            "topTypes": [],
+            "topTypes": ["Grass"],
             "features": [
               {
                 "featureType": "BasicTree",
@@ -587,6 +587,17 @@
         },
         "layers": [
           {
+            "minHeight": 3.5,
+            "tileTypes": ["Dirt"],
+            "topTypes": ["Grass"],
+            "features": [
+              {
+                "featureType": "BasicTree",
+                "probability": 0.1
+              }
+            ]
+          },
+          {
             "minHeight": 3,
             "tileTypes": ["Dirt"],
             "topTypes": [],
@@ -599,7 +610,7 @@
           },
           {
             "minHeight": 1,
-            "tileTypes": ["Grass"],
+            "tileTypes": ["Mud"],
             "topTypes": [],
             "features": [
               {

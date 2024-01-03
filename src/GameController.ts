@@ -7,10 +7,14 @@ import { Character } from "./Character";
 import * as CANNON from "cannon-es";
 import CannonDebugger from "cannon-es-debugger";
 
+const GAME_LENGTH = 10;
+
 export default class GameController {
   private menu: HTMLElement;
   private hud: HTMLElement;
+  private scoreScreen: HTMLElement;
   private menuVisible: boolean = false;
+  private scoreScreenVisible: boolean = false;
   private renderer: THREE.WebGLRenderer;
   public camera: THREE.PerspectiveCamera;
   public controls: OrbitControls;
@@ -27,6 +31,8 @@ export default class GameController {
   private animalsFound: number = 0;
   public goalReached: boolean = false;
   private gameStarted: boolean = false;
+  private timeRemaining: number = GAME_LENGTH;
+  private timeAtPause: number = 0;
 
   private cannonDebugger: typeof CannonDebugger;
   private physicsDebug: boolean = false;
@@ -64,7 +70,7 @@ export default class GameController {
       } else if (e.key === "h") {
         this.toggleShadows();
       } else if (e.key === "Escape") {
-        this.toggleMenu();
+        if (!this.scoreScreenVisible) this.toggleMenu();
       } else {
         this.character.handleKeyboardEvent(e, e.code, true);
       }
@@ -108,13 +114,18 @@ export default class GameController {
     } else {
       this.timeScaleTarget = 0;
     }
+
+    this.timeAtPause = this.clock.getElapsedTime();
   }
 
   private toggleMenu(): void {
     this.togglePause();
+
     if (this.gameStarted) {
-      this.menu.getElementsByClassName("startButton")[0].innerHTML =
-      "Resume";
+      this.menu.getElementsByClassName("startButton")[0].innerHTML = "Resume";
+      const restartButton =
+        this.menu.getElementsByClassName("restartButton")[0];
+      restartButton.style.display = "block";
     }
 
     this.menuVisible = !this.menuVisible;
@@ -122,6 +133,18 @@ export default class GameController {
       this.menu.style.display = "block";
     } else {
       this.menu.style.display = "none";
+    }
+
+    if (this.menuVisible) {
+      this.controls.enabled = false;
+      this.clock.stop();
+    } else {
+      this.controls.enabled = true;
+      this.clock.start();
+    }
+
+    if (!this.gameStarted) {
+      this.gameStarted = true;
     }
   }
 
@@ -176,6 +199,28 @@ export default class GameController {
     });
     menu.appendChild(startButton);
 
+    const restartButton = document.createElement("button");
+    restartButton.className = "restartButton";
+    restartButton.innerHTML = "Restart";
+    restartButton.style.margin = "10px";
+    restartButton.style.padding = "10px";
+    restartButton.style.backgroundColor = "#fff";
+    restartButton.style.color = "#000";
+    restartButton.style.border = "none";
+    restartButton.style.borderRadius = "5px";
+    restartButton.style.cursor = "pointer";
+    restartButton.style.fontSize = "1.2em";
+    restartButton.addEventListener("click", () => {
+      this.timeRemaining = GAME_LENGTH;
+      this.animalsFound = 0;
+      this.gameStarted = false;
+      if (this.scoreScreenVisible) this.toggleScoreScreen();
+      this.toggleMenu();
+      this.generateNextIsland();
+    });
+    restartButton.style.display = "none";
+    menu.appendChild(restartButton);
+
     document.body.appendChild(menu);
     this.menu = menu;
   }
@@ -190,6 +235,13 @@ export default class GameController {
     hud.style.zIndex = "100";
     hud.style.top = "0";
     hud.style.left = "0";
+
+    const time = document.createElement("h2");
+    time.className = "time";
+    time.innerHTML = "Time: " + this.timeRemaining + "s";
+    time.style.margin = "1";
+    time.style.padding = "1";
+    hud.appendChild(time);
 
     const animalsFound = document.createElement("h2");
     animalsFound.className = "animalsFound";
@@ -210,10 +262,72 @@ export default class GameController {
   }
 
   private updateHUD(): void {
+    this.hud.getElementsByClassName("time")[0].innerHTML =
+      "Time: " + this.timeRemaining.toFixed(3) + "s";
     this.hud.getElementsByClassName("animalsFound")[0].innerHTML =
       "Animals Found: " + this.animalsFound;
     this.hud.getElementsByClassName("biomeName")[0].innerHTML =
       "Biome: " + BiomeType[this.island.params.biome];
+  }
+
+  private createScoreScreen(): void {
+    this.controls.enabled = false;
+    const scoreScreen = document.createElement("div");
+    scoreScreen.id = "scoreScreen";
+    scoreScreen.style.position = "absolute";
+    scoreScreen.style.backgroundColor = "rgba(0, 0, 0, 0.8)";
+    scoreScreen.style.color = "#fff";
+    scoreScreen.style.padding = "10px";
+    scoreScreen.style.zIndex = "100";
+    scoreScreen.style.width = (window.innerWidth * 0.4).toString() + "px";
+    scoreScreen.style.height = (window.innerHeight * 0.6).toString() + "px";
+    scoreScreen.style.top =
+      (window.innerHeight / 2 - window.innerHeight * 0.3).toString() + "px";
+    scoreScreen.style.left =
+      (window.innerWidth / 2 - window.innerWidth * 0.2).toString() + "px";
+    scoreScreen.style.textAlign = "center";
+
+    const title = document.createElement("h1");
+    title.innerHTML = "Game Over";
+    scoreScreen.appendChild(title);
+
+    const description = document.createElement("p");
+    description.innerHTML =
+      "You found " +
+      this.animalsFound +
+      " animals! <br />" +
+      "Thanks for playing!";
+    scoreScreen.appendChild(description);
+
+    const restartButton = document.createElement("button");
+    restartButton.className = "scoreScreenRestartButton";
+    restartButton.innerHTML = "Restart";
+    restartButton.style.margin = "10px";
+    restartButton.style.padding = "10px";
+    restartButton.style.backgroundColor = "#fff";
+    restartButton.style.color = "#000";
+    restartButton.style.border = "none";
+    restartButton.style.borderRadius = "5px";
+    restartButton.style.cursor = "pointer";
+    restartButton.style.fontSize = "1.2em";
+    restartButton.addEventListener("click", () => {
+      this.timeRemaining = GAME_LENGTH;
+      this.animalsFound = 0;
+      this.gameStarted = false;
+      this.toggleScoreScreen();
+      this.toggleMenu();
+      this.generateNextIsland();
+    });
+    scoreScreen.appendChild(restartButton);
+
+    document.body.appendChild(scoreScreen);
+    this.scoreScreenVisible = true;
+    this.scoreScreen = scoreScreen;
+  }
+
+  private toggleScoreScreen(): void {
+    this.scoreScreen.style.display = "none";
+    this.scoreScreenVisible = false;
   }
 
   private generateIsland(): void {
@@ -242,9 +356,9 @@ export default class GameController {
 
   public onGoalReached(): void {
     if (!this.goalReached) {
+      this.timeAtPause += this.clock.getElapsedTime();
       this.goalReached = true;
       this.animalsFound++;
-      this.updateHUD();
 
       setTimeout(() => {
         this.generateNextIsland();
@@ -276,6 +390,8 @@ export default class GameController {
     this.updateHUD();
     this.physicsDebug = false;
     this.goalReached = false;
+    this.timeAtPause += this.clock.getElapsedTime();
+    this.clock.start();
   }
 
   public toggleShadows(): void {
@@ -326,6 +442,20 @@ export default class GameController {
   }
 
   private update(timeStep: number): void {
+    if (this.timeRemaining <= 0) {
+      if (this.goalReached) this.clock.stop();
+      if (!this.scoreScreenVisible) this.createScoreScreen();
+      // this.toggleMenu();
+    }
+
+    if (this.gameStarted) {
+      if (!this.goalReached && this.timeRemaining > 0 && !this.menuVisible) {
+        this.timeRemaining -= this.clock.getElapsedTime() * 0.001;
+      }
+    }
+
+    if (this.hud) this.updateHUD();
+
     this.physicsWorld.step(this.physicsFrameTime, timeStep);
 
     this.character.update(timeStep);
