@@ -2,7 +2,8 @@ import * as THREE from "three";
 import * as BufferGeometryUtils from "three/examples/jsm/utils/BufferGeometryUtils.js";
 import { createNoise2D } from "simplex-noise";
 import Item, { AnimalType } from "./Item";
-import Tile, { TileFeature, TileTop, TileType } from "./Tile";
+import Tile, { TileTop, TileType } from "./Tile";
+import { FeatureType, TileFeature } from "./TileFeature";
 import * as CANNON from "cannon-es";
 import World from "./World";
 import { BiomeData, BiomeHelper, BiomeType, Layer } from "./Biomes";
@@ -69,7 +70,7 @@ export default class Island {
             this.getMinHeight(),
           this.params.biomeParams.maxHeight
         );
-        let feature: TileFeature = TileFeature.None;
+        let featureType: FeatureType;
         let item: Item = null;
 
         let tileLayer: Layer | undefined = this.params.biomeParams.layers.find(
@@ -85,12 +86,12 @@ export default class Island {
 
         // Pick a feature based on probability
         if (tileLayer.features.length > 0) {
-          let featureProbability = Math.random();
+          const featureProbability = Math.random();
           let cumulativeProbability = 0;
           for (let i = 0; i < tileLayer.features.length; i++) {
             cumulativeProbability += tileLayer.features[i].probability;
             if (featureProbability <= cumulativeProbability) {
-              feature = tileLayer.features[i].featureType;
+              featureType = tileLayer.features[i].featureType;
               break;
             }
           }
@@ -112,7 +113,7 @@ export default class Island {
             height,
             position,
             tileType,
-            feature,
+            featureType,
             item,
             tiletop
           )
@@ -475,15 +476,6 @@ export default class Island {
       }
     }
     return closestTile;
-  }
-
-  public getCannonBodies(): CANNON.Body[] {
-    // return each tile as a cannon body
-    let bodies: CANNON.Body[] = [];
-    for (let i = 0; i < this.tiles.length; i++) {
-      bodies.push(this.tiles[i].getCannonBodies());
-    }
-    return bodies;
   }
 
   private enableLights(scene: THREE.Scene): void {

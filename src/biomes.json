@@ -34,7 +34,7 @@
               },
               {
                 "featureType": "AlpineTree",
-                "probability": 0.3
+                "probability": 0.2
               }
             ]
           },
@@ -46,10 +46,6 @@
               {
                 "featureType": "AlpineTree",
                 "probability": 0.2
-              },
-              {
-                "featureType": "Snow",
-                "probability": 0.8
               }
             ]
           },
@@ -89,15 +85,15 @@
             "features": [
               {
                 "featureType": "Rock",
-                "probability": 0.2
+                "probability": 0.05
               },
               {
                 "featureType": "Tumbleweed",
-                "probability": 0.2
+                "probability": 0.05
               },
               {
                 "featureType": "Cactus",
-                "probability": 0.2
+                "probability": 0.05
               }
             ]
           }
@@ -122,15 +118,7 @@
             "features": [
               {
                 "featureType": "Rock",
-                "probability": 0.2
-              },
-              {
-                "featureType": "Tumbleweed",
-                "probability": 0.2
-              },
-              {
-                "featureType": "Cactus",
-                "probability": 0.2
+                "probability": 0.05
               }
             ]
           }
@@ -163,7 +151,7 @@
             "features": [
               {
                 "featureType": "Rock",
-                "probability": 0.1
+                "probability": 0.05
               }
             ]
           },
@@ -212,8 +200,8 @@
           "precipitation": null,
           "clouds": {
             "count": 3,
-            "minHeight": 13,
-            "maxHeight": 14,
+            "minHeight": 14,
+            "maxHeight": 18,
             "colour": "#ffffff"
           }
         },
@@ -368,24 +356,13 @@
         "water": null,
         "layers": [
           {
-            "minHeight": 3,
-            "tileTypes": ["Dirt"],
-            "topTypes": [],
-            "features": [
-              {
-                "featureType": "BasicTree",
-                "probability": 0.1
-              }
-            ]
-          },
-          {
             "minHeight": 1,
             "tileTypes": ["Grass"],
             "topTypes": [],
             "features": [
               {
                 "featureType": "BasicTree",
-                "probability": 0.1
+                "probability": 0.05
               }
             ]
           }
@@ -598,10 +575,6 @@
             "topTypes": [],
             "features": [
               {
-                "featureType": "Grass",
-                "probability": 0.1
-              },
-              {
                 "featureType": "BasicTree",
                 "probability": 0.1
               }
@@ -612,10 +585,6 @@
             "tileTypes": ["Grass"],
             "topTypes": [],
             "features": [
-              {
-                "featureType": "Grass",
-                "probability": 0.1
-              },
               {
                 "featureType": "BasicTree",
                 "probability": 0.1

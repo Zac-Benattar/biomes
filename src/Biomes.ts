@@ -1,4 +1,5 @@
-import { TileFeature, TileTop, TileType } from "./Tile";
+import { TileTop, TileType } from "./Tile";
+import { FeatureType, TileFeature } from "./TileFeature";
 import { biomes } from "./biomes.json";
 
 export enum BiomeType {
@@ -48,7 +49,7 @@ export class WaterParams {
 }
 
 export class TileFeatureProbability {
-  featureType: TileFeature;
+  featureType: FeatureType;
   probability: number;
 }
 
@@ -95,7 +96,7 @@ export class BiomeHelper {
       for (let feature of layer.features) {
         let newFeature = new TileFeatureProbability();
         newFeature.featureType =
-          TileFeature[feature.featureType as keyof typeof TileFeature];
+          FeatureType[feature.featureType as keyof typeof FeatureType];
         newFeature.probability = feature.probability;
         features.push(newFeature);
       }

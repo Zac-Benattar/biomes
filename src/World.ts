@@ -205,9 +205,9 @@ export default class World {
       return;
     }
 
-    this.createIsland(biomeType, seed);
-
     this.createPhysicsWorld();
+
+    this.createIsland(biomeType, seed);
 
     this.character = new Character(this);
     this.island.createGoal(
@@ -275,11 +275,6 @@ export default class World {
       gravity: new CANNON.Vec3(0, -9.81, 0),
       broadphase: new CANNON.SAPBroadphase(this.physicsWorld),
       allowSleep: true,
-    });
-
-    // TODO: combine all tiles to a single body
-    this.island.getCannonBodies().forEach((body) => {
-      this.physicsWorld.addBody(body);
     });
   }
 

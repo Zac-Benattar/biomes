@@ -4,7 +4,7 @@ import Item, { Animal, AnimalType, ItemParams } from "./Item";
 import * as CANNON from "cannon-es";
 import World from "./World";
 import { Collider } from "./Colliders";
-import { FeatureType } from "./TileFeature";
+import { FeatureType, TileFeature } from "./TileFeature";
 
 export enum TileType {
   Stone = "Stone",
@@ -23,43 +23,49 @@ export enum TileTop {
   Grass = "Grass",
 }
 
-export default class Tile {
+export default class Tile extends THREE.Object3D {
   public world: World;
   public model: THREE.Group = new THREE.Group();
+  public cannonBody: CANNON.Body;
   public collider: Collider;
   public height: number;
   public position: THREE.Vector3;
   public tileType: TileType;
-  public feature: FeatureType;
+  public feature: TileFeature;
   public item: Item;
   public top: TileTop;
-  public cannonBody: CANNON.Body;
-  public marked: boolean;
 
   constructor(
     world: World,
     height: number,
     position: THREE.Vector3,
     tileType: TileType,
-    feature: FeatureType,
+    featureType: FeatureType,
     item: Item,
     top: TileTop
   ) {
+    super();
     this.world = world;
     this.height = height;
-    this.position = position;
+    this.position.set(position.x, position.y, position.z);
     this.tileType = tileType;
-    this.feature = feature;
+    if (featureType !== undefined)
+      this.feature = new TileFeature(
+        world,
+        featureType,
+        new THREE.Vector3(position.x, height, position.z)
+      );
     this.item = item;
     this.top = top;
-    this.marked = false;
 
     this.Init();
   }
 
   private Init(): void {
     this.generateModel();
+    this.createPhysicsBody();
     this.world.scene.add(this.model);
+    this.world.physicsWorld.addBody(this.cannonBody);
   }
 
   private hexGeometry(
@@ -203,23 +209,6 @@ export default class Tile {
       grassMesh.receiveShadow = true;
       this.model.add(grassMesh);
     }
-
-    if (this.feature != TileFeature.None) {
-      let featureMesh: THREE.Group = new THREE.Group();
-      if (this.feature === TileFeature.Rock) {
-        featureMesh.add(this.rock(this.height, this.position));
-      } else if (this.feature === TileFeature.AlpineTree) {
-        featureMesh.add(this.alpineTree(this.height, this.position));
-      } else if (this.feature === TileFeature.BasicTree) {
-        featureMesh.add(this.basicTree(this.height, this.position));
-      } else if (this.feature === TileFeature.JungleTree) {
-        featureMesh.add(this.jungleTree(this.height, this.position));
-      }
-
-      featureMesh.castShadow = true;
-      featureMesh.receiveShadow = true;
-      this.model.add(featureMesh);
-    }
   }
 
   public getTileTopPosition(): THREE.Vector3 {
@@ -231,7 +220,7 @@ export default class Tile {
   }
 
   //refactor
-  public getCannonBodies(): CANNON.Body {
+  private createPhysicsBody() {
     let shape = new CANNON.Cylinder(1, 1, this.height, 6);
     let tileBody = new CANNON.Body({
       mass: 0,
@@ -243,15 +232,6 @@ export default class Tile {
       shape: shape,
     });
     this.cannonBody = tileBody;
-
-    // let featureBody = new CANNON.Body();
-    // if (this.feature === TileFeature.Rock) {
-    //   featureBody = this.getRockCannonBody();
-    // } else if (this.feature === TileFeature.AlpineTree) {
-    //   featureBody = this.getAlpineTreeCannonBody();
-    // }
-
-    return tileBody;
   }
 
   public GetItem(): Item {
