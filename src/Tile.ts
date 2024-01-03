@@ -27,7 +27,6 @@ export default class Tile extends THREE.Object3D {
   public world: World;
   public model: THREE.Group = new THREE.Group();
   public cannonBody: CANNON.Body;
-  public collider: Collider;
   public height: number;
   public position: THREE.Vector3;
   public tileType: TileType;

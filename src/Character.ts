@@ -5,6 +5,8 @@ import {
   CylinderCollider,
   CylinderColliderOptions,
   CollisionGroups,
+  CapsuleCollider,
+  CapsuleColliderOptions,
 } from "./Colliders";
 import { RelativeSpringSimulator } from "./physics/SpringSimulation/RelativeSpringSimulator";
 import { VectorSpringSimulator } from "./physics/SpringSimulation/VectorSpringSimulator";
@@ -32,7 +34,7 @@ export class Character extends THREE.Object3D {
   public manager: THREE.LoadingManager;
   public actions: { [action: string]: KeyBinding };
   public model: THREE.Group;
-  public height: number = 1;
+  public height: number = 0.7;
   public radius: number = 0.15;
 
   // Movement
@@ -42,11 +44,11 @@ export class Character extends THREE.Object3D {
   public acceleration: THREE.Vector3 = new THREE.Vector3(0, 0, 0);
   public decceleration: THREE.Vector3 = new THREE.Vector3(0, 0, 0);
 
-  public movementSpeed: number = 5.0;
+  public movementSpeed: number = 3.0;
   public angularVelocity: number = 0.0;
   public orientation: THREE.Vector3 = new THREE.Vector3(0, 0, 1);
   public orientationTarget: THREE.Vector3 = new THREE.Vector3(0, 0, 1);
-  public collider: CylinderCollider;
+  public collider: CapsuleCollider;
   public defaultVelocitySimulatorDamping: number = 0.8;
   public defaultVelocitySimulatorMass: number = 60;
   public defaultRotationSimulatorDamping: number = 0.5;
@@ -100,14 +102,14 @@ export class Character extends THREE.Object3D {
       jump: new KeyBinding("Space"),
     };
 
-    this.collider = new CylinderCollider(
-      new CylinderColliderOptions(
+    this.collider = new CapsuleCollider(
+      new CapsuleColliderOptions(
         1,
         new CANNON.Vec3(0, 5, 0),
         this.height,
         this.radius,
         0.3,
-        8
+        20
       )
     );
 
@@ -603,7 +605,7 @@ export class Character extends THREE.Object3D {
       }
 
       // Add positive vertical velocity
-      body.velocity.y += character.movementSpeed;
+      body.velocity.y += 4;
       // Move above ground by 2x safe offset value
       body.position.y += character.raySafeOffset * 2;
       // Reset flag

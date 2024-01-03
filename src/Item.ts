@@ -43,7 +43,7 @@ export default abstract class Item extends THREE.Object3D {
     this.model.receiveShadow = true;
 
     this.collider = new BoxCollider({
-      mass: 0,
+      mass: 1,
       position: new CANNON.Vec3(
         this.position.x,
         this.position.y,

@@ -31,6 +31,31 @@ export class BoxColliderOptions {
   }
 }
 
+export class CapsuleColliderOptions {
+  public mass: number;
+  public position: CANNON.Vec3;
+  public height: number;
+  public radius: number;
+  public friction: number;
+  public segments: number;
+
+  constructor(
+    mass: number,
+    position: CANNON.Vec3,
+    height: number,
+    radius: number,
+    friction: number,
+    segments: number
+  ) {
+    this.mass = mass;
+    this.position = position;
+    this.height = height;
+    this.radius = radius;
+    this.friction = friction;
+    this.segments = segments;
+  }
+}
+
 export class CylinderColliderOptions {
   public mass: number;
   public position: CANNON.Vec3;
@@ -83,6 +108,36 @@ export class CylinderCollider extends Collider {
       material: material,
       shape: baseCyliner,
     });
+
+    cannonBody.allowSleep = false;
+    cannonBody.fixedRotation = true;
+    cannonBody.updateMassProperties();
+    cannonBody.position.copy(options.position);
+    // different group for raycasting
+    cannonBody.collisionFilterGroup = 2;
+
+    super(cannonBody);
+    this.options = options;
+  }
+}
+
+export class CapsuleCollider extends Collider {
+  public options: CylinderColliderOptions;
+
+  constructor(options: CylinderColliderOptions) {
+    const material = new CANNON.Material("capsuleMaterial");
+    material.friction = options.friction;
+
+    const sphereShape = new CANNON.Sphere(options.radius);
+
+    let cannonBody = new CANNON.Body({
+      mass: options.mass,
+      material: material,
+    });
+
+    cannonBody.addShape(sphereShape, new CANNON.Vec3(0, options.radius, 0));
+    cannonBody.addShape(sphereShape, new CANNON.Vec3(0, options.height / 2 + options.radius, 0));
+		cannonBody.addShape(sphereShape, new CANNON.Vec3(0, -options.height / 2 + options.radius, 0));
 
     cannonBody.allowSleep = false;
     cannonBody.fixedRotation = true;
