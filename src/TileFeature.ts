@@ -49,9 +49,9 @@ export class TileFeature extends THREE.Object3D {
       case FeatureType.JungleTree:
         this.jungleTree(position);
         break;
-      // case FeatureType.SavannaTree:
-      //   this.savannaTree(position);
-      //   break;
+      case FeatureType.SavannaTree:
+        this.savannaTree(position);
+        break;
     }
 
     this.world.scene.add(this.model);
@@ -256,6 +256,72 @@ export class TileFeature extends THREE.Object3D {
     this.cannonBody = new CANNON.Body({
       mass: 0,
       shape: new CANNON.Cylinder(0.3, 0.4, treeHeight, 10),
+      position: new CANNON.Vec3(position.x, position.y, position.z),
+    });
+  }
+
+  private savannaTree(position: THREE.Vector3) {
+    const puffCount = 200;
+    const treeHeight = Math.random() * 1 + 3.5;
+    const domeHeight = Math.random() * 0.1 + 0.3;
+    const domeRadius = 2;
+
+    const trunkGeo = new THREE.CylinderGeometry(0.25, 0.3, treeHeight, 10);
+    trunkGeo.translate(position.x, position.y + treeHeight * 0.4, position.z);
+
+    let puffs = [];
+
+    for (let i = 0; i < puffCount; i++) {
+      const puffRadius = Math.random() * 0.2 + 0.1;
+      const puff = new THREE.SphereGeometry(puffRadius, 7, 7);
+
+      // Generate random spherical coordinates
+      const theta = Math.random() * 2 * Math.PI; // azimuthal angle
+      const phi = Math.acos(2 * Math.random() - 1) * domeHeight; // polar angle
+
+      // Convert spherical coordinates to Cartesian coordinates
+      const x = Math.sin(phi) * Math.cos(theta);
+      const y = Math.cos(phi);
+      const z = Math.sin(phi) * Math.sin(theta);
+
+      // Scale the coordinates to the dome's radius
+      const scaledX = x * domeRadius;
+      const scaledY = y * domeRadius;
+      const scaledZ = z * domeRadius;
+
+      puff.translate(scaledX, scaledY - domeRadius, scaledZ);
+      puffs.push(puff);
+    }
+
+    const leavesGeo = BufferGeometryUtils.mergeGeometries(puffs);
+    leavesGeo.translate(position.x, position.y + treeHeight * 0.9, position.z);
+
+    let leavesMaterial = new THREE.MeshStandardMaterial({
+      color: 0x4f7942,
+      flatShading: true,
+    });
+
+    let trunkMaterial = new THREE.MeshStandardMaterial({
+      color: 0x8b4513,
+      flatShading: true,
+    });
+
+    let trunkMesh = new THREE.Mesh(trunkGeo, trunkMaterial);
+    trunkMesh.castShadow = true;
+    trunkMesh.receiveShadow = true;
+
+    let leavesMesh = new THREE.Mesh(leavesGeo, leavesMaterial);
+    leavesMesh.castShadow = true;
+    leavesMesh.receiveShadow = true;
+
+    let tree = new THREE.Group();
+    tree.add(trunkMesh, leavesMesh);
+
+    this.model.clear();
+    this.model.add(tree);
+    this.cannonBody = new CANNON.Body({
+      mass: 0,
+      shape: new CANNON.Cylinder(0.25, 0.3, treeHeight, 10),
       position: new CANNON.Vec3(position.x, position.y, position.z),
     });
   }

@@ -43,7 +43,7 @@ export default abstract class Item extends THREE.Object3D {
     this.model.receiveShadow = true;
 
     this.collider = new BoxCollider({
-      mass: 1,
+      mass: 0,
       position: new CANNON.Vec3(
         this.position.x,
         this.position.y,
@@ -52,7 +52,7 @@ export default abstract class Item extends THREE.Object3D {
       width: 1,
       height: 1,
       depth: 1,
-      friction: 0.5,
+      friction: 0,
     });
 
     this.collider.body.addEventListener("collide", (e: CANNON.EventTarget) => {

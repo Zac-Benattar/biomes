@@ -218,7 +218,6 @@ export default class World {
     );
   }
 
-  // fix - running multiple times when it should only be called once per goal found
   public onGoalReached(): void {
     if (!this.goalReached) {
       this.goalReached = true;
@@ -226,7 +225,7 @@ export default class World {
       this.updateHUD();
 
       setTimeout(() => {
-        this.reset();
+        this.generateNextIsland();
       }, 5000);
 
       let targetPosition = this.island.goalTile.getTileTopPosition();
@@ -236,7 +235,7 @@ export default class World {
     }
   }
 
-  private reset(): void {
+  private generateNextIsland(): void {
     // Reset character position, velocity, rotation
     this.character.reset();
 

@@ -213,7 +213,7 @@
           {
             "minHeight": 5,
             "tileTypes": ["Dirt"],
-            "topTypes": ["Grass"],
+            "topTypes": [],
             "features": [
               {
                 "featureType": "JungleTree",
@@ -263,12 +263,29 @@
         "water": null,
         "layers": [
           {
-            "minHeight": 1,
+            "minHeight": 1.5,
             "tileTypes": ["Dirt"],
             "topTypes": [],
             "features": [
               {
-                "featureType": "BasicTree",
+                "featureType": "SavannaTree",
+                "probability": 0.02
+              }
+            ]
+          },
+          {
+            "minHeight": 1,
+            "tileTypes": ["Mud"],
+            "topTypes": [],
+            "features": []
+          },
+          {
+            "minHeight": 0.5,
+            "tileTypes": ["Sand"],
+            "topTypes": [],
+            "features": [
+              {
+                "featureType": "Rock",
                 "probability": 0.1
               }
             ]
@@ -502,7 +519,7 @@
           {
             "minHeight": 7,
             "tileTypes": ["Stone"],
-            "topTypes": [],
+            "topTypes": ["Snow"],
             "features": [
               {
                 "featureType": "Rock",
@@ -513,32 +530,32 @@
           {
             "minHeight": 6,
             "tileTypes": ["Dirt"],
-            "topTypes": [],
+            "topTypes": ["Snow"],
             "features": [
               {
-                "featureType": "BasicTree",
-                "probability": 0.3
+                "featureType": "Rock",
+                "probability": 0.05
               }
             ]
           },
           {
             "minHeight": 4,
             "tileTypes": ["Dirt"],
-            "topTypes": [],
+            "topTypes": ["Snow"],
             "features": [
               {
-                "featureType": "BasicTree",
-                "probability": 0.4
+                "featureType": "AlpineTree",
+                "probability": 0.1
               }
             ]
           },
           {
             "minHeight": 1,
-            "tileTypes": ["Grass"],
+            "tileTypes": ["Dirt"],
             "topTypes": [],
             "features": [
               {
-                "featureType": "BasicTree",
+                "featureType": "AlpineTree",
                 "probability": 0.2
               }
             ]

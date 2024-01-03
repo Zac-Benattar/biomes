@@ -151,7 +151,7 @@ export default class Tile extends THREE.Object3D {
       let sandMesh = new THREE.Mesh(
         sandGeo,
         new THREE.MeshStandardMaterial({
-          color: 0x8b4513,
+          color: 0xc2b280,
           flatShading: true,
         })
       );
