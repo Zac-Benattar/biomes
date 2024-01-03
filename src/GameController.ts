@@ -7,7 +7,7 @@ import { Character } from "./Character";
 import * as CANNON from "cannon-es";
 import CannonDebugger from "cannon-es-debugger";
 
-export default class World {
+export default class GameController {
   private menu: HTMLElement;
   private hud: HTMLElement;
   private menuVisible: boolean = false;
@@ -26,6 +26,7 @@ export default class World {
   private delta: number = 0;
   private animalsFound: number = 0;
   public goalReached: boolean = false;
+  private gameStarted: boolean = false;
 
   private cannonDebugger: typeof CannonDebugger;
   private physicsDebug: boolean = false;
@@ -111,6 +112,11 @@ export default class World {
 
   private toggleMenu(): void {
     this.togglePause();
+    if (this.gameStarted) {
+      this.menu.getElementsByClassName("startButton")[0].innerHTML =
+      "Resume";
+    }
+
     this.menuVisible = !this.menuVisible;
     if (this.menuVisible) {
       this.menu.style.display = "block";
@@ -124,35 +130,51 @@ export default class World {
     menu.id = "menu";
     menu.style.display = "none";
     menu.style.position = "absolute";
-    menu.style.width = "200px";
-    menu.style.height = "200px";
+    menu.style.width = (window.innerWidth * 0.4).toString() + "px";
+    menu.style.height = (window.innerHeight * 0.6).toString() + "px";
     menu.style.backgroundColor = "rgba(0, 0, 0, 0.8)";
     menu.style.color = "#fff";
     menu.style.padding = "10px";
     menu.style.zIndex = "100";
-    menu.style.top = window.innerHeight / 2 - 200 / 2 + "px";
-    menu.style.left = window.innerWidth / 2 - 200 / 2 + "px";
+    menu.style.top =
+      (window.innerHeight / 2 - window.innerHeight * 0.3).toString() + "px";
+    menu.style.left =
+      (window.innerWidth / 2 - window.innerWidth * 0.2).toString() + "px";
+    menu.style.textAlign = "center";
 
     const title = document.createElement("h1");
     title.innerHTML = "Biomes";
-    title.style.margin = "0";
-    title.style.padding = "0";
     menu.appendChild(title);
 
     const description = document.createElement("p");
     description.innerHTML =
       "A game about exploring biomes and finding animals.";
-    description.style.marginTop = "0";
-    description.style.paddingTop = "0";
     menu.appendChild(description);
 
     const controls = document.createElement("p");
     controls.innerHTML =
       "Controls: <br />" +
       "WASD - Move <br /> Space - Jump <br /> P - Enable Physics Debug <br /> L - Toggle Light Debug <br /> H - Toggle Shadows <br /> Esc - Toggle Menu";
-    controls.style.marginTop = "0";
-    controls.style.paddingTop = "0";
     menu.appendChild(controls);
+
+    const startButton = document.createElement("button");
+    startButton.className = "startButton";
+    startButton.innerHTML = "Start";
+    startButton.style.margin = "10px";
+    startButton.style.padding = "10px";
+    startButton.style.backgroundColor = "#fff";
+    startButton.style.color = "#000";
+    startButton.style.border = "none";
+    startButton.style.borderRadius = "5px";
+    startButton.style.cursor = "pointer";
+    startButton.style.fontSize = "1.2em";
+    startButton.addEventListener("click", () => {
+      if (!this.gameStarted) {
+        this.gameStarted = true;
+      }
+      this.toggleMenu();
+    });
+    menu.appendChild(startButton);
 
     document.body.appendChild(menu);
     this.menu = menu;
@@ -169,14 +191,14 @@ export default class World {
     hud.style.top = "0";
     hud.style.left = "0";
 
-    const animalsFound = document.createElement("h1");
+    const animalsFound = document.createElement("h2");
     animalsFound.className = "animalsFound";
     animalsFound.innerHTML = "Animals Found: " + this.animalsFound;
     animalsFound.style.margin = "1";
     animalsFound.style.padding = "1";
     hud.appendChild(animalsFound);
 
-    const biomeName = document.createElement("h1");
+    const biomeName = document.createElement("h2");
     biomeName.className = "biomeName";
     biomeName.innerHTML = "Biome: " + BiomeType[this.island.params.biome];
     biomeName.style.margin = "1";
@@ -288,7 +310,7 @@ export default class World {
     this.renderer.setSize(window.innerWidth, window.innerHeight);
   }
 
-  private render(world: World): void {
+  private render(world: GameController): void {
     this.delta = this.clock.getDelta();
 
     requestAnimationFrame(() => {

@@ -13,7 +13,7 @@ import { VectorSpringSimulator } from "./physics/SpringSimulation/VectorSpringSi
 import { Idle } from "./CharacterStates/Idle";
 import * as CANNON from "cannon-es";
 import Tile from "./Tile";
-import World from "./World";
+import GameController from "./GameController";
 import * as Utils from "./Utils";
 import { ICharacterState } from "./CharacterStates/ICharacterState";
 
@@ -65,18 +65,18 @@ export class Character extends THREE.Object3D {
   public wantsToJump: boolean = false;
   public initJumpSpeed: number = -1;
 
-  public world: World;
+  public world: GameController;
 
   public physicsEnabled: boolean = true;
   public rotationSimulator: any;
   public velocitySimulator: any;
 
-  constructor(world: World) {
+  constructor(world: GameController) {
     super();
     this.Init(world);
   }
 
-  public Init(world: World): void {
+  public Init(world: GameController): void {
     this.world = world;
     this.decceleration = new THREE.Vector3(-0.0005, -0.0001, -5.0);
     this.acceleration = new THREE.Vector3(1, 0.25, 50.0);

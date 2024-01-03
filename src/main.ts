@@ -1,17 +1,23 @@
-import World from "./World";
+import  GameController from "./GameController";
+import WebGL from "three/addons/capabilities/WebGL.js";
 
-let APP: World;
+let APP: GameController;
 
 window.addEventListener("DOMContentLoaded", () => {
-  try {
-    var canvas = document.createElement("canvas");
-    if (
-      window.WebGLRenderingContext &&
-      (canvas.getContext("webgl") || canvas.getContext("experimental-webgl"))
-    ) {
-      APP = new World();
+  if (!WebGL.isWebGLAvailable()) {
+    const warning = WebGL.getWebGLErrorMessage();
+    document.getElementById("container").appendChild(warning);
+  } else {
+    try {
+      var canvas = document.createElement("canvas");
+      if (
+        window.WebGLRenderingContext &&
+        (canvas.getContext("webgl") || canvas.getContext("experimental-webgl"))
+      ) {
+        APP = new GameController();
+      }
+    } catch (e) {
+      console.log(e);
     }
-  } catch (e) {
-    console.log(e);
   }
 });

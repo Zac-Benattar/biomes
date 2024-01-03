@@ -2,7 +2,7 @@ import * as THREE from "three";
 import * as BufferGeometryUtils from "three/examples/jsm/utils/BufferGeometryUtils.js";
 import Item, { Animal, AnimalType, ItemParams } from "./Item";
 import * as CANNON from "cannon-es";
-import World from "./World";
+import GameController from "./GameController";
 import { Collider } from "./Colliders";
 import { FeatureType, TileFeature } from "./TileFeature";
 
@@ -24,7 +24,7 @@ export enum TileTop {
 }
 
 export default class Tile extends THREE.Object3D {
-  public world: World;
+  public world: GameController;
   public model: THREE.Group = new THREE.Group();
   public cannonBody: CANNON.Body;
   public height: number;
@@ -35,7 +35,7 @@ export default class Tile extends THREE.Object3D {
   public top: TileTop;
 
   constructor(
-    world: World,
+    world: GameController,
     height: number,
     position: THREE.Vector3,
     tileType: TileType,

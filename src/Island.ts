@@ -5,17 +5,17 @@ import Item, { AnimalType } from "./Item";
 import Tile, { TileTop, TileType } from "./Tile";
 import { FeatureType, TileFeature } from "./TileFeature";
 import * as CANNON from "cannon-es";
-import World from "./World";
+import GameController from "./GameController";
 import { BiomeData, BiomeHelper, BiomeType, Layer } from "./Biomes";
 
 export class IslandParams {
-  world: World;
+  world: GameController;
   biome: BiomeType;
   biomeParams: BiomeData;
   seed: number = Math.random();
   radius: number = 15;
 
-  constructor(world: World, biome: BiomeType, seed?: number, radius?: number) {
+  constructor(world: GameController, biome: BiomeType, seed?: number, radius?: number) {
     this.world = world;
     this.biome = biome;
   }

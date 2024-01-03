@@ -1,7 +1,7 @@
 import * as THREE from "three";
 import * as CANNON from "cannon-es";
 import { BoxCollider } from "./Colliders";
-import World from "./World";
+import GameController from "./GameController";
 
 export enum ItemType {
   Animal,
@@ -13,17 +13,17 @@ export enum AnimalType {
 }
 
 export class ItemParams {
-  world: World;
+  world: GameController;
   position: THREE.Vector3;
 
-  constructor(world: World, position: THREE.Vector3) {
+  constructor(world: GameController, position: THREE.Vector3) {
     this.world = world;
     this.position = position;
   }
 }
 
 export default abstract class Item extends THREE.Object3D {
-  world: World;
+  world: GameController;
   light: THREE.PointLight;
   model: THREE.Group = new THREE.Group();
   collider: BoxCollider;

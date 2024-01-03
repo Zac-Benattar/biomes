@@ -1,7 +1,7 @@
 import * as THREE from "three";
 import * as CANNON from "cannon-es";
 import { BufferGeometryUtils } from "three/examples/jsm/Addons.js";
-import World from "./World";
+import GameController from "./GameController";
 
 export enum FeatureType {
   Rock = "Rock",
@@ -25,13 +25,13 @@ export enum FeatureType {
 }
 
 export class TileFeature extends THREE.Object3D {
-  public world: World;
+  public world: GameController;
   public featureType: FeatureType;
   public model: THREE.Group = new THREE.Group();
   public cannonBody: CANNON.Body;
   private tileRadius = 0.5;
 
-  constructor(world: World, featureType: FeatureType, position: THREE.Vector3) {
+  constructor(world: GameController, featureType: FeatureType, position: THREE.Vector3) {
     super();
     this.world = world;
     this.featureType = featureType;
