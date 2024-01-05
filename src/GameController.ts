@@ -8,8 +8,9 @@ import * as CANNON from "cannon-es";
 import CannonDebugger from "cannon-es-debugger";
 import { FlyingSaucer } from "./FlyingSaucer";
 
-const GAME_LENGTH = 10;
+const GAME_LENGTH = 100;
 const SAUCER_HEIGHT = 20;
+const ISLAND_RADIUS = 15;
 
 export default class GameController {
   private menu: HTMLElement;
@@ -379,11 +380,18 @@ export default class GameController {
       this.flyingSaucer.setPosition(this.island.getTileFromXZ(this.character.position.x, this.character.position.z).getTileTopPosition());
       this.flyingSaucer.enableBeam(this.island.getTileFromXZ(this.character.position.x, this.character.position.z).getTileTopPosition());
 
-      let targetPosition = this.island.goalTile.getTileTopPosition();
-      this.camera.position.set(targetPosition.x, 20, targetPosition.z);
-      this.camera.lookAt(targetPosition);
-      this.camera.updateMatrixWorld();
+      this.moveCameraToGoal();
     }
+  }
+
+  private moveCameraToGoal(): void {
+    const goalPosition = this.island.goalTile.getTileTopPosition();
+    const goalDirection = goalPosition.normalize();
+    const cameraPosition = new THREE.Vector3(goalDirection.x * ISLAND_RADIUS * 1.2, 20, goalDirection.z * ISLAND_RADIUS * 1.2);
+
+    this.camera.position.copy(cameraPosition);
+    this.camera.lookAt(goalPosition);
+    this.camera.updateMatrixWorld();
   }
 
   private generateNextIsland(): void {

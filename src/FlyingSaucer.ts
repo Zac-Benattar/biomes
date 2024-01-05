@@ -42,7 +42,6 @@ export class FlyingSaucer extends THREE.Object3D {
 
     private createBeam(targetPosition: THREE.Vector3) {
         const beamHeight = this.position.y - targetPosition.y;
-        console.log(this.position.y, targetPosition.y, beamHeight);
         let geo = new THREE.CylinderGeometry(0.5, 1, beamHeight, 6, 1, false);
         let material = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
         material.transparent = true;
