@@ -450,7 +450,13 @@ export default class GameController {
 
     if (this.gameStarted) {
       if (!this.goalReached && this.timeRemaining > 0 && !this.menuVisible) {
-        this.timeRemaining -= this.clock.getElapsedTime() * 0.001;
+        const newTime = this.timeRemaining - this.clock.getElapsedTime() * 0.001;
+        if (newTime < 0) {
+          this.timeRemaining = 0;
+        }
+        else {
+          this.timeRemaining = newTime;
+        }
       }
     }
 

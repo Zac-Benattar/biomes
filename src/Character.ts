@@ -17,6 +17,8 @@ import GameController from "./GameController";
 import * as Utils from "./Utils";
 import { ICharacterState } from "./CharacterStates/ICharacterState";
 
+const SPAWN_HEIGHT = 20;
+
 export class KeyBinding {
   public eventCodes: string[];
   public isPressed: boolean = false;
@@ -647,7 +649,7 @@ export class Character extends THREE.Object3D {
   }
 
   public reset(): void {
-    this.setPosition(new THREE.Vector3(0, 10, 0));
+    this.setPosition(new THREE.Vector3(0, SPAWN_HEIGHT, 0));
     this.resetVelocity();
     this.resetOrientation();
   }
