@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import GameController from './GameController';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 
 export class FlyingSaucer extends THREE.Object3D {
     private gameController: GameController;
@@ -13,16 +14,20 @@ export class FlyingSaucer extends THREE.Object3D {
 
     private Init(gameContoller: GameController, position: THREE.Vector3): void {
         this.gameController = gameContoller;
-        this.createModel();
-        this.setPosition(position);
-        this.gameController.scene.add(this.model);
+        this.loadModel(position);
     }
 
     // Swap out for a real model
-    private createModel() {
-        let geo = new THREE.BoxGeometry(1, 1, 1);
-        let material = new THREE.MeshBasicMaterial({ color: 0xffff00 });
-        this.model = new THREE.Mesh(geo, material);
+    private loadModel(position: THREE.Vector3 = new THREE.Vector3(0, 0, 0)) {
+        const loader = new GLTFLoader();
+        loader.load("./assets/models/Saucer.glb", (gltf) => {
+            this.model = gltf.scene.children[0] as THREE.Mesh;
+            this.model.scale.set(0.5, 0.5, 0.5);
+            this.model.castShadow = true;
+            this.model.receiveShadow = true;
+            this.setPosition(position);
+            this.gameController.scene.add(this.model);
+        });
     }
 
     public enableBeam(targetPosition: THREE.Vector3) {
@@ -37,12 +42,13 @@ export class FlyingSaucer extends THREE.Object3D {
 
     private createBeam(targetPosition: THREE.Vector3) {
         const beamHeight = this.position.y - targetPosition.y;
+        console.log(this.position.y, targetPosition.y, beamHeight);
         let geo = new THREE.CylinderGeometry(0.5, 1, beamHeight, 6, 1, false);
         let material = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
         material.transparent = true;
         material.opacity = 0.2;
         this.beam = new THREE.Mesh(geo, material);
-        this.beam.position.set(this.position.x, this.position.y - beamHeight /2, this.position.z);
+        this.beam.position.set(this.position.x, this.position.y - beamHeight / 2, this.position.z);
     }
 
     public setPosition(position: THREE.Vector3): void {

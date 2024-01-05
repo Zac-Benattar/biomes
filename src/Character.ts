@@ -1,5 +1,5 @@
 import * as THREE from "three";
-import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 // import { FBXLoader } from "three/examples/jsm/loaders/FBXLoader";
 import {
   CollisionGroups,
@@ -116,7 +116,7 @@ export class Character extends THREE.Object3D {
     );
     this.collider.body.position.y = SPAWN_HEIGHT;
 
-    this.LoadModel();
+    this.loadModel();
 
     this.setPhysicsEnabled(true);
 
@@ -131,10 +131,10 @@ export class Character extends THREE.Object3D {
     this.setState(new Idle(this));
   }
 
-  public LoadModel() {
+  public loadModel() {
     const loader = new GLTFLoader();
     loader.load(
-      "./assets/models/alien/",
+      "./assets/models/Alien.glb",
       (gltf: THREE.Group<THREE.Object3DEventMap>) => {
         gltf.scale.setScalar(0.005);
         gltf.position.set(0, 10, 0);
