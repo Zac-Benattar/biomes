@@ -25,15 +25,15 @@ export enum FeatureType {
 }
 
 export class TileFeature extends THREE.Object3D {
-  public world: GameController;
+  public gameContoller: GameController;
   public featureType: FeatureType;
   public model: THREE.Group = new THREE.Group();
   public cannonBody: CANNON.Body;
   private tileRadius = 0.5;
 
-  constructor(world: GameController, featureType: FeatureType, position: THREE.Vector3) {
+  constructor(gameContoller: GameController, featureType: FeatureType, position: THREE.Vector3) {
     super();
-    this.world = world;
+    this.gameContoller = gameContoller;
     this.featureType = featureType;
 
     switch (featureType) {
@@ -54,8 +54,8 @@ export class TileFeature extends THREE.Object3D {
         break;
     }
 
-    this.world.scene.add(this.model);
-    this.world.physicsWorld.addBody(this.cannonBody);
+    this.gameContoller.scene.add(this.model);
+    this.gameContoller.physicsWorld.addBody(this.cannonBody);
   }
 
   private rock(position: THREE.Vector3) {

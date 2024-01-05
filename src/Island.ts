@@ -9,14 +9,14 @@ import GameController from "./GameController";
 import { BiomeData, BiomeHelper, BiomeType, Layer } from "./Biomes";
 
 export class IslandParams {
-  world: GameController;
+  gameController: GameController;
   biome: BiomeType;
   biomeParams: BiomeData;
   seed: number = Math.random();
   radius: number = 15;
 
-  constructor(world: GameController, biome: BiomeType, seed?: number, radius?: number) {
-    this.world = world;
+  constructor(gameController: GameController, biome: BiomeType, seed?: number, radius?: number) {
+    this.gameController = gameController;
     this.biome = biome;
   }
 }
@@ -109,7 +109,7 @@ export default class Island {
 
         this.tiles.push(
           new Tile(
-            this.params.world,
+            this.params.gameController,
             height,
             position,
             tileType,
@@ -121,8 +121,8 @@ export default class Island {
       }
     }
 
-    this.enableLights(this.params.world.scene);
-    this.createIslandBase(this.params.world.scene);
+    this.enableLights(this.params.gameController.scene);
+    this.createIslandBase(this.params.gameController.scene);
   }
 
   public update(t: number): void {
@@ -510,22 +510,22 @@ export default class Island {
     this.lightDebug = !this.lightDebug;
     if (this.lightDebug) {
       this.sunHelper = new THREE.DirectionalLightHelper(this.sun, 5);
-      this.params.world.scene.add(this.sunHelper);
+      this.params.gameController.scene.add(this.sunHelper);
       this.sunShadowHelper = new THREE.CameraHelper(this.sun.shadow.camera);
-      this.params.world.scene.add(this.sunShadowHelper);
+      this.params.gameController.scene.add(this.sunShadowHelper);
       this.moonHelper = new THREE.DirectionalLightHelper(this.moon, 5);
-      this.params.world.scene.add(this.moonHelper);
+      this.params.gameController.scene.add(this.moonHelper);
       this.moonShadowHelper = new THREE.CameraHelper(this.moon.shadow.camera);
-      this.params.world.scene.add(this.moonShadowHelper);
-      this.params.world.scene.add(this.sunHelper);
-      this.params.world.scene.add(this.sunShadowHelper);
-      this.params.world.scene.add(this.moonHelper);
-      this.params.world.scene.add(this.moonShadowHelper);
+      this.params.gameController.scene.add(this.moonShadowHelper);
+      this.params.gameController.scene.add(this.sunHelper);
+      this.params.gameController.scene.add(this.sunShadowHelper);
+      this.params.gameController.scene.add(this.moonHelper);
+      this.params.gameController.scene.add(this.moonShadowHelper);
     } else {
-      this.params.world.scene.remove(this.sunHelper);
-      this.params.world.scene.remove(this.sunShadowHelper);
-      this.params.world.scene.remove(this.moonHelper);
-      this.params.world.scene.remove(this.moonShadowHelper);
+      this.params.gameController.scene.remove(this.sunHelper);
+      this.params.gameController.scene.remove(this.sunShadowHelper);
+      this.params.gameController.scene.remove(this.moonHelper);
+      this.params.gameController.scene.remove(this.moonShadowHelper);
       this.sunHelper = null;
       this.sunShadowHelper = null;
       this.moonHelper = null;

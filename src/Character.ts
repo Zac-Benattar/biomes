@@ -2,8 +2,6 @@ import * as THREE from "three";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
 import { FBXLoader } from "three/examples/jsm/loaders/FBXLoader";
 import {
-  CylinderCollider,
-  CylinderColliderOptions,
   CollisionGroups,
   CapsuleCollider,
   CapsuleColliderOptions,
@@ -67,19 +65,21 @@ export class Character extends THREE.Object3D {
   public wantsToJump: boolean = false;
   public initJumpSpeed: number = -1;
 
-  public world: GameController;
+  public gameController: GameController;
 
   public physicsEnabled: boolean = true;
   public rotationSimulator: any;
   public velocitySimulator: any;
 
-  constructor(world: GameController) {
+  public grounded: boolean = false;
+
+  constructor(gameController: GameController) {
     super();
-    this.Init(world);
+    this.Init(gameController);
   }
 
-  public Init(world: GameController): void {
-    this.world = world;
+  public Init(gameController: GameController): void {
+    this.gameController = gameController;
     this.decceleration = new THREE.Vector3(-0.0005, -0.0001, -5.0);
     this.acceleration = new THREE.Vector3(1, 0.25, 50.0);
 
@@ -114,16 +114,17 @@ export class Character extends THREE.Object3D {
         20
       )
     );
+    this.collider.body.position.y = SPAWN_HEIGHT;
 
     this.LoadModels();
 
     this.setPhysicsEnabled(true);
 
-    this.world.physicsWorld.addEventListener("preStep", () => {
+    this.gameController.physicsWorld.addEventListener("preStep", () => {
       this.physicsPreStep(this);
     });
 
-    this.world.physicsWorld.addEventListener("postStep", () => {
+    this.gameController.physicsWorld.addEventListener("postStep", () => {
       this.physicsPostStep(this.collider.body, this);
     });
 
@@ -143,7 +144,7 @@ export class Character extends THREE.Object3D {
         });
 
         this.model = fbx;
-        this.world.scene.add(this.model);
+        this.gameController.scene.add(this.model);
 
         this.mixer = new THREE.AnimationMixer(this.model);
 
@@ -174,9 +175,9 @@ export class Character extends THREE.Object3D {
     this.physicsEnabled = enabled;
 
     if (enabled) {
-      this.world.physicsWorld.addBody(this.collider.body);
+      this.gameController.physicsWorld.addBody(this.collider.body);
     } else {
-      this.world.physicsWorld.removeBody(this.collider.body);
+      this.gameController.physicsWorld.removeBody(this.collider.body);
     }
   }
 
@@ -241,7 +242,7 @@ export class Character extends THREE.Object3D {
         // Update view vector so movement is relative to the camera
         this.viewVector = new THREE.Vector3().subVectors(
           this.position,
-          this.world.camera.position
+          this.gameController.camera.position
         );
 
         const binding = this.actions[action];
@@ -425,7 +426,7 @@ export class Character extends THREE.Object3D {
     let index = 0;
     for (index = 0; index < startPoints.length; index++) {
       let rayResult: CANNON.RaycastResult = new CANNON.RaycastResult();
-      this.world.physicsWorld.raycastClosest(
+      this.gameController.physicsWorld.raycastClosest(
         startPoints[index],
         endPoints[index],
         rayCastOptions,
@@ -456,7 +457,7 @@ export class Character extends THREE.Object3D {
   public physicsPostStep(body: CANNON.Body, character: Character): void {
     let outsideIsland =
       Math.pow(this.position.x, 2) + Math.pow(this.position.z, 2) >
-      Math.pow(this.world.island.params.radius, 2);
+      Math.pow(this.gameController.island.params.radius, 2);
 
     // Reset character if outside of island or fell below y=0
     if (outsideIsland || this.position.y < 0) {
@@ -532,6 +533,9 @@ export class Character extends THREE.Object3D {
 
     // Check if we have ground contact
     if (character.rayHitTarget) {
+      // Set grounded flag
+      this.grounded = true;
+
       // Stop falling
       newVelocity.y = 0;
 
@@ -569,9 +573,11 @@ export class Character extends THREE.Object3D {
       body.position.y =
         character.rayResult.hitPointWorld.y +
         character.rayCastLength +
-        newVelocity.y / character.world.physicsFrameRate;
+        newVelocity.y / character.gameController.physicsFrameRate;
     } else {
       // We are in the air
+      this.grounded = false;
+
       body.velocity.x = newVelocity.x;
       body.velocity.y = newVelocity.y;
       body.velocity.z = newVelocity.z;

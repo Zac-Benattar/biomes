@@ -24,7 +24,7 @@ export enum TileTop {
 }
 
 export default class Tile extends THREE.Object3D {
-  public world: GameController;
+  public gameContoller: GameController;
   public model: THREE.Group = new THREE.Group();
   public cannonBody: CANNON.Body;
   public height: number;
@@ -35,7 +35,7 @@ export default class Tile extends THREE.Object3D {
   public top: TileTop;
 
   constructor(
-    world: GameController,
+    gameContoller: GameController,
     height: number,
     position: THREE.Vector3,
     tileType: TileType,
@@ -44,13 +44,13 @@ export default class Tile extends THREE.Object3D {
     top: TileTop
   ) {
     super();
-    this.world = world;
+    this.gameContoller = gameContoller;
     this.height = height;
     this.position.set(position.x, position.y, position.z);
     this.tileType = tileType;
     if (featureType !== undefined)
       this.feature = new TileFeature(
-        world,
+        gameContoller,
         featureType,
         new THREE.Vector3(position.x, height, position.z)
       );
@@ -63,8 +63,8 @@ export default class Tile extends THREE.Object3D {
   private Init(): void {
     this.generateModel();
     this.createPhysicsBody();
-    this.world.scene.add(this.model);
-    this.world.physicsWorld.addBody(this.cannonBody);
+    this.gameContoller.scene.add(this.model);
+    this.gameContoller.physicsWorld.addBody(this.cannonBody);
   }
 
   private hexGeometry(
@@ -238,7 +238,7 @@ export default class Tile extends THREE.Object3D {
   }
 
   public SetGoal(animal: AnimalType): void {
-    const itemParams = new ItemParams(this.world, this.getTileTopPosition());
+    const itemParams = new ItemParams(this.gameContoller, this.getTileTopPosition());
     this.item = new Animal(itemParams, animal);
   }
 }

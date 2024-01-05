@@ -6,8 +6,10 @@ import { BiomeType } from "./Biomes";
 import { Character } from "./Character";
 import * as CANNON from "cannon-es";
 import CannonDebugger from "cannon-es-debugger";
+import { FlyingSaucer } from "./FlyingSaucer";
 
 const GAME_LENGTH = 10;
+const SAUCER_HEIGHT = 20;
 
 export default class GameController {
   private menu: HTMLElement;
@@ -22,6 +24,7 @@ export default class GameController {
   public physicsWorld: CANNON.World;
   public island: Island;
   private character: Character;
+  private flyingSaucer: FlyingSaucer;
   public physicsFrameRate: number = 60;
   public physicsFrameTime: number = 1 / this.physicsFrameRate;
   private timeScaleTarget: number = 1;
@@ -33,6 +36,7 @@ export default class GameController {
   private gameStarted: boolean = false;
   private timeRemaining: number = GAME_LENGTH;
   private timeAtPause: number = 0;
+  private initialPlayerGroundingOccurred: boolean = false;
 
   private cannonDebugger: typeof CannonDebugger;
   private physicsDebug: boolean = false;
@@ -72,6 +76,7 @@ export default class GameController {
       } else if (e.key === "Escape") {
         if (!this.scoreScreenVisible) this.toggleMenu();
       } else {
+        if (this.gameStarted && this.timeRemaining > 0 && !this.menuVisible && !this.scoreScreenVisible)
         this.character.handleKeyboardEvent(e, e.code, true);
       }
     });
@@ -143,7 +148,7 @@ export default class GameController {
       this.clock.start();
     }
 
-    if (!this.gameStarted) {
+    if (!this.gameStarted && this.initialPlayerGroundingOccurred) {
       this.gameStarted = true;
     }
   }
@@ -192,7 +197,7 @@ export default class GameController {
     startButton.style.cursor = "pointer";
     startButton.style.fontSize = "1.2em";
     startButton.addEventListener("click", () => {
-      if (!this.gameStarted) {
+      if (!this.gameStarted && this.initialPlayerGroundingOccurred) {
         this.gameStarted = true;
       }
       this.toggleMenu();
@@ -211,6 +216,7 @@ export default class GameController {
     restartButton.style.cursor = "pointer";
     restartButton.style.fontSize = "1.2em";
     restartButton.addEventListener("click", () => {
+      this.initialPlayerGroundingOccurred = false;
       this.timeRemaining = GAME_LENGTH;
       this.animalsFound = 0;
       this.gameStarted = false;
@@ -311,6 +317,7 @@ export default class GameController {
     restartButton.style.cursor = "pointer";
     restartButton.style.fontSize = "1.2em";
     restartButton.addEventListener("click", () => {
+      this.initialPlayerGroundingOccurred = false;
       this.timeRemaining = GAME_LENGTH;
       this.animalsFound = 0;
       this.gameStarted = false;
@@ -352,6 +359,10 @@ export default class GameController {
         this.character.getFeetPosition().z
       )
     );
+
+    const flyingSaucerPosition: THREE.Vector3 = new THREE.Vector3(this.character.position.x, SAUCER_HEIGHT, this.character.position.z)
+    this.flyingSaucer = new FlyingSaucer(this, flyingSaucerPosition);
+    this.flyingSaucer.enableBeam(this.island.getTileFromXZ(this.character.position.x, this.character.position.z).getTileTopPosition());
   }
 
   public onGoalReached(): void {
@@ -359,10 +370,14 @@ export default class GameController {
       this.timeAtPause += this.clock.getElapsedTime();
       this.goalReached = true;
       this.animalsFound++;
+      this.initialPlayerGroundingOccurred = false;
 
       setTimeout(() => {
         this.generateNextIsland();
       }, 5000);
+
+      this.flyingSaucer.setPosition(this.island.getTileFromXZ(this.character.position.x, this.character.position.z).getTileTopPosition());
+      this.flyingSaucer.enableBeam(this.island.getTileFromXZ(this.character.position.x, this.character.position.z).getTileTopPosition());
 
       let targetPosition = this.island.goalTile.getTileTopPosition();
       this.camera.position.set(targetPosition.x, 20, targetPosition.z);
@@ -378,7 +393,7 @@ export default class GameController {
     // Delete previous island
     this.scene.clear();
 
-    // Delete previous physics world
+    // Delete previous physics gameContoller
     while (this.physicsWorld.bodies.length > 0) {
       this.physicsWorld.removeBody(this.physicsWorld.bodies[0]);
     }
@@ -426,17 +441,17 @@ export default class GameController {
     this.renderer.setSize(window.innerWidth, window.innerHeight);
   }
 
-  private render(world: GameController): void {
+  private render(gameContoller: GameController): void {
     this.delta = this.clock.getDelta();
 
     requestAnimationFrame(() => {
-      world.render(world);
+      gameContoller.render(gameContoller);
     });
 
     let timeStep = this.delta * this.timeScale;
     timeStep = Math.min(timeStep, 1 / 30);
 
-    world.update(timeStep);
+    gameContoller.update(timeStep);
 
     this.renderer.render(this.scene, this.camera);
   }
@@ -465,6 +480,12 @@ export default class GameController {
     this.physicsWorld.step(this.physicsFrameTime, timeStep);
 
     this.character.update(timeStep);
+
+    // Check if the player has landed on the ground for the first time
+    if (this.character.grounded && !this.initialPlayerGroundingOccurred) {
+      this.initialPlayerGroundingOccurred = true;
+      this.gameStarted = true;
+    }
 
     this.island.update(timeStep);
 

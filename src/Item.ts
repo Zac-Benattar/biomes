@@ -13,24 +13,24 @@ export enum AnimalType {
 }
 
 export class ItemParams {
-  world: GameController;
+  gameContoller: GameController;
   position: THREE.Vector3;
 
-  constructor(world: GameController, position: THREE.Vector3) {
-    this.world = world;
+  constructor(gameContoller: GameController, position: THREE.Vector3) {
+    this.gameContoller = gameContoller;
     this.position = position;
   }
 }
 
 export default abstract class Item extends THREE.Object3D {
-  world: GameController;
+  gameController: GameController;
   light: THREE.PointLight;
   model: THREE.Group = new THREE.Group();
   collider: BoxCollider;
 
   constructor(params: ItemParams, model: THREE.Group) {
     super();
-    this.world = params.world;
+    this.gameController = params.gameContoller;
 
     // Placeholder box model
     const geometry = new THREE.BoxGeometry(0.5, 0.5, 0.5);
@@ -56,13 +56,13 @@ export default abstract class Item extends THREE.Object3D {
     });
 
     this.collider.body.addEventListener("collide", (e: CANNON.EventTarget) => {
-      if (!this.world.goalReached && e.body.collisionFilterGroup === 2) this.world.onGoalReached();
+      if (!this.gameController.goalReached && e.body.collisionFilterGroup === 2) this.gameController.onGoalReached();
     });
 
     this.setPosition(params.position);
 
-    this.world.scene.add(this.model);
-    this.world.physicsWorld.addBody(this.collider.body);
+    this.gameController.scene.add(this.model);
+    this.gameController.physicsWorld.addBody(this.collider.body);
   }
 
   public setPosition(position: THREE.Vector3): void {
