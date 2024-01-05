@@ -1,6 +1,6 @@
 import * as THREE from "three";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
-import { FBXLoader } from "three/examples/jsm/loaders/FBXLoader";
+// import { FBXLoader } from "three/examples/jsm/loaders/FBXLoader";
 import {
   CollisionGroups,
   CapsuleCollider,
@@ -116,7 +116,7 @@ export class Character extends THREE.Object3D {
     );
     this.collider.body.position.y = SPAWN_HEIGHT;
 
-    this.LoadModels();
+    this.LoadModel();
 
     this.setPhysicsEnabled(true);
 
@@ -131,19 +131,18 @@ export class Character extends THREE.Object3D {
     this.setState(new Idle(this));
   }
 
-  public LoadModels() {
-    const loader = new FBXLoader();
-    loader.setPath("./assets/models/zombie/");
+  public LoadModel() {
+    const loader = new GLTFLoader();
     loader.load(
-      "mremireh_o_desbiens.fbx",
-      (fbx: THREE.Group<THREE.Object3DEventMap>) => {
-        fbx.scale.setScalar(0.005);
-        fbx.position.set(0, 10, 0);
-        fbx.traverse(function (object: any) {
+      "./assets/models/alien/",
+      (gltf: THREE.Group<THREE.Object3DEventMap>) => {
+        gltf.scale.setScalar(0.005);
+        gltf.position.set(0, 10, 0);
+        gltf.traverse(function (object: any) {
           if (object.isMesh) object.castShadow = true;
         });
 
-        this.model = fbx;
+        this.model = gltf;
         this.gameController.scene.add(this.model);
 
         this.mixer = new THREE.AnimationMixer(this.model);
