@@ -8,8 +8,8 @@ import * as CANNON from "cannon-es";
 import CannonDebugger from "cannon-es-debugger";
 import { FlyingSaucer } from "./FlyingSaucer";
 
-const GAME_LENGTH = 100;
-const SAUCER_HEIGHT = 20;
+const GAME_LENGTH = 60;
+const SAUCER_HEIGHT = 18;
 const ISLAND_RADIUS = 15;
 
 export default class GameController {
@@ -38,6 +38,7 @@ export default class GameController {
   private timeRemaining: number = GAME_LENGTH;
   private timeAtPause: number = 0;
   private initialPlayerGroundingOccurred: boolean = false;
+  public spawnHeight: number = SAUCER_HEIGHT;
 
   private cannonDebugger: typeof CannonDebugger;
   private physicsDebug: boolean = false;
@@ -77,8 +78,13 @@ export default class GameController {
       } else if (e.key === "Escape") {
         if (!this.scoreScreenVisible) this.toggleMenu();
       } else {
-        if (this.gameStarted && this.timeRemaining > 0 && !this.menuVisible && !this.scoreScreenVisible)
-        this.character.handleKeyboardEvent(e, e.code, true);
+        if (
+          this.gameStarted &&
+          this.timeRemaining > 0 &&
+          !this.menuVisible &&
+          !this.scoreScreenVisible
+        )
+          this.character.handleKeyboardEvent(e, e.code, true);
       }
     });
 
@@ -278,7 +284,6 @@ export default class GameController {
   }
 
   private createScoreScreen(): void {
-    this.controls.enabled = false;
     const scoreScreen = document.createElement("div");
     scoreScreen.id = "scoreScreen";
     scoreScreen.style.position = "absolute";
@@ -329,13 +334,19 @@ export default class GameController {
     scoreScreen.appendChild(restartButton);
 
     document.body.appendChild(scoreScreen);
-    this.scoreScreenVisible = true;
     this.scoreScreen = scoreScreen;
   }
 
   private toggleScoreScreen(): void {
-    this.scoreScreen.style.display = "none";
-    this.scoreScreenVisible = false;
+    if (this.scoreScreenVisible) {
+      this.controls.enabled = true;
+      this.scoreScreen.style.display = "none";
+      this.scoreScreenVisible = false;
+    } else {
+      this.controls.enabled = false;
+      this.scoreScreen.style.display = "block";
+      this.scoreScreenVisible = true;
+    }
   }
 
   private generateIsland(): void {
@@ -361,9 +372,17 @@ export default class GameController {
       )
     );
 
-    const flyingSaucerPosition: THREE.Vector3 = new THREE.Vector3(this.character.position.x, SAUCER_HEIGHT, this.character.position.z)
+    const flyingSaucerPosition: THREE.Vector3 = new THREE.Vector3(
+      this.character.position.x,
+      SAUCER_HEIGHT,
+      this.character.position.z
+    );
     this.flyingSaucer = new FlyingSaucer(this, flyingSaucerPosition);
-    this.flyingSaucer.enableBeam(this.island.getTileFromXZ(this.character.position.x, this.character.position.z).getTileTopPosition());
+    this.flyingSaucer.enableBeam(
+      this.island
+        .getTileFromXZ(this.character.position.x, this.character.position.z)
+        .getTileTopPosition()
+    );
   }
 
   public onGoalReached(): void {
@@ -374,11 +393,15 @@ export default class GameController {
       this.initialPlayerGroundingOccurred = false;
 
       setTimeout(() => {
+        this.flyingSaucer.disableBeam();
         this.generateNextIsland();
       }, 5000);
 
-      this.flyingSaucer.setPosition(this.island.getTileFromXZ(this.character.position.x, this.character.position.z).getTileTopPosition());
-      this.flyingSaucer.enableBeam(this.island.getTileFromXZ(this.character.position.x, this.character.position.z).getTileTopPosition());
+      const goalTilePosition = this.island.goalTile.getTileTopPosition();
+      this.flyingSaucer.setPosition(
+        new THREE.Vector3(goalTilePosition.x, SAUCER_HEIGHT, goalTilePosition.z)
+      );
+      this.flyingSaucer.enableBeam(goalTilePosition);
 
       this.moveCameraToGoal();
     }
@@ -387,7 +410,11 @@ export default class GameController {
   private moveCameraToGoal(): void {
     const goalPosition = this.island.goalTile.getTileTopPosition();
     const goalDirection = goalPosition.normalize();
-    const cameraPosition = new THREE.Vector3(goalDirection.x * ISLAND_RADIUS * 1.2, 20, goalDirection.z * ISLAND_RADIUS * 1.2);
+    const cameraPosition = new THREE.Vector3(
+      goalDirection.x * ISLAND_RADIUS * 1.2,
+      SAUCER_HEIGHT + 5,
+      goalDirection.z * ISLAND_RADIUS * 1.2
+    );
 
     this.camera.position.copy(cameraPosition);
     this.camera.lookAt(goalPosition);
@@ -467,17 +494,19 @@ export default class GameController {
   private update(timeStep: number): void {
     if (this.timeRemaining <= 0) {
       if (this.goalReached) this.clock.stop();
-      if (!this.scoreScreenVisible) this.createScoreScreen();
-      // this.toggleMenu();
+      if (!this.scoreScreenVisible) {
+        this.createScoreScreen();
+        this.toggleScoreScreen();
+      }
     }
 
     if (this.gameStarted) {
       if (!this.goalReached && this.timeRemaining > 0 && !this.menuVisible) {
-        const newTime = this.timeRemaining - this.clock.getElapsedTime() * 0.001;
+        const newTime =
+          this.timeRemaining - this.clock.getElapsedTime() * 0.001;
         if (newTime < 0) {
           this.timeRemaining = 0;
-        }
-        else {
+        } else {
           this.timeRemaining = newTime;
         }
       }

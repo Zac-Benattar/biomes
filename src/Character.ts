@@ -1,6 +1,5 @@
 import * as THREE from "three";
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
-// import { FBXLoader } from "three/examples/jsm/loaders/FBXLoader";
 import {
   CollisionGroups,
   CapsuleCollider,
@@ -14,8 +13,6 @@ import Tile from "./Tile";
 import GameController from "./GameController";
 import * as Utils from "./Utils";
 import { ICharacterState } from "./CharacterStates/ICharacterState";
-
-const SPAWN_HEIGHT = 20;
 
 export class KeyBinding {
   public eventCodes: string[];
@@ -36,6 +33,7 @@ export class Character extends THREE.Object3D {
   public model: THREE.Group;
   public height: number = 0.7;
   public radius: number = 0.15;
+  public spawnHeight: number = 20;
 
   // Movement
   public velocity: THREE.Vector3 = new THREE.Vector3(0, 0, 0);
@@ -82,6 +80,7 @@ export class Character extends THREE.Object3D {
     this.gameController = gameController;
     this.decceleration = new THREE.Vector3(-0.0005, -0.0001, -5.0);
     this.acceleration = new THREE.Vector3(1, 0.25, 50.0);
+    this.spawnHeight = this.gameController.spawnHeight;
 
     this.velocitySimulator = new VectorSpringSimulator(
       60,
@@ -114,7 +113,7 @@ export class Character extends THREE.Object3D {
         20
       )
     );
-    this.collider.body.position.y = SPAWN_HEIGHT;
+    this.collider.body.position.y = this.spawnHeight;
 
     this.loadModel();
 
@@ -654,7 +653,7 @@ export class Character extends THREE.Object3D {
   }
 
   public reset(): void {
-    this.setPosition(new THREE.Vector3(0, SPAWN_HEIGHT, 0));
+    this.setPosition(new THREE.Vector3(0, this.spawnHeight, 0));
     this.resetVelocity();
     this.resetOrientation();
   }
