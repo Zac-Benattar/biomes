@@ -7,7 +7,7 @@ import { Character } from "./Character";
 import * as CANNON from "cannon-es";
 import CannonDebugger from "cannon-es-debugger";
 import { FlyingSaucer } from "./FlyingSaucer";
-import { AnimalType } from "./Item";
+import { AnimalType } from "./Animal";
 
 const GAME_LENGTH = 60;
 const SAUCER_HEIGHT = 18;
@@ -520,6 +520,10 @@ export default class GameController {
           this.timeRemaining = 0;
         } else {
           this.timeRemaining = newTime;
+        }
+
+        if (this.island.getTileFromXZ(this.character.position.x, this.character.position.z) === this.island.goalTile) {
+          this.onGoalReached();
         }
       }
     }

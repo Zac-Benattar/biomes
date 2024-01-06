@@ -1,9 +1,10 @@
 import * as THREE from "three";
 import * as BufferGeometryUtils from "three/examples/jsm/utils/BufferGeometryUtils.js";
-import Item, { Animal, AnimalType, ItemParams } from "./Item";
+import Item, { ItemParams } from "./Item";
+import { Animal, AnimalType } from "./Animal";
 import * as CANNON from "cannon-es";
 import GameController from "./GameController";
-import { Collider, HexTileCollider } from "./Colliders";
+import { HexTileCollider } from "./Colliders";
 import { FeatureType, TileFeature } from "./TileFeature";
 
 export enum TileType {
@@ -224,11 +225,7 @@ export default class Tile extends THREE.Object3D {
   }
 
   public getTileTopPosition(): THREE.Vector3 {
-    return new THREE.Vector3(
-      this.position.x,
-      this.height,
-      this.position.z
-    );
+    return new THREE.Vector3(this.position.x, this.height, this.position.z);
   }
 
   public getTileItemPosition(): THREE.Vector3 {
@@ -254,7 +251,10 @@ export default class Tile extends THREE.Object3D {
   }
 
   public SetGoal(animal: AnimalType): Animal {
-    const itemParams = new ItemParams(this.gameContoller, this.getTileItemPosition());
+    const itemParams = new ItemParams(
+      this.gameContoller,
+      this.getTileItemPosition()
+    );
     this.item = new Animal(itemParams, animal);
     return this.item as Animal;
   }

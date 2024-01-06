@@ -2,20 +2,8 @@ import * as THREE from "three";
 import * as CANNON from "cannon-es";
 import { BoxCollider } from "./Colliders";
 import GameController from "./GameController";
-import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 
-export enum AnimalType {
-  Hippo,
-  Baboon,
-  Elephant,
-  Horse,
-  Goat,
-  BlackBear,
-  Octopus,
-  RedPanda,
-}
-
-class UrlScaleOffset {
+export class UrlScaleOffset {
   url: string;
   scale: number;
   yOffset: number = 0;
@@ -37,29 +25,6 @@ export class ItemParams {
   }
 }
 
-function getModelFileScaleOffset(animalType: AnimalType): UrlScaleOffset {
-  switch (animalType) {
-    case AnimalType.Baboon:
-      return new UrlScaleOffset("./assets/models/baboon.glb", 0.05, -0.5);
-    case AnimalType.BlackBear:
-      return new UrlScaleOffset("./assets/models/black_bear.glb", 1, -0.42);
-    case AnimalType.Elephant:
-      return new UrlScaleOffset("./assets/models/elephant.glb", 0.1, -0.5);
-    case AnimalType.Goat:
-      return new UrlScaleOffset("./assets/models/goat.glb", 0.1, -0.19);
-    case AnimalType.Hippo:
-      return new UrlScaleOffset("./assets/models/hippo.glb", 0.45, -0.21);
-    case AnimalType.Horse:
-      return new UrlScaleOffset("./assets/models/horse.glb", 0.5, 0.2);
-    case AnimalType.Octopus:
-      return new UrlScaleOffset("./assets/models/octopus.glb", 0.03, -0.5);
-    case AnimalType.RedPanda:
-      return new UrlScaleOffset("./assets/models/red_panda.glb", 0.001, -0.2);
-    default:
-      console.log("No model found for animal type: " + animalType);
-  }
-}
-
 export default abstract class Item extends THREE.Object3D {
   gameController: GameController;
   light: THREE.PointLight;
@@ -77,7 +42,6 @@ export default abstract class Item extends THREE.Object3D {
     this.gameController = params.gameContoller;
     this.yOffset = yOffset;
 
-    // Placeholder box model
     this.loadModel(url, scale, yOffset);
 
     this.collider = new BoxCollider({
@@ -91,11 +55,6 @@ export default abstract class Item extends THREE.Object3D {
       height: 1,
       depth: 1,
       friction: 0,
-    });
-
-    this.collider.body.addEventListener("collide", (e: CANNON.EventTarget) => {
-      if (!this.gameController.goalReached && e.body.collisionFilterGroup === 2)
-        this.gameController.onGoalReached();
     });
 
     this.setPosition(params.position);
@@ -120,50 +79,5 @@ export default abstract class Item extends THREE.Object3D {
 
   public getLight(): THREE.PointLight {
     return this.light;
-  }
-}
-
-export class Animal extends Item {
-  animalType: AnimalType;
-
-  constructor(params: ItemParams, animalType: AnimalType) {
-    // Add logic to select model based on animalType
-    const { url, scale, yOffset } = getModelFileScaleOffset(animalType);
-    super(params, url, scale, yOffset);
-    this.Init(animalType);
-  }
-
-  loadModel(url: string, scale: number = 1) {
-    const loader = new GLTFLoader();
-    loader.load(url, (gltf) => {
-      this.model = gltf.scene.children[0] as THREE.Group;
-      this.model.scale.set(scale, scale, scale);
-      this.gameController.scene.add(this.model);
-
-      this.model.castShadow = true;
-      this.model.receiveShadow = true;
-
-      this.model.rotateZ(Math.random() * 2 * Math.PI);
-
-      // Update model position to match collider
-      this.setPosition(this.position);
-    });
-  }
-
-  setPosition(position: THREE.Vector3): void {
-    const modelPosition = new THREE.Vector3(
-      position.x,
-      position.y + this.yOffset,
-      position.z
-    );
-    this.position.copy(position);
-    this.model.position.copy(modelPosition);
-    this.collider.body.position.copy(
-      new CANNON.Vec3(position.x, position.y, position.z)
-    );
-  }
-
-  private Init(animalType: AnimalType) {
-    this.animalType = animalType;
   }
 }

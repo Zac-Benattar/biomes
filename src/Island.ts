@@ -1,7 +1,8 @@
 import * as THREE from "three";
 import * as BufferGeometryUtils from "three/examples/jsm/utils/BufferGeometryUtils.js";
 import { createNoise2D } from "simplex-noise";
-import Item, { Animal, AnimalType } from "./Item";
+import Item from "./Item";
+import { Animal, AnimalType } from "./Animal";
 import Tile, { TileTop, TileType } from "./Tile";
 import { FeatureType, TileFeature } from "./TileFeature";
 import * as CANNON from "cannon-es";
@@ -641,15 +642,23 @@ export default class Island {
         case BiomeType.Savanna:
           animalOptions.push(AnimalType.Hippo);
           animalOptions.push(AnimalType.Elephant);
+          animalOptions.push(AnimalType.Giraffe);
+          animalOptions.push(AnimalType.Lion);
+          animalOptions.push(AnimalType.Kangaroo);
           break;
         case BiomeType.Desert:
           animalOptions.push(AnimalType.Horse);
+          animalOptions.push(AnimalType.Snake);
+          animalOptions.push(AnimalType.Camel);
           break;
         case BiomeType.Plains:
           animalOptions.push(AnimalType.Horse);
+          animalOptions.push(AnimalType.Bison);
           break;
         case BiomeType.Ocean:
           animalOptions.push(AnimalType.Octopus);
+          animalOptions.push(AnimalType.Shark);
+          animalOptions.push(AnimalType.Turtle);
           break;
         case BiomeType.Jungle:
           animalOptions.push(AnimalType.RedPanda);
@@ -658,17 +667,23 @@ export default class Island {
           break;
         case BiomeType.Alpine:
           animalOptions.push(AnimalType.Goat);
+          animalOptions.push(AnimalType.Bison);
+          animalOptions.push(AnimalType.Ibex);
           break;
         case BiomeType.Tundra:
           animalOptions.push(AnimalType.Goat);
           animalOptions.push(AnimalType.BlackBear);
+          animalOptions.push(AnimalType.PolarBear);
+          animalOptions.push(AnimalType.Penguin);
           break;
         case BiomeType.Forest:
           animalOptions.push(AnimalType.BlackBear);
+          animalOptions.push(AnimalType.Fox);
           break;
         case BiomeType.Swamp:
           animalOptions.push(AnimalType.Hippo);
           animalOptions.push(AnimalType.Baboon);
+          animalOptions.push(AnimalType.Alligator);
           break;
       }
 
