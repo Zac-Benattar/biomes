@@ -42,7 +42,7 @@ function getModelFileScaleOffset(animalType: AnimalType): UrlScaleOffset {
     case AnimalType.Baboon:
       return new UrlScaleOffset("./assets/models/baboon.glb", 0.05, -0.5);
     case AnimalType.BlackBear:
-      return new UrlScaleOffset("./assets/models/black_bear.glb", 1.2, -0.4);
+      return new UrlScaleOffset("./assets/models/black_bear.glb", 1, -0.42);
     case AnimalType.Elephant:
       return new UrlScaleOffset("./assets/models/elephant.glb", 0.1, -0.5);
     case AnimalType.Goat:
@@ -81,7 +81,7 @@ export default abstract class Item extends THREE.Object3D {
     this.loadModel(url, scale, yOffset);
 
     this.collider = new BoxCollider({
-      mass: 1,
+      mass: 0,
       position: new CANNON.Vec3(
         this.position.x,
         this.position.y,
@@ -116,7 +116,6 @@ export default abstract class Item extends THREE.Object3D {
     this.collider.body.position.copy(
       new CANNON.Vec3(position.x, position.y, position.z)
     );
-    console.log("Item position: " + this.position);
   }
 
   public getLight(): THREE.PointLight {
@@ -144,6 +143,8 @@ export class Animal extends Item {
       this.model.castShadow = true;
       this.model.receiveShadow = true;
 
+      this.model.rotateZ(Math.random() * 2 * Math.PI);
+
       // Update model position to match collider
       this.setPosition(this.position);
     });
@@ -156,7 +157,6 @@ export class Animal extends Item {
       position.z
     );
     this.position.copy(position);
-    console.log("offset " + this.yOffset);
     this.model.position.copy(modelPosition);
     this.collider.body.position.copy(
       new CANNON.Vec3(position.x, position.y, position.z)

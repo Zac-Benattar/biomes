@@ -3,7 +3,7 @@ import * as BufferGeometryUtils from "three/examples/jsm/utils/BufferGeometryUti
 import Item, { Animal, AnimalType, ItemParams } from "./Item";
 import * as CANNON from "cannon-es";
 import GameController from "./GameController";
-import { Collider } from "./Colliders";
+import { Collider, HexTileCollider } from "./Colliders";
 import { FeatureType, TileFeature } from "./TileFeature";
 
 export enum TileType {
@@ -26,7 +26,7 @@ export enum TileTop {
 export default class Tile extends THREE.Object3D {
   public gameContoller: GameController;
   public model: THREE.Group = new THREE.Group();
-  public cannonBody: CANNON.Body;
+  public collider: HexTileCollider;
   public height: number;
   public position: THREE.Vector3;
   public tileType: TileType;
@@ -64,7 +64,7 @@ export default class Tile extends THREE.Object3D {
     this.generateModel();
     this.createPhysicsBody();
     this.gameContoller.scene.add(this.model);
-    this.gameContoller.physicsWorld.addBody(this.cannonBody);
+    this.gameContoller.physicsWorld.addBody(this.collider.body);
   }
 
   public removeFromWorld(): void {
@@ -77,7 +77,7 @@ export default class Tile extends THREE.Object3D {
       this.gameContoller.physicsWorld.removeBody(this.item.collider.body);
     }
     this.gameContoller.scene.remove(this.model);
-    this.gameContoller.physicsWorld.removeBody(this.cannonBody);
+    this.gameContoller.physicsWorld.removeBody(this.collider.body);
   }
 
   private hexGeometry(
@@ -226,24 +226,27 @@ export default class Tile extends THREE.Object3D {
   public getTileTopPosition(): THREE.Vector3 {
     return new THREE.Vector3(
       this.position.x,
+      this.height,
+      this.position.z
+    );
+  }
+
+  public getTileItemPosition(): THREE.Vector3 {
+    return new THREE.Vector3(
+      this.position.x,
       this.height + 0.5,
       this.position.z
     );
   }
 
-  //refactor
   private createPhysicsBody() {
-    let shape = new CANNON.Cylinder(1, 1, this.height, 6);
-    let tileBody = new CANNON.Body({
+    this.collider = new HexTileCollider({
       mass: 0,
-      position: new CANNON.Vec3(
-        this.position.x,
-        this.height / 2,
-        this.position.z
-      ),
-      shape: shape,
+      position: new CANNON.Vec3(this.position.x, this.height, this.position.z),
+      radius: 1,
+      height: this.height,
+      friction: 0.3,
     });
-    this.cannonBody = tileBody;
   }
 
   public GetItem(): Item {
@@ -251,7 +254,7 @@ export default class Tile extends THREE.Object3D {
   }
 
   public SetGoal(animal: AnimalType): Animal {
-    const itemParams = new ItemParams(this.gameContoller, this.getTileTopPosition());
+    const itemParams = new ItemParams(this.gameContoller, this.getTileItemPosition());
     this.item = new Animal(itemParams, animal);
     return this.item as Animal;
   }

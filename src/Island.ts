@@ -675,7 +675,6 @@ export default class Island {
       // Choose a random animal from the options
       let animalType: AnimalType =
         animalOptions[Math.floor(Math.random() * animalOptions.length)];
-      console.log("Goal animal type: " + animalType);
       if (animalType === undefined) {
         console.log("No animal type found for biome: " + this.params.biome);
         return;

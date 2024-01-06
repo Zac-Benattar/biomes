@@ -4,6 +4,6 @@ import { Character } from "../Character";
 export class StartWalkLeft extends StartWalkBase {
   constructor(character: Character) {
     super(character);
-    this.animationLength = character.setAnimation("start_left", 0.1);
+    this.animationLength = character.setAnimation("idle", 0.1);
   }
 }

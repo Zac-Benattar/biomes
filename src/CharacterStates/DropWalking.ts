@@ -12,7 +12,6 @@ export class DropWalking extends CharacterStateBase {
     super(character);
 
     this.character.setVelocityTarget(new THREE.Vector3(1, 0, 0));
-    // this.playAnimation("drop_walking", 0.1);
     this.playAnimation("run_fwd", 0.1);
   }
 

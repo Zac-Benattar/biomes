@@ -197,9 +197,14 @@ export class Character extends THREE.Object3D {
     this.model.position.y = this.collider.body.position.y - this.height / 2;
     this.model.position.z = this.collider.body.position.z;
 
-    let axis = new THREE.Vector3(1, 0, 0);
-    let angle = -Math.PI / 2;
-    let newQuaternion = this.quaternion.clone().setFromAxisAngle(axis, angle);
+    let axis = new THREE.Vector3(-1, 0, 0);
+    let angle = Math.PI / 2;
+    let rotation = new THREE.Quaternion().setFromAxisAngle(axis, angle);
+    let newQuaternion = this.quaternion.clone().multiply(rotation);
+    axis = new THREE.Vector3(0, 0, 1);
+    angle = Math.PI;
+    rotation = new THREE.Quaternion().setFromAxisAngle(axis, angle);
+    newQuaternion = newQuaternion.multiply(rotation);
     this.model.quaternion.copy(newQuaternion);
   }
 
@@ -376,8 +381,8 @@ export class Character extends THREE.Object3D {
     // Create raycast start points at each corner of the cylinder collider, end points a set distance below
     let startPoints: CANNON.Vec3[] = [];
     let endPoints: CANNON.Vec3[] = [];
-    for (let i = 0; i < this.collider.options.segments; i++) {
-      let angle = (i / this.collider.options.segments) * Math.PI * 2;
+    for (let i = 0; i < this.collider.segments; i++) {
+      let angle = (i / this.collider.segments) * Math.PI * 2;
       let startPoint = new CANNON.Vec3(
         body.position.x + Math.sin(angle) * this.radius,
         body.position.y,

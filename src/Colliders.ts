@@ -81,6 +81,28 @@ export class CylinderColliderOptions {
   }
 }
 
+export class HexColliderOptions {
+  public mass: number;
+  public position: CANNON.Vec3;
+  public height: number;
+  public radius: number;
+  public friction: number;
+
+  constructor(
+    mass: number,
+    position: CANNON.Vec3,
+    height: number,
+    radius: number,
+    friction: number
+  ) {
+    this.mass = mass;
+    this.position = position;
+    this.height = height;
+    this.radius = radius;
+    this.friction = friction;
+  }
+}
+
 export abstract class Collider {
   public body: CANNON.Body;
 
@@ -90,8 +112,6 @@ export abstract class Collider {
 }
 
 export class CylinderCollider extends Collider {
-  public options: CylinderColliderOptions;
-
   constructor(options: CylinderColliderOptions) {
     const material = new CANNON.Material("cylinderMaterial");
     material.friction = options.friction;
@@ -117,14 +137,13 @@ export class CylinderCollider extends Collider {
     cannonBody.collisionFilterGroup = 2;
 
     super(cannonBody);
-    this.options = options;
   }
 }
 
 export class CapsuleCollider extends Collider {
-  public options: CylinderColliderOptions;
-
+  segments: number;
   constructor(options: CylinderColliderOptions) {
+
     const material = new CANNON.Material("capsuleMaterial");
     material.friction = options.friction;
 
@@ -136,8 +155,14 @@ export class CapsuleCollider extends Collider {
     });
 
     cannonBody.addShape(sphereShape, new CANNON.Vec3(0, options.radius, 0));
-    cannonBody.addShape(sphereShape, new CANNON.Vec3(0, options.height / 2 + options.radius, 0));
-		cannonBody.addShape(sphereShape, new CANNON.Vec3(0, -options.height / 2 + options.radius, 0));
+    cannonBody.addShape(
+      sphereShape,
+      new CANNON.Vec3(0, options.height / 2 + options.radius, 0)
+    );
+    cannonBody.addShape(
+      sphereShape,
+      new CANNON.Vec3(0, -options.height / 2 + options.radius, 0)
+    );
 
     cannonBody.allowSleep = false;
     cannonBody.fixedRotation = true;
@@ -147,12 +172,12 @@ export class CapsuleCollider extends Collider {
     cannonBody.collisionFilterGroup = 2;
 
     super(cannonBody);
-    this.options = options;
+
+    this.segments = options.segments;
   }
 }
 
 export class BoxCollider extends Collider {
-  public options: BoxColliderOptions;
   public body: CANNON.Body;
 
   constructor(options: BoxColliderOptions) {
@@ -168,13 +193,37 @@ export class BoxCollider extends Collider {
       new CANNON.Vec3(options.width / 2, options.height / 2, options.depth / 2)
     );
 
-    cannonBody.addShape(box, new CANNON.Vec3(0, 0, 0));
+    cannonBody.addShape(box, options.position);
 
     cannonBody.allowSleep = false;
     cannonBody.fixedRotation = true;
     cannonBody.updateMassProperties();
-    cannonBody.position.copy(options.position);
     cannonBody.collisionFilterGroup = 2;
+
+    super(cannonBody);
+  }
+}
+
+export class HexTileCollider extends Collider {
+  public body: CANNON.Body;
+
+  constructor(options: HexColliderOptions) {
+    const material = new CANNON.Material("hexMaterial");
+    material.friction = options.friction;
+
+    let cannonBody = new CANNON.Body({
+      mass: options.mass,
+      material: material,
+    });
+
+    const shape = new CANNON.Cylinder(
+      options.radius,
+      options.radius,
+      options.height,
+      6
+    );
+
+    cannonBody.addShape(shape, new CANNON.Vec3(options.position.x, options.position.y - options.height / 2, options.position.z));
 
     super(cannonBody);
   }
