@@ -250,8 +250,9 @@ export default class Tile extends THREE.Object3D {
     return this.item;
   }
 
-  public SetGoal(animal: AnimalType): void {
+  public SetGoal(animal: AnimalType): Animal {
     const itemParams = new ItemParams(this.gameContoller, this.getTileTopPosition());
     this.item = new Animal(itemParams, animal);
+    return this.item as Animal;
   }
 }

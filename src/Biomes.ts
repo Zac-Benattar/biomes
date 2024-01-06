@@ -14,7 +14,7 @@ export enum BiomeType {
   Plains,
   // Taiga, // Less snowy than Alpine
   // Beach,
-  Meadow,
+  // Meadow,
   // MartianDesert,
 }
 

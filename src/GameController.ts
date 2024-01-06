@@ -7,6 +7,7 @@ import { Character } from "./Character";
 import * as CANNON from "cannon-es";
 import CannonDebugger from "cannon-es-debugger";
 import { FlyingSaucer } from "./FlyingSaucer";
+import { AnimalType } from "./Item";
 
 const GAME_LENGTH = 60;
 const SAUCER_HEIGHT = 18;
@@ -279,6 +280,13 @@ export default class GameController {
     biomeName.style.padding = "1";
     hud.appendChild(biomeName);
 
+    const animalToLookFor = document.createElement("h2");
+    animalToLookFor.className = "animalToLookFor";
+    animalToLookFor.innerHTML = "Animal: " + "???";
+    animalToLookFor.style.margin = "1";
+    animalToLookFor.style.padding = "1";
+    hud.appendChild(animalToLookFor);
+
     document.body.appendChild(hud);
     this.hud = hud;
   }
@@ -290,6 +298,9 @@ export default class GameController {
       "Animals Found: " + this.animalsFound;
     this.hud.getElementsByClassName("biomeName")[0].innerHTML =
       "Biome: " + BiomeType[this.island.params.biome];
+    if (this.island.goal)
+      this.hud.getElementsByClassName("animalToLookFor")[0].innerHTML =
+        "Animal: " + AnimalType[this.island.goal.animalType];
   }
 
   private createScoreScreen(): void {
@@ -457,7 +468,6 @@ export default class GameController {
       }
     }
   }
-
 
   private createPhysicsWorld(): void {
     this.physicsWorld = new CANNON.World({

@@ -322,7 +322,7 @@ export class TileFeature extends THREE.Object3D {
     this.cannonBody = new CANNON.Body({
       mass: 0,
       shape: new CANNON.Cylinder(0.25, 0.3, treeHeight, 10),
-      position: new CANNON.Vec3(position.x, position.y, position.z),
+      position: new CANNON.Vec3(position.x, position.y + treeHeight * 0.4, position.z),
     });
   }
 }

@@ -1,7 +1,7 @@
 import * as THREE from "three";
 import * as BufferGeometryUtils from "three/examples/jsm/utils/BufferGeometryUtils.js";
 import { createNoise2D } from "simplex-noise";
-import Item, { AnimalType } from "./Item";
+import Item, { Animal, AnimalType } from "./Item";
 import Tile, { TileTop, TileType } from "./Tile";
 import { FeatureType, TileFeature } from "./TileFeature";
 import * as CANNON from "cannon-es";
@@ -23,6 +23,8 @@ export class IslandParams {
   ) {
     this.gameController = gameController;
     this.biome = biome;
+    if (seed !== undefined) this.seed = seed;
+    if (radius !== undefined) this.radius = radius;
   }
 }
 
@@ -36,6 +38,7 @@ export default class Island {
   public params: IslandParams;
   public tiles: Array<Tile>;
   public goalTile: Tile | null = null;
+  public goal: Animal;
   private weather: Weather = Weather.None;
   private particles: THREE.Points<THREE.BufferGeometry> | null;
   private clouds: THREE.Mesh<
@@ -631,7 +634,54 @@ export default class Island {
       ) {
         goalTile = this.tiles[Math.floor(Math.random() * this.tiles.length)];
       }
-      goalTile.SetGoal(AnimalType.Penguin);
+
+      // Choose appropriate animal for the goal tile based on biome
+      let animalOptions: AnimalType[] = [];
+      switch (this.params.biome) {
+        case BiomeType.Savanna:
+          animalOptions.push(AnimalType.Hippo);
+          animalOptions.push(AnimalType.Elephant);
+          break;
+        case BiomeType.Desert:
+          animalOptions.push(AnimalType.Horse);
+          break;
+        case BiomeType.Plains:
+          animalOptions.push(AnimalType.Horse);
+          break;
+        case BiomeType.Ocean:
+          animalOptions.push(AnimalType.Octopus);
+          break;
+        case BiomeType.Jungle:
+          animalOptions.push(AnimalType.RedPanda);
+          animalOptions.push(AnimalType.Hippo);
+          animalOptions.push(AnimalType.Baboon);
+          break;
+        case BiomeType.Alpine:
+          animalOptions.push(AnimalType.Goat);
+          break;
+        case BiomeType.Tundra:
+          animalOptions.push(AnimalType.Goat);
+          animalOptions.push(AnimalType.BlackBear);
+          break;
+        case BiomeType.Forest:
+          animalOptions.push(AnimalType.BlackBear);
+          break;
+        case BiomeType.Swamp:
+          animalOptions.push(AnimalType.Hippo);
+          animalOptions.push(AnimalType.Baboon);
+          break;
+      }
+
+      // Choose a random animal from the options
+      let animalType: AnimalType =
+        animalOptions[Math.floor(Math.random() * animalOptions.length)];
+      console.log("Goal animal type: " + animalType);
+      if (animalType === undefined) {
+        console.log("No animal type found for biome: " + this.params.biome);
+        return;
+      }
+
+      this.goal = goalTile.SetGoal(animalType);
       this.goalTile = goalTile;
     }
   }

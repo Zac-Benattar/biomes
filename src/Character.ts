@@ -143,6 +143,9 @@ export class Character extends THREE.Object3D {
       gltf.animations.forEach((clip) => {
         this.animations.push(clip);
       });
+
+      this.model.castShadow = true;
+      this.model.receiveShadow = true;
     });
   }
 
