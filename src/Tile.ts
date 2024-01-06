@@ -67,6 +67,19 @@ export default class Tile extends THREE.Object3D {
     this.gameContoller.physicsWorld.addBody(this.cannonBody);
   }
 
+  public removeFromWorld(): void {
+    if (this.feature !== undefined && this.feature !== null) {
+      this.gameContoller.scene.remove(this.feature.model);
+      this.gameContoller.physicsWorld.removeBody(this.feature.cannonBody);
+    }
+    if (this.item !== undefined && this.item !== null) {
+      this.gameContoller.scene.remove(this.item.model);
+      this.gameContoller.physicsWorld.removeBody(this.item.collider.body);
+    }
+    this.gameContoller.scene.remove(this.model);
+    this.gameContoller.physicsWorld.removeBody(this.cannonBody);
+  }
+
   private hexGeometry(
     height: number,
     position: THREE.Vector3

@@ -14,6 +14,7 @@ export class FlyingSaucer extends THREE.Object3D {
 
     private Init(gameContoller: GameController, position: THREE.Vector3): void {
         this.gameController = gameContoller;
+        this.position.copy(position);
         this.loadModel(position);
     }
 
@@ -31,6 +32,9 @@ export class FlyingSaucer extends THREE.Object3D {
     }
 
     public enableBeam(targetPosition: THREE.Vector3) {
+        // Ensure there is no existing beam
+        this.disableBeam();
+        
         this.createBeam(targetPosition);
         this.gameController.scene.add(this.beam);
     }

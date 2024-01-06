@@ -107,6 +107,15 @@ export default class GameController {
     this.controls.dampingFactor = 0.05;
     this.controls.update();
 
+    this.createPhysicsWorld();
+
+    this.character = new Character(this);
+    this.flyingSaucer = new FlyingSaucer(
+      this,
+      new THREE.Vector3(0, SAUCER_HEIGHT, 0)
+    );
+    this.flyingSaucer.enableBeam(new THREE.Vector3(0, 0, 0));
+
     this.generateIsland();
     this.render(this);
     this.toggleMenu();
@@ -360,29 +369,9 @@ export default class GameController {
       return;
     }
 
-    this.createPhysicsWorld();
-
     this.createIsland(biomeType, seed);
 
-    this.character = new Character(this);
-    this.island.createGoal(
-      this.island.getTileFromXZ(
-        this.character.getFeetPosition().x,
-        this.character.getFeetPosition().z
-      )
-    );
-
-    const flyingSaucerPosition: THREE.Vector3 = new THREE.Vector3(
-      this.character.position.x,
-      SAUCER_HEIGHT,
-      this.character.position.z
-    );
-    this.flyingSaucer = new FlyingSaucer(this, flyingSaucerPosition);
-    this.flyingSaucer.enableBeam(
-      this.island
-        .getTileFromXZ(this.character.position.x, this.character.position.z)
-        .getTileTopPosition()
-    );
+    this.island.createGoal(this.island.getTileFromXZ(0, 0));
   }
 
   public onGoalReached(): void {
@@ -390,10 +379,8 @@ export default class GameController {
       this.timeAtPause += this.clock.getElapsedTime();
       this.goalReached = true;
       this.animalsFound++;
-      this.initialPlayerGroundingOccurred = false;
 
       setTimeout(() => {
-        this.flyingSaucer.disableBeam();
         this.generateNextIsland();
       }, 5000);
 
@@ -422,24 +409,39 @@ export default class GameController {
   }
 
   private generateNextIsland(): void {
+    this.goalReached = false;
+    this.initialPlayerGroundingOccurred = false;
+
     // Reset character position, velocity, rotation
     this.character.reset();
 
-    // Delete previous island
-    this.scene.clear();
+    // Reset flying saucer position, velocity, rotation
+    const flyingSaucerPosition: THREE.Vector3 = new THREE.Vector3(
+      0,
+      SAUCER_HEIGHT,
+      0
+    );
+    this.flyingSaucer.setPosition(flyingSaucerPosition);
+    this.flyingSaucer.enableBeam(
+      this.island.getTileFromXZ(0, 0).getTileTopPosition()
+    );
 
-    // Delete previous physics gameContoller
-    while (this.physicsWorld.bodies.length > 0) {
-      this.physicsWorld.removeBody(this.physicsWorld.bodies[0]);
+    // Delete previous island's tiles
+    for (let i = 0; i < this.island.tiles.length; i++) {
+      this.island.tiles[i].removeFromWorld();
     }
 
     // Generate new island
     this.generateIsland();
 
+    // Refresh debug view
+    if (this.physicsDebug) {
+      this.cannonDebugger.update();
+    }
+
     this.resetCamera();
     this.updateHUD();
-    this.physicsDebug = false;
-    this.goalReached = false;
+
     this.timeAtPause += this.clock.getElapsedTime();
     this.clock.start();
   }
@@ -456,6 +458,7 @@ export default class GameController {
       }
     }
   }
+
 
   private createPhysicsWorld(): void {
     this.physicsWorld = new CANNON.World({
@@ -521,6 +524,7 @@ export default class GameController {
     // Check if the player has landed on the ground for the first time
     if (this.character.grounded && !this.initialPlayerGroundingOccurred) {
       this.initialPlayerGroundingOccurred = true;
+      this.flyingSaucer.disableBeam();
       this.gameStarted = true;
     }
 

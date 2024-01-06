@@ -1,5 +1,5 @@
 import * as THREE from "three";
-import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 import {
   CollisionGroups,
   CapsuleCollider,
@@ -44,7 +44,7 @@ export class Character extends THREE.Object3D {
 
   public movementSpeed: number = 3.0;
   public angularVelocity: number = 0.0;
-  public orientation: THREE.Vector3 = new THREE.Vector3(0, 0, 1);
+  public orientation: THREE.Vector3 = new THREE.Vector3(1, 0, 0);
   public orientationTarget: THREE.Vector3 = new THREE.Vector3(0, 0, 1);
   public collider: CapsuleCollider;
   public defaultVelocitySimulatorDamping: number = 0.8;
@@ -117,7 +117,7 @@ export class Character extends THREE.Object3D {
 
     this.loadModel();
 
-    this.setPhysicsEnabled(true);
+    this.addToPhysicsWorld();
 
     this.gameController.physicsWorld.addEventListener("preStep", () => {
       this.physicsPreStep(this);
@@ -132,54 +132,30 @@ export class Character extends THREE.Object3D {
 
   public loadModel() {
     const loader = new GLTFLoader();
-    loader.load(
-      "./assets/models/Alien.glb",
-      (gltf: THREE.Group<THREE.Object3DEventMap>) => {
-        gltf.scale.setScalar(0.005);
-        gltf.position.set(0, 10, 0);
-        gltf.traverse(function (object: any) {
-          if (object.isMesh) object.castShadow = true;
-        });
+    loader.load("./assets/models/space_survivor.glb", (gltf) => {
+      this.model = gltf.scene.children[0] as THREE.Group;
+      const modelScale = 0.5;
+      this.model.scale.set(modelScale, modelScale, modelScale);
+      this.gameController.scene.add(this.model);
 
-        this.model = gltf;
-        this.gameController.scene.add(this.model);
+      this.mixer = new THREE.AnimationMixer(this.model);
 
-        this.mixer = new THREE.AnimationMixer(this.model);
+      this.manager = new THREE.LoadingManager();
 
-        this.manager = new THREE.LoadingManager();
-
-        const OnLoad = (animName: string, anim: any) => {
-          anim.animations[0].name = animName;
-          const clip = anim.animations[0];
-          this.animations.push(clip);
-        };
-
-        const loader = new FBXLoader(this.manager);
-        loader.setPath("./assets/models/zombie/");
-        loader.load("walk.fbx", (a: any) => {
-          OnLoad("Walk", a);
-        });
-        loader.load("idle.fbx", (a: any) => {
-          OnLoad("Idle", a);
-        });
-        loader.load("dance.fbx", (a: any) => {
-          OnLoad("Dance", a);
-        });
-      }
-    );
+      const OnLoad = (animName: string, anim: any) => {
+        anim.animations[0].name = animName;
+        const clip = anim.animations[0];
+        this.animations.push(clip);
+      };
+    });
   }
 
-  public setPhysicsEnabled(enabled: boolean): void {
-    this.physicsEnabled = enabled;
-
-    if (enabled) {
-      this.gameController.physicsWorld.addBody(this.collider.body);
-    } else {
-      this.gameController.physicsWorld.removeBody(this.collider.body);
-    }
+  public addToPhysicsWorld(): void {
+    this.gameController.physicsWorld.addBody(this.collider.body);
   }
 
   public setPosition(position: THREE.Vector3): void {
+    this.grounded = false;
     this.model.position.copy(position);
 
     if (this.physicsEnabled)
@@ -222,7 +198,10 @@ export class Character extends THREE.Object3D {
     this.model.position.y = this.collider.body.position.y - this.height / 2;
     this.model.position.z = this.collider.body.position.z;
 
-    this.model.quaternion.copy(this.quaternion);
+    let axis = new THREE.Vector3(1, 0, 0);
+    let angle = -Math.PI / 2;
+    let newQuaternion = this.quaternion.clone().setFromAxisAngle(axis, angle);
+    this.model.quaternion.copy(newQuaternion);
   }
 
   public jump(initialJumpSpeed: number = -1): void {
@@ -281,7 +260,7 @@ export class Character extends THREE.Object3D {
     const topOfTile = new THREE.Vector3(
       currentTile.position.x,
       currentTile.height + 0.5,
-      currentTile.position.z,
+      currentTile.position.z
     );
 
     const distance = this.getFeetPosition().distanceTo(topOfTile);
