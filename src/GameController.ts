@@ -359,6 +359,10 @@ export default class GameController {
   }
 
   private generateIsland(): void {
+    if (this.island) {
+      this.island.removeFromWorld();
+    }
+
     const seed = Math.random();
     const biomeOptions = Object.keys(BiomeType).length / 2;
     const biomeType: BiomeType = Math.floor(seed * biomeOptions);
@@ -425,11 +429,6 @@ export default class GameController {
     this.flyingSaucer.enableBeam(
       this.island.getTileFromXZ(0, 0).getTileTopPosition()
     );
-
-    // Delete previous island's tiles
-    for (let i = 0; i < this.island.tiles.length; i++) {
-      this.island.tiles[i].removeFromWorld();
-    }
 
     // Generate new island
     this.generateIsland();

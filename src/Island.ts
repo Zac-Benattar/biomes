@@ -15,7 +15,12 @@ export class IslandParams {
   seed: number = Math.random();
   radius: number = 15;
 
-  constructor(gameController: GameController, biome: BiomeType, seed?: number, radius?: number) {
+  constructor(
+    gameController: GameController,
+    biome: BiomeType,
+    seed?: number,
+    radius?: number
+  ) {
     this.gameController = gameController;
     this.biome = biome;
   }
@@ -33,6 +38,26 @@ export default class Island {
   public goalTile: Tile | null = null;
   private weather: Weather = Weather.None;
   private particles: THREE.Points<THREE.BufferGeometry> | null;
+  private clouds: THREE.Mesh<
+    THREE.BufferGeometry<THREE.NormalBufferAttributes>,
+    THREE.MeshStandardMaterial,
+    THREE.Object3DEventMap
+  >;
+  private water: THREE.Mesh<
+    THREE.CylinderGeometry,
+    THREE.MeshPhysicalMaterial,
+    THREE.Object3DEventMap
+  >;
+  private islandContainer: THREE.Mesh<
+    THREE.CylinderGeometry,
+    THREE.MeshPhysicalMaterial,
+    THREE.Object3DEventMap
+  >;
+  private islandFloor: THREE.Mesh<
+    THREE.CylinderGeometry,
+    THREE.MeshStandardMaterial,
+    THREE.Object3DEventMap
+  >;
   private sun: THREE.DirectionalLight;
   private moon: THREE.DirectionalLight;
   private sunHelper: THREE.DirectionalLightHelper;
@@ -131,6 +156,42 @@ export default class Island {
     this.previousRAF += t;
   }
 
+  public removeFromWorld(): void {
+    // Delete previous island's tiles
+    for (let i = 0; i < this.tiles.length; i++) {
+      this.tiles[i].removeFromWorld();
+    }
+
+    // Delete previous island's lights
+    if (this.lightDebug) {
+      this.params.gameController.scene.remove(this.sunHelper);
+      this.params.gameController.scene.remove(this.moonHelper);
+      this.params.gameController.scene.remove(this.sunShadowHelper);
+      this.params.gameController.scene.remove(this.moonShadowHelper);
+    }
+
+    // Delete previous island's lights
+    if (this.sun) this.params.gameController.scene.remove(this.sun);
+    if (this.moon) this.params.gameController.scene.remove(this.moon);
+
+    // Delete previous island's clouds
+    if (this.clouds) this.params.gameController.scene.remove(this.clouds);
+
+    // Delete previous island's particles
+    if (this.particles) this.params.gameController.scene.remove(this.particles);
+
+    // Delete previous island's water
+    if (this.water) this.params.gameController.scene.remove(this.water);
+
+    // Delete previous island's island container
+    if (this.islandContainer)
+      this.params.gameController.scene.remove(this.islandContainer);
+
+    // Delete previous island's island floor
+    if (this.islandFloor)
+      this.params.gameController.scene.remove(this.islandFloor);
+  }
+
   public getMaxHeight(): number {
     return this.params.biomeParams.layers.reduce((max, layer) => {
       return Math.max(max, layer.minHeight);
@@ -175,11 +236,7 @@ export default class Island {
     this.moon.shadow.mapSize.height = height;
   }
 
-  private getClouds(): THREE.Mesh<
-    THREE.BufferGeometry<THREE.NormalBufferAttributes>,
-    THREE.MeshStandardMaterial,
-    THREE.Object3DEventMap
-  > {
+  private createClouds(): void {
     let geo: THREE.BufferGeometry = new THREE.SphereGeometry(0, 0, 0);
     let count = this.params.biomeParams.weather.clouds.count;
 
@@ -224,11 +281,11 @@ export default class Island {
     mesh.receiveShadow = true;
     mesh.castShadow = true;
 
-    return mesh;
+    this.clouds = mesh;
+    this.params.gameController.scene.add(this.clouds);
   }
 
-  private getSnow(): THREE.Points<THREE.BufferGeometry> {
-    let particles;
+  private createSnow(): void {
     let positions: number[] = [];
     let velocities: number[] = [];
     const particleCount = 250;
@@ -267,12 +324,11 @@ export default class Island {
       opacity: 0.8,
     });
 
-    particles = new THREE.Points(geo, material);
-    return particles;
+    this.particles = new THREE.Points(geo, material);
+    this.params.gameController.scene.add(this.particles);
   }
 
-  private getRain(): THREE.Points<THREE.BufferGeometry> {
-    let particles;
+  private createRain(): void {
     let positions: number[] = [];
     let velocities: number[] = [];
     const particleCount = 250;
@@ -311,8 +367,8 @@ export default class Island {
       opacity: 0.8,
     });
 
-    particles = new THREE.Points(geo, material);
-    return particles;
+    this.particles = new THREE.Points(geo, material);
+    this.params.gameController.scene.add(this.particles);
   }
 
   private updateParticles(t: number): void {
@@ -395,7 +451,8 @@ export default class Island {
       );
       waterMesh.position.set(0, this.params.biomeParams.water.height / 2, 0);
 
-      scene.add(waterMesh);
+      this.water = waterMesh;
+      scene.add(this.water);
     }
 
     let islandContainerMesh = new THREE.Mesh(
@@ -438,11 +495,13 @@ export default class Island {
       0
     );
 
-    scene.add(islandContainerMesh, islandFloorMesh);
+    this.islandContainer = islandContainerMesh;
+    this.islandFloor = islandFloorMesh;
+    scene.add(this.islandContainer, this.islandFloor);
 
     if (this.params.biomeParams.weather) {
       if (this.params.biomeParams.weather.clouds) {
-        scene.add(this.getClouds());
+        this.createClouds();
       }
 
       // Implement precipitation
@@ -451,11 +510,9 @@ export default class Island {
         if (
           Math.random() < this.params.biomeParams.weather.precipitation.snowBias
         ) {
-          this.particles = this.getSnow();
-          scene.add(this.particles);
+          this.createSnow();
         } else {
-          this.particles = this.getRain();
-          scene.add(this.particles);
+          this.createRain();
         }
       }
     }
