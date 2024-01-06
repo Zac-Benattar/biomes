@@ -31,8 +31,8 @@ export class Character extends THREE.Object3D {
   public manager: THREE.LoadingManager;
   public actions: { [action: string]: KeyBinding };
   public model: THREE.Group;
-  public height: number = 0.7;
-  public radius: number = 0.15;
+  public height: number = 1;
+  public radius: number = 0.1;
   public spawnHeight: number = 20;
 
   // Movement
@@ -134,7 +134,7 @@ export class Character extends THREE.Object3D {
     const loader = new GLTFLoader();
     loader.load("./assets/models/space_survivor.glb", (gltf) => {
       this.model = gltf.scene.children[0] as THREE.Group;
-      const modelScale = 0.5;
+      const modelScale = 0.6;
       this.model.scale.set(modelScale, modelScale, modelScale);
       this.gameController.scene.add(this.model);
 

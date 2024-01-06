@@ -218,7 +218,7 @@ export class HexTileCollider extends Collider {
 
     const shape = new CANNON.Cylinder(
       options.radius,
-      options.radius,
+      options.radius * 0.99,
       options.height,
       6
     );

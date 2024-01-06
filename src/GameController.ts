@@ -115,7 +115,7 @@ export default class GameController {
       this,
       new THREE.Vector3(0, SAUCER_HEIGHT, 0)
     );
-    this.flyingSaucer.enableBeam(new THREE.Vector3(0, 0, 0));
+    this.flyingSaucer.enableBeam(new THREE.Vector3(0, -5, 0));
 
     this.generateIsland();
     this.render(this);
@@ -438,7 +438,7 @@ export default class GameController {
     );
     this.flyingSaucer.setPosition(flyingSaucerPosition);
     this.flyingSaucer.enableBeam(
-      this.island.getTileFromXZ(0, 0).getTileTopPosition()
+      this.island.getTileFromXZ(0, 0).getTileItemPosition()
     );
 
     // Generate new island
