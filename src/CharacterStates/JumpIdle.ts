@@ -11,8 +11,7 @@ export class JumpIdle extends CharacterStateBase {
     this.character.velocitySimulator.mass = 50;
 
     this.character.setVelocityTarget(new THREE.Vector3(0, 0, 0));
-    // this.playAnimation("jump_idle", 0.1);
-    this.playAnimation("Idle", 0.1);
+    this.playAnimation("idle", 0.1);
     this.alreadyJumped = false;
   }
 

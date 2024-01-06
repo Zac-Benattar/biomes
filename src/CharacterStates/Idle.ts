@@ -10,7 +10,7 @@ export class Idle extends CharacterStateBase {
     this.character.velocitySimulator.mass = 10;
 
     this.character.setVelocityTarget(new THREE.Vector3(0, 0, 0));
-    this.playAnimation("Idle", 0.1);
+    this.playAnimation("idle", 0.1);
   }
 
   public update(timeStep: number): void {

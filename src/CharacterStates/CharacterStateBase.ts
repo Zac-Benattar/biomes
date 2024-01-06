@@ -1,7 +1,6 @@
 import * as Utils from "../Utils";
 import {
   DropIdle,
-  DropRolling,
   DropWalking as DropWalking,
   Falling,
   StartWalkBackLeft,
@@ -85,7 +84,7 @@ export abstract class CharacterStateBase {
 
   public setAppropriateDropState(): void {
     if (this.character.groundImpactVelocity.y < -6) {
-      this.character.setState(new DropRolling(this.character));
+      this.character.setState(new DropIdle(this.character));
     } else if (this.anyDirection()) {
       if (this.character.groundImpactVelocity.y < -2) {
         this.character.setState(new DropWalking(this.character));

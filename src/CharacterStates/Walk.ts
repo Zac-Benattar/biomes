@@ -12,7 +12,7 @@ export class Walk extends CharacterStateBase {
     super(character);
 
     this.character.setVelocityTarget(new THREE.Vector3(0, 0, 0.8));
-    this.playAnimation("Walk", 0.1);
+    this.playAnimation("run_fwd", 0.1);
   }
 
   public update(timeStep: number): void {

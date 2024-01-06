@@ -1,6 +1,5 @@
 export * from "./CharacterStateBase";
 export * from "./DropIdle";
-export * from "./DropRolling";
 export * from "./DropWalking";
 export * from "./EndWalk";
 export * from "./Falling";

@@ -140,13 +140,9 @@ export class Character extends THREE.Object3D {
 
       this.mixer = new THREE.AnimationMixer(this.model);
 
-      this.manager = new THREE.LoadingManager();
-
-      const OnLoad = (animName: string, anim: any) => {
-        anim.animations[0].name = animName;
-        const clip = anim.animations[0];
+      gltf.animations.forEach((clip) => {
         this.animations.push(clip);
-      };
+      });
     });
   }
 
