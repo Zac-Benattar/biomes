@@ -2,7 +2,7 @@
 
 ## Libraries:
 Threejs (https://github.com/mrdoob/three.js) by mrdoob and contributers is licensed under MIT license (https://opensource.org/license/MIT/).
-Cannonjs (https://github.com/schteppe/cannon.js) by schteppe and contributers is licensed under MIT license (https://opensource.org/license/MIT/).
+Cannon-es (https://github.com/pmndrs/cannon-es) by pmndrs is licensed under MIT license (https://opensource.org/license/MIT/).
 Sketchbook (https://github.com/swift502/Sketchbook) by swift502 and benhatsor is licensed under MIT license (https://opensource.org/license/MIT.
 
 ## Models
