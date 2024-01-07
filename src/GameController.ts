@@ -48,6 +48,7 @@ export default class GameController {
     this.Init();
   }
 
+  /* Initialises the game controller class */
   private Init(): void {
     this.createMenu();
 
@@ -75,7 +76,7 @@ export default class GameController {
       } else if (e.key === "l") {
         this.island.toggleLightDebug();
       } else if (e.key === "h") {
-        this.toggleShadows();
+        this.toggleShadowCasting();
       } else if (e.key === "Escape") {
         if (!this.scoreScreenVisible) this.toggleMenu();
       } else {
@@ -123,6 +124,7 @@ export default class GameController {
     this.createHUD();
   }
 
+  /* Resets the camera to the default position */
   private resetCamera(): void {
     this.camera.position.set(20, 20, 20);
     this.camera.lookAt(0, 10, 0);
@@ -130,6 +132,7 @@ export default class GameController {
     this.controls.target.set(0, 10, 0);
   }
 
+  /* Toggles the pause state of the game */
   private togglePause(): void {
     if (this.timeScaleTarget === 0) {
       this.timeScaleTarget = 1;
@@ -140,6 +143,7 @@ export default class GameController {
     this.timeAtPause = this.clock.getElapsedTime();
   }
 
+  /* Toggles whether the menu is visible */
   private toggleMenu(): void {
     this.togglePause();
 
@@ -170,6 +174,7 @@ export default class GameController {
     }
   }
 
+  /* Creates the menu HTML element */
   private createMenu(): void {
     const menu = document.createElement("div");
     menu.id = "menu";
@@ -248,6 +253,7 @@ export default class GameController {
     this.menu = menu;
   }
 
+  /* Creates the HUD HTML element */
   private createHUD(): void {
     const hud = document.createElement("div");
     hud.id = "hud";
@@ -291,6 +297,7 @@ export default class GameController {
     this.hud = hud;
   }
 
+  /* Updates the HUD HTML element to reflect current game state */
   private updateHUD(): void {
     this.hud.getElementsByClassName("time")[0].innerHTML =
       "Time: " + this.timeRemaining.toFixed(3) + "s";
@@ -303,6 +310,7 @@ export default class GameController {
         "Animal: " + AnimalType[this.island.goal.animalType];
   }
 
+  /* Creates the score screen HTML element */
   private createScoreScreen(): void {
     const scoreScreen = document.createElement("div");
     scoreScreen.id = "scoreScreen";
@@ -357,6 +365,7 @@ export default class GameController {
     this.scoreScreen = scoreScreen;
   }
 
+  /* Toggles whether the score screen is visible */
   private toggleScoreScreen(): void {
     if (this.scoreScreenVisible) {
       this.controls.enabled = true;
@@ -369,6 +378,7 @@ export default class GameController {
     }
   }
 
+  /* Generates a new island */
   private generateIsland(): void {
     if (this.island) {
       this.island.removeFromWorld();
@@ -389,6 +399,10 @@ export default class GameController {
     this.island.createGoal(this.island.getTileFromXZ(0, 0));
   }
 
+  /* Pauses game and sets the game state to goal reached.
+  Moves saucer to goal tile and enables beam.
+  Moves camera to goal tile.
+  Starts 5 second timer to generate the next biome */
   public onGoalReached(): void {
     if (!this.goalReached) {
       this.timeAtPause += this.clock.getElapsedTime();
@@ -409,6 +423,7 @@ export default class GameController {
     }
   }
 
+  /* Moves the camera to the goal tile */
   private moveCameraToGoal(): void {
     const goalPosition = this.island.goalTile.getTileTopPosition();
     const goalDirection = goalPosition.normalize();
@@ -423,6 +438,7 @@ export default class GameController {
     this.camera.updateMatrixWorld();
   }
 
+  /* Generates the next island */
   private generateNextIsland(): void {
     this.goalReached = false;
     this.initialPlayerGroundingOccurred = false;
@@ -456,10 +472,12 @@ export default class GameController {
     this.clock.start();
   }
 
-  public toggleShadows(): void {
+  /* Toggles whether shadows are cast */
+  public toggleShadowCasting(): void {
     this.renderer.shadowMap.enabled = !this.renderer.shadowMap.enabled;
   }
 
+  /* Enables physics debug view */
   public enablePhsyicsDebug(): void {
     if (!this.physicsDebug) {
       this.physicsDebug = true;
@@ -469,6 +487,7 @@ export default class GameController {
     }
   }
 
+  /* Creates the physics world */
   private createPhysicsWorld(): void {
     this.physicsWorld = new CANNON.World({
       gravity: new CANNON.Vec3(0, -9.81, 0),
@@ -477,17 +496,20 @@ export default class GameController {
     });
   }
 
+  /* Creates the island */
   private createIsland(biomeType: BiomeType, seed: number): void {
     const params = new IslandParams(this, biomeType, seed, 15);
     this.island = new Island(params);
   }
 
+  /* Updates the camera render settings to match window size */
   private onWindowResize(): void {
     this.camera.aspect = window.innerWidth / window.innerHeight;
     this.camera.updateProjectionMatrix();
     this.renderer.setSize(window.innerWidth, window.innerHeight);
   }
 
+  /* Renders the scene, progresses times and calls a game state update*/
   private render(gameContoller: GameController): void {
     this.delta = this.clock.getDelta();
 
@@ -503,6 +525,7 @@ export default class GameController {
     this.renderer.render(this.scene, this.camera);
   }
 
+  /* Updates the game state. Performs checks for goal reached and time up */
   private update(timeStep: number): void {
     if (this.timeRemaining <= 0) {
       if (this.goalReached) this.clock.stop();
@@ -522,7 +545,12 @@ export default class GameController {
           this.timeRemaining = newTime;
         }
 
-        if (this.island.getTileFromXZ(this.character.position.x, this.character.position.z) === this.island.goalTile) {
+        if (
+          this.island.getTileFromXZ(
+            this.character.position.x,
+            this.character.position.z
+          ) === this.island.goalTile
+        ) {
           this.onGoalReached();
         }
       }

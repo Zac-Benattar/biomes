@@ -3,6 +3,7 @@ import * as CANNON from "cannon-es";
 import { BoxCollider } from "./Colliders";
 import GameController from "./GameController";
 
+/* Class to store the url, scale and yOffset of a model */
 export class UrlScaleOffset {
   url: string;
   scale: number;
@@ -63,12 +64,14 @@ export default abstract class Item extends THREE.Object3D {
     this.gameController.physicsWorld.addBody(this.collider.body);
   }
 
+  /* Load model from url and add it to the scene */
   protected abstract loadModel(
     url: string,
     scale: number,
     yOffset: number
   ): void;
 
+  /* Sets the position of the item */
   public setPosition(position: THREE.Vector3): void {
     this.position.copy(position);
     this.model.position.copy(position);
@@ -77,6 +80,7 @@ export default abstract class Item extends THREE.Object3D {
     );
   }
 
+  /* Returns the light of the item */
   public getLight(): THREE.PointLight {
     return this.light;
   }

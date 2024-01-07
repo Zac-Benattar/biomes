@@ -293,7 +293,6 @@ export class Character extends THREE.Object3D {
     this.updateMatrixWorld();
   }
 
-
   // Performs a spring simulation on the character's velocity
   public springMovement(timeStep: number): void {
     // Get simulation result

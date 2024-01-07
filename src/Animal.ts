@@ -51,31 +51,31 @@ function getModelFileScaleOffsetFromAnimalType(
     case AnimalType.RedPanda:
       return new UrlScaleOffset("./assets/models/red_panda.glb", 0.001, -0.2);
     case AnimalType.Bison:
-        return new UrlScaleOffset("./assets/models/bison.glb", 0.01, 0.28);
+      return new UrlScaleOffset("./assets/models/bison.glb", 0.01, 0.28);
     case AnimalType.Fox:
-        return new UrlScaleOffset("./assets/models/fox.glb", 0.012, -0.68);
+      return new UrlScaleOffset("./assets/models/fox.glb", 0.012, -0.68);
     case AnimalType.Giraffe:
-        return new UrlScaleOffset("./assets/models/giraffe.glb", 3, 0.9);
+      return new UrlScaleOffset("./assets/models/giraffe.glb", 3, 0.9);
     case AnimalType.Ibex:
-        return new UrlScaleOffset("./assets/models/ibex.glb", 0.001, 0);
+      return new UrlScaleOffset("./assets/models/ibex.glb", 0.001, 0);
     case AnimalType.Kangaroo:
-        return new UrlScaleOffset("./assets/models/kangaroo.glb", 3, -0.5);
+      return new UrlScaleOffset("./assets/models/kangaroo.glb", 3, -0.5);
     case AnimalType.Lion:
-        return new UrlScaleOffset("./assets/models/lion.glb", 0.0038, -0.05);
+      return new UrlScaleOffset("./assets/models/lion.glb", 0.0038, -0.05);
     case AnimalType.Penguin:
-        return new UrlScaleOffset("./assets/models/penguin.glb", 0.11, -0.42);
+      return new UrlScaleOffset("./assets/models/penguin.glb", 0.11, -0.42);
     case AnimalType.PolarBear:
-        return new UrlScaleOffset("./assets/models/polar_bear.glb", 0.8, -0.5);
+      return new UrlScaleOffset("./assets/models/polar_bear.glb", 0.8, -0.5);
     case AnimalType.Shark:
-        return new UrlScaleOffset("./assets/models/shark.glb", 0.08, 0);
+      return new UrlScaleOffset("./assets/models/shark.glb", 0.08, 0);
     case AnimalType.Snake:
-        return new UrlScaleOffset("./assets/models/snaek.glb", 7, -0.38);
+      return new UrlScaleOffset("./assets/models/snaek.glb", 7, -0.38);
     case AnimalType.Camel:
-        return new UrlScaleOffset("./assets/models/camel.glb", 0.0045, -0.5);
+      return new UrlScaleOffset("./assets/models/camel.glb", 0.0045, -0.5);
     case AnimalType.Alligator:
-        return new UrlScaleOffset("./assets/models/alligator.glb", 0.2, -0.49);
+      return new UrlScaleOffset("./assets/models/alligator.glb", 0.2, -0.49);
     case AnimalType.Turtle:
-        return new UrlScaleOffset("./assets/models/turtle.glb", 0.12, -0.5);
+      return new UrlScaleOffset("./assets/models/turtle.glb", 0.12, -0.5);
     default:
       console.log("No model found for animal type: " + animalType);
   }
@@ -85,9 +85,15 @@ export class Animal extends Item {
   animalType: AnimalType;
 
   constructor(params: ItemParams, animalType: AnimalType) {
-    const { url, scale, yOffset } = getModelFileScaleOffsetFromAnimalType(animalType);
+    const { url, scale, yOffset } =
+      getModelFileScaleOffsetFromAnimalType(animalType);
     super(params, url, scale, yOffset);
     this.Init(animalType);
+  }
+
+  /* Initialises the animal class */
+  private Init(animalType: AnimalType) {
+    this.animalType = animalType;
   }
 
   /* Loads model from url. Sets position, shadow settings and yOffset. 
@@ -110,6 +116,7 @@ export class Animal extends Item {
     });
   }
 
+  /* Sets the position of the animal. */
   setPosition(position: THREE.Vector3): void {
     const modelPosition = new THREE.Vector3(
       position.x,
@@ -121,9 +128,5 @@ export class Animal extends Item {
     this.collider.body.position.copy(
       new CANNON.Vec3(position.x, position.y, position.z)
     );
-  }
-
-  private Init(animalType: AnimalType) {
-    this.animalType = animalType;
   }
 }
