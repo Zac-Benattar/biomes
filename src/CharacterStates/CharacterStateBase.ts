@@ -1,3 +1,9 @@
+/*
+ 	Slightly modified version of CharacterStateBase.ts byswift502.
+	https://github.com/swift502/Sketchbook/blob/master/src/ts/characters/character_states/CharacterStateBase.ts
+	Licensed under MIT License.
+*/
+
 import * as Utils from "../Utils";
 import {
   DropIdle,

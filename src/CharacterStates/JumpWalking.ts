@@ -1,3 +1,9 @@
+/*
+ 	Slightly modified version of JumpWalkingts byswift502.
+	https://github.com/swift502/Sketchbook/blob/master/src/ts/characters/character_states/JumpWalking.ts
+	Licensed under MIT License.
+*/
+
 import { CharacterStateBase, Falling } from "./_stateLibrary";
 import { Character } from "../Character";
 import * as THREE from "three";

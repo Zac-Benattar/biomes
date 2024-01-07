@@ -1,3 +1,9 @@
+/*
+ 	Slightly modified version of DropWalking.ts byswift502.
+	https://github.com/swift502/Sketchbook/blob/master/src/ts/characters/character_states/DropWalking.ts
+	Licensed under MIT License.
+*/
+
 import {
   CharacterStateBase,
   EndWalk,

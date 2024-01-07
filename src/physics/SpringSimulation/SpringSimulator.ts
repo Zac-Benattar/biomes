@@ -1,3 +1,9 @@
+/*
+	SpringSimulator.ts byswift502.
+	https://github.com/swift502/Sketchbook/blob/master/src/ts/physics/spring_simulation/SpringSimulator.ts
+	Licensed under MIT License.
+*/
+
 import * as THREE from 'three';
 import { SimulatorBase } from './SimulatorBase';
 import { SimulationFrame } from './SimulationFrame';

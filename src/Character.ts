@@ -1,3 +1,9 @@
+/*
+ 	Using physics and spring methods from Character.ts byswift502.
+	https://github.com/swift502/Sketchbook/blob/master/src/ts/characters/Character.ts
+	Licensed under MIT License.
+*/
+
 import * as THREE from "three";
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 import {

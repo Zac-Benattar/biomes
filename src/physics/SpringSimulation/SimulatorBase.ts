@@ -1,3 +1,9 @@
+/*
+	SimulatorBase.ts byswift502.
+	https://github.com/swift502/Sketchbook/blob/master/src/ts/physics/spring_simulation/SimulatorBase.ts
+	Licensed under MIT License.
+*/
+
 export abstract class SimulatorBase
 {
 	public mass: any;
