@@ -1,10 +1,16 @@
 # Attributions
-
-## Libraries:
+## Libraries
 Threejs (https://github.com/mrdoob/three.js) by mrdoob and contributers is licensed under MIT license (https://opensource.org/license/MIT/).
-Cannon-es (https://github.com/pmndrs/cannon-es) by pmndrs is licensed under MIT license (https://opensource.org/license/MIT/).
-Sketchbook (https://github.com/swift502/Sketchbook) by swift502 and benhatsor is licensed under MIT license (https://opensource.org/license/MIT.
 
+Cannon-es (https://github.com/pmndrs/cannon-es) by pmndrs is licensed under MIT license (https://opensource.org/license/MIT/).
+
+Sketchbook (https://github.com/swift502/Sketchbook) by swift502 is licensed under MIT license (https://opensource.org/license/MIT.
+## Images
+Alien turnaround (https://jeremymah.blogspot.com/2010_08_01_archive.html) by Jeremy Mah.
+
+raindrop.png (https://pixelartmaker.com/art/b3e0f940338bc21) by CreatorID d8536d
+
+snowflake.png (https://pixelartmaker.com/art/9c91fbdf6a48e1c) by CreatorID 9664c4
 ## Models
 "space survivor" (https://skfb.ly/6BrKP) by s.probka is licensed under Creative Commons Attribution (http://creativecommons.org/licenses/by/4.0/).
 
