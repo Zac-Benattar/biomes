@@ -33,7 +33,7 @@ export default class GameController {
   private timeScale: number = 1;
   private clock: THREE.Clock = new THREE.Clock();
   private delta: number = 0;
-  private animalsFound: number = 0;
+  private animalsCollected: number = 0;
   public goalReached: boolean = false;
   private gameStarted: boolean = false;
   private timeRemaining: number = GAME_LENGTH;
@@ -199,7 +199,7 @@ export default class GameController {
     const controls = document.createElement("p");
     controls.innerHTML =
       "Controls: <br />" +
-      "WASD - Move <br /> Space - Jump <br /> P - Enable Physics Debug <br /> L - Toggle Light Debug <br /> H - Toggle Shadows <br /> Esc - Toggle Menu";
+      "WASD - Move <br /> Space - Jump <br /> P - Enable Physics Debug <br /> L - Toggle Light Debug <br /> H - Toggle Shadow Casting <br /> Esc - Toggle Menu";
     menu.appendChild(controls);
 
     const startButton = document.createElement("button");
@@ -235,7 +235,7 @@ export default class GameController {
     restartButton.addEventListener("click", () => {
       this.initialPlayerGroundingOccurred = false;
       this.timeRemaining = GAME_LENGTH;
-      this.animalsFound = 0;
+      this.animalsCollected = 0;
       this.gameStarted = false;
       if (this.scoreScreenVisible) this.toggleScoreScreen();
       this.toggleMenu();
@@ -266,12 +266,12 @@ export default class GameController {
     time.style.padding = "1";
     hud.appendChild(time);
 
-    const animalsFound = document.createElement("h2");
-    animalsFound.className = "animalsFound";
-    animalsFound.innerHTML = "Animals Found: " + this.animalsFound;
-    animalsFound.style.margin = "1";
-    animalsFound.style.padding = "1";
-    hud.appendChild(animalsFound);
+    const animalsCollected = document.createElement("h2");
+    animalsCollected.className = "animalsCollected";
+    animalsCollected.innerHTML = "Animals Collected: " + this.animalsCollected;
+    animalsCollected.style.margin = "1";
+    animalsCollected.style.padding = "1";
+    hud.appendChild(animalsCollected);
 
     const biomeName = document.createElement("h2");
     biomeName.className = "biomeName";
@@ -294,8 +294,8 @@ export default class GameController {
   private updateHUD(): void {
     this.hud.getElementsByClassName("time")[0].innerHTML =
       "Time: " + this.timeRemaining.toFixed(3) + "s";
-    this.hud.getElementsByClassName("animalsFound")[0].innerHTML =
-      "Animals Found: " + this.animalsFound;
+    this.hud.getElementsByClassName("animalsCollected")[0].innerHTML =
+      "Animals Collected: " + this.animalsCollected;
     this.hud.getElementsByClassName("biomeName")[0].innerHTML =
       "Biome: " + BiomeType[this.island.params.biome];
     if (this.island.goal)
@@ -326,7 +326,7 @@ export default class GameController {
     const description = document.createElement("p");
     description.innerHTML =
       "You found " +
-      this.animalsFound +
+      this.animalsCollected +
       " animals! <br />" +
       "Thanks for playing!";
     scoreScreen.appendChild(description);
@@ -345,7 +345,7 @@ export default class GameController {
     restartButton.addEventListener("click", () => {
       this.initialPlayerGroundingOccurred = false;
       this.timeRemaining = GAME_LENGTH;
-      this.animalsFound = 0;
+      this.animalsCollected = 0;
       this.gameStarted = false;
       this.toggleScoreScreen();
       this.toggleMenu();
@@ -393,7 +393,7 @@ export default class GameController {
     if (!this.goalReached) {
       this.timeAtPause += this.clock.getElapsedTime();
       this.goalReached = true;
-      this.animalsFound++;
+      this.animalsCollected++;
 
       setTimeout(() => {
         this.generateNextIsland();
