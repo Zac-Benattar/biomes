@@ -27,6 +27,9 @@ export enum AnimalType {
   Turtle,
 }
 
+/* Bodge fix to get model file, scale and yOffset from animal type. 
+This should be replaced with a proper model loader class, 
+and models should be scaled and zero'd correctly at the creation level. */
 function getModelFileScaleOffsetFromAnimalType(
   animalType: AnimalType
 ): UrlScaleOffset {
@@ -82,12 +85,14 @@ export class Animal extends Item {
   animalType: AnimalType;
 
   constructor(params: ItemParams, animalType: AnimalType) {
-    // Add logic to select model based on animalType
     const { url, scale, yOffset } = getModelFileScaleOffsetFromAnimalType(animalType);
     super(params, url, scale, yOffset);
     this.Init(animalType);
   }
 
+  /* Loads model from url. Sets position, shadow settings and yOffset. 
+  Randomly rotates the model in the z axis so each animal doesnt face
+  the same direction every time. */
   loadModel(url: string, scale: number = 1) {
     const loader = new GLTFLoader();
     loader.load(url, (gltf) => {

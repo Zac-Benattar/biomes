@@ -51,9 +51,9 @@ export default abstract class Item extends THREE.Object3D {
         this.position.y,
         this.position.z
       ),
-      width: 1,
+      width: 0.5,
       height: 1,
-      depth: 1,
+      depth: 0.5,
       friction: 0,
     });
 

@@ -141,6 +141,8 @@ export class CylinderCollider extends Collider {
 }
 
 export class CapsuleCollider extends Collider {
+  /* Segments have no effect on the collider shape itself, but are used to determine
+  the number of points in the raycast circle for grounding tests */
   segments: number;
   constructor(options: CylinderColliderOptions) {
 

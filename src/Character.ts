@@ -41,7 +41,6 @@ export class Character extends THREE.Object3D {
   public velocityInfluence: THREE.Vector3 = new THREE.Vector3(0, 0, 0);
   public acceleration: THREE.Vector3 = new THREE.Vector3(0, 0, 0);
   public decceleration: THREE.Vector3 = new THREE.Vector3(0, 0, 0);
-
   public movementSpeed: number = 3.0;
   public angularVelocity: number = 0.0;
   public orientation: THREE.Vector3 = new THREE.Vector3(1, 0, 0);
@@ -65,7 +64,6 @@ export class Character extends THREE.Object3D {
 
   public gameController: GameController;
 
-  public physicsEnabled: boolean = true;
   public rotationSimulator: any;
   public velocitySimulator: any;
 
@@ -157,10 +155,9 @@ export class Character extends THREE.Object3D {
     this.grounded = false;
     this.model.position.copy(position);
 
-    if (this.physicsEnabled)
-      this.collider.body.position.copy(
-        new CANNON.Vec3(position.x, position.y, position.z)
-      );
+    this.collider.body.position.copy(
+      new CANNON.Vec3(position.x, position.y, position.z)
+    );
   }
 
   public resetVelocity(): void {
@@ -274,61 +271,53 @@ export class Character extends THREE.Object3D {
   public update(timeInSeconds: number) {
     this.state?.update(timeInSeconds);
 
-    if (this.physicsEnabled) {
-      this.springMovement(timeInSeconds);
-      this.springRotation(timeInSeconds);
-      this.syncModel();
-    }
+    this.springMovement(timeInSeconds);
+    this.springRotation(timeInSeconds);
+    this.syncModel();
+
     if (this.mixer !== undefined) this.mixer.update(timeInSeconds);
 
-    // Sync physics/graphics
-    if (this.physicsEnabled) {
-      this.position.set(
-        this.collider.body.interpolatedPosition.x,
-        this.collider.body.interpolatedPosition.y,
-        this.collider.body.interpolatedPosition.z
-      );
-    } else {
-      let newPos = new THREE.Vector3();
-      // this.getWorldPosition(newPos);
-
-      this.collider.body.position.copy(
-        new CANNON.Vec3(newPos.x, newPos.y, newPos.z)
-      );
-      this.collider.body.interpolatedPosition.copy(
-        new CANNON.Vec3(newPos.x, newPos.y, newPos.z)
-      );
-    }
+    // Sync physics body position with the model
+    this.position.set(
+      this.collider.body.interpolatedPosition.x,
+      this.collider.body.interpolatedPosition.y,
+      this.collider.body.interpolatedPosition.z
+    );
 
     this.updateMatrixWorld();
   }
 
+
+  // Performs a spring simulation on the character's velocity
   public springMovement(timeStep: number): void {
-    // Simulator
+    // Get simulation result
     this.velocitySimulator.target.copy(this.velocityTarget);
     this.velocitySimulator.simulate(timeStep);
 
-    // Update values
+    // Apply result
     this.velocity.copy(this.velocitySimulator.position);
     this.acceleration.copy(this.velocitySimulator.velocity);
   }
 
+  // Performs a spring simulation on the character's orientation
   public springRotation(timeStep: number): void {
-    // Spring rotation
     // Figure out angle between current and target orientation
     let angle = Utils.getSignedAngleBetweenVectors(
       this.orientation,
       this.orientationTarget
     );
 
+    // Get simulation result
     this.rotationSimulator.target = angle;
     this.rotationSimulator.simulate(timeStep);
     let rot = this.rotationSimulator.position;
 
+    // Apply rotation
     this.orientation.applyAxisAngle(new THREE.Vector3(0, 1, 0), rot);
     this.angularVelocity = this.rotationSimulator.velocity;
   }
 
+  // Returns a vector representing the direction the character is moving in
   public getLocalMovementDirection(): THREE.Vector3 {
     const positiveX = this.actions.right.isPressed ? -1 : 0;
     const negativeX = this.actions.left.isPressed ? 1 : 0;
@@ -353,7 +342,6 @@ export class Character extends THREE.Object3D {
 
   public setAnimation(clipName: string, fadeIn: number): number {
     if (this.mixer !== undefined) {
-      // gltf
       let clip = THREE.AnimationClip.findByName(this.animations, clipName);
 
       let action = this.mixer.clipAction(clip);
@@ -371,10 +359,12 @@ export class Character extends THREE.Object3D {
     return -1;
   }
 
+  // For use in physics pre-step event
   public physicsPreStep(character: Character): void {
     character.feetRaycast();
   }
 
+  // Casts rays from the character's feet to the ground to check for ground contact
   public feetRaycast(): void {
     let body = this.collider.body;
 
