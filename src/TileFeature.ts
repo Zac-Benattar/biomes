@@ -31,7 +31,11 @@ export class TileFeature extends THREE.Object3D {
   public cannonBody: CANNON.Body;
   private tileRadius = 0.5;
 
-  constructor(gameContoller: GameController, featureType: FeatureType, position: THREE.Vector3) {
+  constructor(
+    gameContoller: GameController,
+    featureType: FeatureType,
+    position: THREE.Vector3
+  ) {
     super();
     this.gameContoller = gameContoller;
     this.featureType = featureType;
@@ -58,6 +62,7 @@ export class TileFeature extends THREE.Object3D {
     this.gameContoller.physicsWorld.addBody(this.cannonBody);
   }
 
+  /* Creates a rock mesh at the specified position */
   private rock(position: THREE.Vector3) {
     const px = Math.random() * 0.5 - this.tileRadius / 2;
     const pz = Math.random() * 0.5 - this.tileRadius / 2;
@@ -84,6 +89,7 @@ export class TileFeature extends THREE.Object3D {
     });
   }
 
+  /* Creates an alpine tree mesh at the specified position */
   private alpineTree(position: THREE.Vector3) {
     const treeHeight = Math.random() * 1 + 1.25;
 
@@ -147,6 +153,7 @@ export class TileFeature extends THREE.Object3D {
     });
   }
 
+  /* Creates a basic tree mesh at the specified position */
   private basicTree(position: THREE.Vector3) {
     const treeHeight = Math.random() * 1 + 1.25;
 
@@ -204,6 +211,7 @@ export class TileFeature extends THREE.Object3D {
     });
   }
 
+  /* Creates a jungle tree mesh at the specified position */
   private jungleTree(position: THREE.Vector3) {
     const treeHeight = Math.random() * 3 + 4;
 
@@ -260,6 +268,7 @@ export class TileFeature extends THREE.Object3D {
     });
   }
 
+  /* Creates a savanna tree mesh at the specified position */
   private savannaTree(position: THREE.Vector3) {
     const puffCount = 200;
     const treeHeight = Math.random() * 1 + 3.5;
@@ -322,7 +331,11 @@ export class TileFeature extends THREE.Object3D {
     this.cannonBody = new CANNON.Body({
       mass: 0,
       shape: new CANNON.Cylinder(0.25, 0.3, treeHeight, 10),
-      position: new CANNON.Vec3(position.x, position.y + treeHeight * 0.4, position.z),
+      position: new CANNON.Vec3(
+        position.x,
+        position.y + treeHeight * 0.4,
+        position.z
+      ),
     });
   }
 }

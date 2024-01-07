@@ -1,3 +1,9 @@
+/*
+ 	Slightly modified version of StartWalkBase.ts byswift502.
+	https://github.com/swift502/Sketchbook/blob/master/src/ts/characters/character_states/StartWalkBase.ts
+	Licensed under MIT License.
+*/
+
 import * as Utils from '../Utils';
 import {
   CharacterStateBase,

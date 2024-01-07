@@ -12,7 +12,7 @@ export enum BiomeType {
   Tundra,
   Swamp,
   Plains,
-  // Taiga, // Less snowy than Alpine
+  // Taiga,
   // Beach,
   // Meadow,
   // MartianDesert,
@@ -61,10 +61,13 @@ export class Layer {
 }
 
 export class BiomeHelper {
+  // Returns the biome type as a string
   public static getBiomeTypeString(biomeType: BiomeType): string {
     return BiomeType[biomeType];
   }
 
+  /* Parses the biome data from Biomes.json and returns the data
+  for the biome passed as an arguement */
   public static parseBiomeData(biomeType: BiomeType): BiomeData {
     const biomeData = biomes.find(
       (x) => x.biomeName == this.getBiomeTypeString(biomeType)

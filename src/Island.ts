@@ -5,7 +5,6 @@ import Item from "./Item";
 import { Animal, AnimalType } from "./Animal";
 import Tile, { TileTop, TileType } from "./Tile";
 import { FeatureType, TileFeature } from "./TileFeature";
-import * as CANNON from "cannon-es";
 import GameController from "./GameController";
 import { BiomeData, BiomeHelper, BiomeType, Layer } from "./Biomes";
 
@@ -79,6 +78,7 @@ export default class Island {
     this.Init(params);
   }
 
+  /* Initializes the island with the given parameters */
   private Init(params: IslandParams) {
     this.params = params;
     this.tiles = [];
@@ -150,17 +150,21 @@ export default class Island {
       }
     }
 
-    this.enableLights(this.params.gameController.scene);
+    this.createLights(this.params.gameController.scene);
     this.createIslandBase(this.params.gameController.scene);
   }
 
+  /* Updates the island for the current time */
   public update(t: number): void {
     this.updateParticles(t);
     this.updateLightOrbits(t);
     this.previousRAF += t;
   }
 
+  /* Removes the previous island from the world */
   public removeFromWorld(): void {
+    const scene = this.params.gameController.scene;
+
     // Delete previous island's tiles
     for (let i = 0; i < this.tiles.length; i++) {
       this.tiles[i].removeFromWorld();
@@ -168,46 +172,49 @@ export default class Island {
 
     // Delete previous island's lights
     if (this.lightDebug) {
-      this.params.gameController.scene.remove(this.sunHelper);
-      this.params.gameController.scene.remove(this.moonHelper);
-      this.params.gameController.scene.remove(this.sunShadowHelper);
-      this.params.gameController.scene.remove(this.moonShadowHelper);
+      scene.remove(this.sunHelper);
+      scene.remove(this.moonHelper);
+      scene.remove(this.sunShadowHelper);
+      scene.remove(this.moonShadowHelper);
     }
 
     // Delete previous island's lights
-    if (this.sun) this.params.gameController.scene.remove(this.sun);
-    if (this.moon) this.params.gameController.scene.remove(this.moon);
+    if (this.sun) scene.remove(this.sun);
+    if (this.moon) scene.remove(this.moon);
 
     // Delete previous island's clouds
-    if (this.clouds) this.params.gameController.scene.remove(this.clouds);
+    if (this.clouds) scene.remove(this.clouds);
 
     // Delete previous island's particles
-    if (this.particles) this.params.gameController.scene.remove(this.particles);
+    if (this.particles) scene.remove(this.particles);
 
     // Delete previous island's water
-    if (this.water) this.params.gameController.scene.remove(this.water);
+    if (this.water) scene.remove(this.water);
 
     // Delete previous island's island container
-    if (this.islandContainer)
-      this.params.gameController.scene.remove(this.islandContainer);
+    if (this.islandContainer) scene.remove(this.islandContainer);
 
     // Delete previous island's island floor
-    if (this.islandFloor)
-      this.params.gameController.scene.remove(this.islandFloor);
+    if (this.islandFloor) scene.remove(this.islandFloor);
   }
 
+  /* Returns the maximum height of the island equal to the
+  height of the highest height tile */
   public getMaxHeight(): number {
     return this.params.biomeParams.layers.reduce((max, layer) => {
       return Math.max(max, layer.minHeight);
     }, 0);
   }
 
+  /* Returns the minimum height of the island equal to the 
+  height of the lowest height tile */
   private getMinHeight(): number {
     return this.params.biomeParams.layers.reduce((min, layer) => {
       return Math.min(min, layer.minHeight);
     }, this.params.biomeParams.maxHeight);
   }
 
+  /* Returns world position from the tileX, tileZ used to generate tiles */
   private tileXZToPosition(tileX: number, tileZ: number): THREE.Vector3 {
     return new THREE.Vector3(
       (tileX + (tileZ % 2) * 0.5) * 1.77,
@@ -216,6 +223,7 @@ export default class Island {
     );
   }
 
+  /* Returns the LCG algorithm, a simple seeded pseudo-random algorithm */
   private randomFunction(seed: number): Function {
     // Constants (A and M) for the LCG algorithm
     const A = 1664525;
@@ -233,6 +241,7 @@ export default class Island {
     };
   }
 
+  /* Sets the shadow map size of the sun and moon */
   public setShadowMapSize(width: number, height: number): void {
     this.sun.shadow.mapSize.width = width;
     this.sun.shadow.mapSize.height = height;
@@ -240,6 +249,7 @@ export default class Island {
     this.moon.shadow.mapSize.height = height;
   }
 
+  /* Creates the clouds for the island */
   private createClouds(): void {
     let geo: THREE.BufferGeometry = new THREE.SphereGeometry(0, 0, 0);
     let count = this.params.biomeParams.weather.clouds.count;
@@ -289,6 +299,7 @@ export default class Island {
     this.params.gameController.scene.add(this.clouds);
   }
 
+  /* Creates the snow particles */
   private createSnow(): void {
     let positions: number[] = [];
     let velocities: number[] = [];
@@ -332,6 +343,7 @@ export default class Island {
     this.params.gameController.scene.add(this.particles);
   }
 
+  /* Creates the rain particles */
   private createRain(): void {
     let positions: number[] = [];
     let velocities: number[] = [];
@@ -375,6 +387,7 @@ export default class Island {
     this.params.gameController.scene.add(this.particles);
   }
 
+  /* Updates the rain or snow particles with the current time */
   private updateParticles(t: number): void {
     const min_height = this.getMinHeight();
     if (this.particles) {
@@ -432,6 +445,7 @@ export default class Island {
     }
   }
 
+  /* Creates the base and water of the island */
   public createIslandBase(scene: THREE.Scene): void {
     if (this.params.biomeParams.water) {
       let waterMesh = new THREE.Mesh(
@@ -508,7 +522,6 @@ export default class Island {
         this.createClouds();
       }
 
-      // Implement precipitation
       if (this.params.biomeParams.weather.precipitation) {
         // Determine whether it should snow or rain
         if (
@@ -522,6 +535,7 @@ export default class Island {
     }
   }
 
+  /* Returns the tile at the given X,Z position */
   public getTileFromXZ(x: number, z: number): Tile | null {
     // Find the tile with the closest center x,z to the given position
     let closestTile: Tile | null = null;
@@ -539,7 +553,8 @@ export default class Island {
     return closestTile;
   }
 
-  private enableLights(scene: THREE.Scene): void {
+  /* Creates the ambient light, sun, and moon */
+  private createLights(scene: THREE.Scene): void {
     const ambientLight = new THREE.AmbientLight(0xffcb8e, 0.1);
     ambientLight.castShadow = false;
     scene.add(ambientLight);
@@ -567,6 +582,7 @@ export default class Island {
     this.setShadowMapSize(512, 512);
   }
 
+  /* Toggles the light debug helpers */
   public toggleLightDebug(): void {
     this.lightDebug = !this.lightDebug;
     if (this.lightDebug) {
@@ -594,6 +610,7 @@ export default class Island {
     }
   }
 
+  /* Sets the angle of the given light */
   private setLightAngle(light: THREE.DirectionalLight, angle: number): void {
     light.position.set(
       this.orbitRadius * Math.sin(angle),
@@ -602,6 +619,7 @@ export default class Island {
     );
   }
 
+  /* Updates the sun and moon's positions for the current time */
   private updateLightOrbits(t: number) {
     this.sunAngle += t * this.orbitSpeed;
     if (this.sunAngle > Math.PI * 2) this.sunAngle -= Math.PI * 2;
@@ -625,6 +643,9 @@ export default class Island {
     }
   }
 
+  /* Creates a single goal tile for the player to reach, ignores the
+  tile passed as an argument so to not put the goal on the player's
+  starting tile */
   public createGoal(playerTile: Tile): void {
     if (this.goalTile == null) {
       let goalTile: Tile | null = null;

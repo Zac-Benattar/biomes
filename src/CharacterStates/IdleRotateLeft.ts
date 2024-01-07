@@ -1,3 +1,9 @@
+/*
+ 	Slightly modified version of IdleRotateLeft.ts byswift502.
+	https://github.com/swift502/Sketchbook/blob/master/src/ts/characters/character_states/IdleRotateLeft.ts
+	Licensed under MIT License.
+*/
+
 import { CharacterStateBase, Idle, JumpIdle, Walk } from "./_stateLibrary";
 import { Character } from "../Character";
 import * as THREE from "three";

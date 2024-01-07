@@ -1,3 +1,9 @@
+/*
+ 	Slightly modified version of _stateLibrary.ts byswift502.
+	https://github.com/swift502/Sketchbook/blob/master/src/ts/characters/character_states/_stateLibrary.ts
+	Licensed under MIT License.
+*/
+
 export * from "./CharacterStateBase";
 export * from "./DropIdle";
 export * from "./DropWalking";

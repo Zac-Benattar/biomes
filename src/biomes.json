@@ -25,8 +25,12 @@
         "layers": [
           {
             "minHeight": 8,
-            "tileTypes": ["Stone"],
-            "topTypes": ["Snow"],
+            "tileTypes": [
+              "Stone"
+            ],
+            "topTypes": [
+              "Snow"
+            ],
             "features": [
               {
                 "featureType": "Rock",
@@ -40,8 +44,12 @@
           },
           {
             "minHeight": 7,
-            "tileTypes": ["Dirt"],
-            "topTypes": ["Snow"],
+            "tileTypes": [
+              "Dirt"
+            ],
+            "topTypes": [
+              "Snow"
+            ],
             "features": [
               {
                 "featureType": "AlpineTree",
@@ -51,20 +59,32 @@
           },
           {
             "minHeight": 6,
-            "tileTypes": ["Dirt"],
-            "topTypes": ["Snow"],
+            "tileTypes": [
+              "Dirt"
+            ],
+            "topTypes": [
+              "Snow"
+            ],
             "features": []
           },
           {
             "minHeight": 4,
-            "tileTypes": ["Grass"],
-            "topTypes": ["Snow"],
+            "tileTypes": [
+              "Grass"
+            ],
+            "topTypes": [
+              "Snow"
+            ],
             "features": []
           },
           {
             "minHeight": 1,
-            "tileTypes": ["Grass"],
-            "topTypes": ["Snow"],
+            "tileTypes": [
+              "Grass"
+            ],
+            "topTypes": [
+              "Snow"
+            ],
             "features": []
           }
         ]
@@ -80,7 +100,9 @@
         "layers": [
           {
             "minHeight": 1,
-            "tileTypes": ["Sand"],
+            "tileTypes": [
+              "Sand"
+            ],
             "topTypes": [],
             "features": [
               {
@@ -113,7 +135,9 @@
         "layers": [
           {
             "minHeight": 1,
-            "tileTypes": ["MartianSand"],
+            "tileTypes": [
+              "MartianSand"
+            ],
             "topTypes": [],
             "features": [
               {
@@ -146,7 +170,9 @@
         "layers": [
           {
             "minHeight": 7,
-            "tileTypes": ["Stone"],
+            "tileTypes": [
+              "Stone"
+            ],
             "topTypes": [],
             "features": [
               {
@@ -157,8 +183,12 @@
           },
           {
             "minHeight": 6,
-            "tileTypes": ["Dirt"],
-            "topTypes": ["Grass"],
+            "tileTypes": [
+              "Dirt"
+            ],
+            "topTypes": [
+              "Grass"
+            ],
             "features": [
               {
                 "featureType": "BasicTree",
@@ -168,8 +198,12 @@
           },
           {
             "minHeight": 4,
-            "tileTypes": ["Dirt"],
-            "topTypes": ["Grass"],
+            "tileTypes": [
+              "Dirt"
+            ],
+            "topTypes": [
+              "Grass"
+            ],
             "features": [
               {
                 "featureType": "BasicTree",
@@ -179,7 +213,9 @@
           },
           {
             "minHeight": 1,
-            "tileTypes": ["Grass"],
+            "tileTypes": [
+              "Grass"
+            ],
             "topTypes": [],
             "features": [
               {
@@ -212,7 +248,9 @@
         "layers": [
           {
             "minHeight": 5,
-            "tileTypes": ["Dirt"],
+            "tileTypes": [
+              "Dirt"
+            ],
             "topTypes": [],
             "features": [
               {
@@ -223,8 +261,12 @@
           },
           {
             "minHeight": 3,
-            "tileTypes": ["Dirt"],
-            "topTypes": ["Grass"],
+            "tileTypes": [
+              "Dirt"
+            ],
+            "topTypes": [
+              "Grass"
+            ],
             "features": [
               {
                 "featureType": "JungleTree",
@@ -234,7 +276,9 @@
           },
           {
             "minHeight": 1,
-            "tileTypes": ["Grass"],
+            "tileTypes": [
+              "Grass"
+            ],
             "topTypes": [],
             "features": [
               {
@@ -264,7 +308,9 @@
         "layers": [
           {
             "minHeight": 1.5,
-            "tileTypes": ["Dirt"],
+            "tileTypes": [
+              "Dirt"
+            ],
             "topTypes": [],
             "features": [
               {
@@ -275,13 +321,17 @@
           },
           {
             "minHeight": 1,
-            "tileTypes": ["Mud"],
+            "tileTypes": [
+              "Mud"
+            ],
             "topTypes": [],
             "features": []
           },
           {
             "minHeight": 0.5,
-            "tileTypes": ["Sand"],
+            "tileTypes": [
+              "Sand"
+            ],
             "topTypes": [],
             "features": [
               {
@@ -314,8 +364,12 @@
         "layers": [
           {
             "minHeight": 5.5,
-            "tileTypes": ["Dirt"],
-            "topTypes": ["Grass"],
+            "tileTypes": [
+              "Dirt"
+            ],
+            "topTypes": [
+              "Grass"
+            ],
             "features": [
               {
                 "featureType": "BasicTree",
@@ -325,7 +379,9 @@
           },
           {
             "minHeight": 1,
-            "tileTypes": ["Sand"],
+            "tileTypes": [
+              "Sand"
+            ],
             "topTypes": [],
             "features": [
               {
@@ -340,7 +396,9 @@
           },
           {
             "minHeight": 0,
-            "tileTypes": ["Stone"],
+            "tileTypes": [
+              "Stone"
+            ],
             "topTypes": [],
             "features": [
               {
@@ -374,7 +432,9 @@
         "layers": [
           {
             "minHeight": 1,
-            "tileTypes": ["Grass"],
+            "tileTypes": [
+              "Grass"
+            ],
             "topTypes": [],
             "features": [
               {
@@ -404,8 +464,12 @@
         "layers": [
           {
             "minHeight": 3,
-            "tileTypes": ["Dirt"],
-            "topTypes": ["Grass"],
+            "tileTypes": [
+              "Dirt"
+            ],
+            "topTypes": [
+              "Grass"
+            ],
             "features": [
               {
                 "featureType": "BasicTree",
@@ -415,7 +479,9 @@
           },
           {
             "minHeight": 1,
-            "tileTypes": ["Grass"],
+            "tileTypes": [
+              "Grass"
+            ],
             "topTypes": [],
             "features": [
               {
@@ -448,7 +514,9 @@
         "layers": [
           {
             "minHeight": 7,
-            "tileTypes": ["Stone"],
+            "tileTypes": [
+              "Stone"
+            ],
             "topTypes": [],
             "features": [
               {
@@ -459,7 +527,9 @@
           },
           {
             "minHeight": 6,
-            "tileTypes": ["Dirt"],
+            "tileTypes": [
+              "Dirt"
+            ],
             "topTypes": [],
             "features": [
               {
@@ -470,7 +540,9 @@
           },
           {
             "minHeight": 4,
-            "tileTypes": ["Dirt"],
+            "tileTypes": [
+              "Dirt"
+            ],
             "topTypes": [],
             "features": [
               {
@@ -481,7 +553,9 @@
           },
           {
             "minHeight": 1,
-            "tileTypes": ["Grass"],
+            "tileTypes": [
+              "Grass"
+            ],
             "topTypes": [],
             "features": [
               {
@@ -518,8 +592,12 @@
         "layers": [
           {
             "minHeight": 7,
-            "tileTypes": ["Stone"],
-            "topTypes": ["Snow"],
+            "tileTypes": [
+              "Stone"
+            ],
+            "topTypes": [
+              "Snow"
+            ],
             "features": [
               {
                 "featureType": "Rock",
@@ -529,8 +607,12 @@
           },
           {
             "minHeight": 6,
-            "tileTypes": ["Dirt"],
-            "topTypes": ["Snow"],
+            "tileTypes": [
+              "Dirt"
+            ],
+            "topTypes": [
+              "Snow"
+            ],
             "features": [
               {
                 "featureType": "Rock",
@@ -540,8 +622,12 @@
           },
           {
             "minHeight": 4,
-            "tileTypes": ["Dirt"],
-            "topTypes": ["Snow"],
+            "tileTypes": [
+              "Dirt"
+            ],
+            "topTypes": [
+              "Snow"
+            ],
             "features": [
               {
                 "featureType": "AlpineTree",
@@ -551,7 +637,9 @@
           },
           {
             "minHeight": 1,
-            "tileTypes": ["Dirt"],
+            "tileTypes": [
+              "Dirt"
+            ],
             "topTypes": [],
             "features": [
               {
@@ -588,8 +676,12 @@
         "layers": [
           {
             "minHeight": 3.5,
-            "tileTypes": ["Dirt"],
-            "topTypes": ["Grass"],
+            "tileTypes": [
+              "Dirt"
+            ],
+            "topTypes": [
+              "Grass"
+            ],
             "features": [
               {
                 "featureType": "BasicTree",
@@ -599,7 +691,9 @@
           },
           {
             "minHeight": 3,
-            "tileTypes": ["Dirt"],
+            "tileTypes": [
+              "Dirt"
+            ],
             "topTypes": [],
             "features": [
               {
@@ -610,7 +704,9 @@
           },
           {
             "minHeight": 1,
-            "tileTypes": ["Mud"],
+            "tileTypes": [
+              "Mud"
+            ],
             "topTypes": [],
             "features": [
               {

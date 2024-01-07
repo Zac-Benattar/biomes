@@ -1,3 +1,9 @@
+/*
+	Methods from FunctionLibrary.ts from byswift502.
+	https://github.com/swift502/Sketchbook/blob/a6fac1b4fe4f78ce530b2ed2efdc85fbb25cec8a/src/ts/core/FunctionLibrary.ts#L154
+	Licensed under MIT License.
+*/
+
 import * as THREE from "three";
 import * as CANNON from "cannon-es";
 import { SimulationFrame } from "./physics/SpringSimulation/SimulationFrame";

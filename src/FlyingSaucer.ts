@@ -12,13 +12,14 @@ export class FlyingSaucer extends THREE.Object3D {
         this.Init(gameContoller, position);
     }
 
+    /* Initialises the flying saucer class */
     private Init(gameContoller: GameController, position: THREE.Vector3): void {
         this.gameController = gameContoller;
         this.position.copy(position);
         this.loadModel(position);
     }
 
-    // Swap out for a real model
+    /* Loads the flying saucer model */
     private loadModel(position: THREE.Vector3 = new THREE.Vector3(0, 0, 0)) {
         const loader = new GLTFLoader();
         loader.load("./assets/models/Saucer.glb", (gltf) => {
@@ -31,6 +32,8 @@ export class FlyingSaucer extends THREE.Object3D {
         });
     }
 
+    /* Creates and adds to scene the beam to the height 
+    specified in the y component of the position argument */
     public enableBeam(targetPosition: THREE.Vector3) {
         // Ensure there is no existing beam
         this.disableBeam();
@@ -39,11 +42,14 @@ export class FlyingSaucer extends THREE.Object3D {
         this.gameController.scene.add(this.beam);
     }
 
+    /* Disables the beam */
     public disableBeam() {
         this.gameController.scene.remove(this.beam);
         this.beam = null;
     }
 
+    /* Creates a beam to the height specified in the y
+    component of the position argument */
     private createBeam(targetPosition: THREE.Vector3) {
         const beamHeight = this.position.y - targetPosition.y;
         let geo = new THREE.CylinderGeometry(0.5, 1, beamHeight, 6, 1, false);
@@ -54,6 +60,7 @@ export class FlyingSaucer extends THREE.Object3D {
         this.beam.position.set(this.position.x, this.position.y - beamHeight / 2, this.position.z);
     }
 
+    /* Sets the position of the flying saucer */
     public setPosition(position: THREE.Vector3): void {
         this.position.copy(position);
         this.model.position.copy(position);

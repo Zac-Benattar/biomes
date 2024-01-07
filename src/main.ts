@@ -1,4 +1,4 @@
-import  GameController from "./GameController";
+import GameController from "./GameController";
 import WebGL from "three/addons/capabilities/WebGL.js";
 
 let APP: GameController;

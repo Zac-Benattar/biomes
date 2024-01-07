@@ -1,3 +1,9 @@
+/*
+	VectorSpringSimulator.ts byswift502.
+	https://github.com/swift502/Sketchbook/blob/master/src/ts/physics/spring_simulation/VectorSpringSimulator.ts
+	Licensed under MIT License.
+*/
+
 import * as THREE from 'three';
 import { SimulatorBase } from './SimulatorBase';
 import { SimulationFrameVector } from './SimulationFrameVector';

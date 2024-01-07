@@ -61,6 +61,7 @@ export default class Tile extends THREE.Object3D {
     this.Init();
   }
 
+  /* Initialises the tile class */
   private Init(): void {
     this.generateModel();
     this.createPhysicsBody();
@@ -68,6 +69,7 @@ export default class Tile extends THREE.Object3D {
     this.gameContoller.physicsWorld.addBody(this.collider.body);
   }
 
+  /* Removes the tile and its children from the scene and physics world*/
   public removeFromWorld(): void {
     if (this.feature !== undefined && this.feature !== null) {
       this.gameContoller.scene.remove(this.feature.model);
@@ -81,6 +83,8 @@ export default class Tile extends THREE.Object3D {
     this.gameContoller.physicsWorld.removeBody(this.collider.body);
   }
 
+  /* Returns a hexagonal prism buffer geometry of height and
+  position specified in the arguments */
   private hexGeometry(
     height: number,
     position: THREE.Vector3
@@ -91,6 +95,7 @@ export default class Tile extends THREE.Object3D {
     return geo;
   }
 
+  /* Returns a snow buffer geometry of position specified in the argument */
   private snowGeometry(position: THREE.Vector3): THREE.BufferGeometry {
     let geo = new THREE.CylinderGeometry(1, 1, 0.1, 6, 1, false);
     geo.translate(position.x, position.y, position.z);
@@ -98,6 +103,7 @@ export default class Tile extends THREE.Object3D {
     return geo;
   }
 
+  /* Generates the tile model */
   private generateModel(): void {
     let geo = this.hexGeometry(this.height, this.position);
     geo.name = "baseHexagon";
@@ -224,10 +230,12 @@ export default class Tile extends THREE.Object3D {
     }
   }
 
+  /* Sets the position of the tile */
   public getTileTopPosition(): THREE.Vector3 {
     return new THREE.Vector3(this.position.x, this.height, this.position.z);
   }
 
+  /* Gets the position of the tile's item */
   public getTileItemPosition(): THREE.Vector3 {
     return new THREE.Vector3(
       this.position.x,
@@ -236,6 +244,7 @@ export default class Tile extends THREE.Object3D {
     );
   }
 
+  /* Creates the physics body for the tile */
   private createPhysicsBody() {
     this.collider = new HexTileCollider({
       mass: 0,
@@ -246,10 +255,12 @@ export default class Tile extends THREE.Object3D {
     });
   }
 
+  /* Gets the tile's item */
   public GetItem(): Item {
     return this.item;
   }
 
+  /* Sets the tile's item to the goal animal */
   public SetGoal(animal: AnimalType): Animal {
     const itemParams = new ItemParams(
       this.gameContoller,
