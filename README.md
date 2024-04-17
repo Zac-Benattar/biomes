@@ -1,6 +1,13 @@
 # Biomes
+Simple demo game for a graphics coursework. Didn't score well due to not being able to run the code with a python webserver.
 
-Simple demo game for CS324 Computer Graphics
+## Installing and Running the System
+- Clone the repo into a local folder.
+- Install Node.js (https://nodejs.org/en) and npm (should be installed with nodejs), you may need to restart your terminal to use
+npm.
+- From the `rt-trainer-app` directory run the following commands in a terminal:
+	- Install the required dependencies: `npm install`
+	- Run the webserver: `npx vite` 
 
 ![alt text](https://github.com/Zac-Benattar/biomes/blob/main/assets/early_screenshot.png?raw=true)
 
