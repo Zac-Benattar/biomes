@@ -1,5 +1,5 @@
 # Biomes
-Simple demo game for a graphics coursework. Didn't score well due to not being able to run the code with a python webserver.
+Simple demo game for a graphics coursework. Didn't score well due to not knowing the submission had to be run as a python package despite the coursework being based around three.js
 
 ## Installing and Running the System
 - Clone the repo into a local folder.
